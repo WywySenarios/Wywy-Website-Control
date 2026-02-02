@@ -1,11 +1,11 @@
 #!/bin/bash
 # FOR DEVELOPMENT USE ONLY.
-# Runs all services specified in the positional arguments. Input the reduced lowercase name of the service.
+# Runs all services specified in the positional arguments. Input the reduced lower snake case name of the service.
 # 
 
 # Runs a service given the name.
 # Arguments:
-#   $1: Service name (reduced, lowercase).
+#   $1: Service name (reduced, lower snake case).
 run_service() {
     bash "scripts/run/$service_name.sh" "dev"
 }
