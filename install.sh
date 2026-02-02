@@ -26,8 +26,8 @@ sudo chown $USER:$USER /etc/Wywy-Website-Control
 git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
 
 # clone every service that is desired by the user.
-for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
-    read -p "Install service $service_name? [y/n]" overwrite
+for repo_name in $(cat /etc/Wywy-Website-Control/repos.txt); do
+    read -p "Install service $repo_name? [y/n]" overwrite
     if ! [[ $overwrite = "y" ]] && ! [[ $y = "1" ]]
     then
         continue
@@ -36,7 +36,7 @@ for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
     sudo mkdir /usr/local/Wywy-Website
     sudo chmod 755 /usr/local/Wywy-Website
     sudo chown $USER:$USER /usr/local/Wywy-Website
-    git clone https://github.com/WywySenarios/Wywy-Website-$service_name.git /usr/local/Wywy-Website/Wywy-Website-$service_name
+    git clone https://github.com/WywySenarios/$repo_name.git /usr/local/Wywy-Website/$repo_name
 done
 
 # create secrets directory
