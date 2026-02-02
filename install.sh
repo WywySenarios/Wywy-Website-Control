@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -d "/etc/Wywy-Website-Control" ];
 then
     read -p "Directory /etc/Wywy-Website-Control already exists. Overwrite? [y/n] " overwrite;
