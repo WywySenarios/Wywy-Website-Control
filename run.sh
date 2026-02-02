@@ -22,6 +22,7 @@ do
         ;;
     b)
         rebuild=1
+        ;;
     *)
         echo "Invalid flag \"-${opt}\". Expected -a for all, -b for build" &>2
         exit 1
@@ -40,6 +41,6 @@ then
 fi
 
 # Run each service specified.
-for service_name in $#; do
+for service_name in $@; do
     (run_service "$service_name")
 done
