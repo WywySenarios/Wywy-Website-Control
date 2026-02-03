@@ -33,11 +33,12 @@ done
 # shift args so that position arguments make sense
 shift $((OPTIND-1))
 
-if [[ a -eq 0 ]];
+if [[ a -eq 1 ]];
 then
     for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
         (run_service "$service_name")
     done
+    exit 0
 fi
 
 # Run each service specified.
