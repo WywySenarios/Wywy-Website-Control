@@ -45,3 +45,5 @@ fi
 for service_name in $@; do
     (run_service "$service_name") &
 done
+
+trap 'docker stop $(docker ps -q)' EXIT SIGINT SIGTERM
