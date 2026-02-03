@@ -35,6 +35,7 @@ case "$1" in
         if [ "$rebuild" -eq 1 ];
         then
             sudo chmod +rw "$project_dir/apps/postgres/pgdata"
+            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/*"
             sudo chmod +rw "$project_dir/apps/postgres/pgdata/**/*"
         fi
 
@@ -56,6 +57,7 @@ case "$1" in
         if [ "$rebuild" -eq 1 ];
         then
             sudo chmod +rwx "$project_dir/apps/postgres/pgdata"
+            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/*"
             sudo chmod +rwx "$project_dir/apps/postgres/pgdata/**/*"
         fi
 
