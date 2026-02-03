@@ -8,6 +8,9 @@ fi
 
 rebuild=0
 endflags=""
+project_dir=/usr/local/Wywy-Website/Wywy-Website
+docker_dir="$project_dir/docker"
+config_dir="/etc/Wywy-Website-Control/config"
 
 # Check for flags
 while getopts "b" opt;
@@ -31,23 +34,37 @@ case "$1" in
     prod)
         if [ "$rebuild" -eq 1 ];
         then
-            sudo chmod +rw "../apps/postgres/pgdata"
-            sudo chmod +rw "../apps/postgres/pgdata/**/*"
+            sudo chmod +rw "$project_dir/apps/postgres/pgdata"
+            sudo chmod +rw "$project_dir/apps/postgres/pgdata/**/*"
         fi
 
         case "$2" in 
-            astro) docker compose -f prod/docker-compose.astro.yml up${endflags}
+            astro)
+                docker compose -f "$docker_dir/prod/docker-compose.astro.yml" \
+                    --env-file "$config_dir/.env" \
+                    --env-file "$config_dir/website/.env" \
+                    --env-file "$config_dir/website/.env.dev" \
+                    up
+                ;;
         esac
-        docker compose -f docker-compose.prod.yml up${endflags}
+        docker compose -f "$docker_dir/docker-compose.prod.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/website/.env" \
+            up
         ;;
     dev)
         if [ "$rebuild" -eq 1 ];
         then
-            sudo chmod +rwx "../apps/postgres/pgdata"
-            sudo chmod +rwx "../apps/postgres/pgdata/**/*"
+            sudo chmod +rwx "$project_dir/apps/postgres/pgdata"
+            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/**/*"
         fi
 
-        docker compose -f docker-compose.dev.yml up --watch${endflags}
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/website/.env" \
+            --env-file "$config_dir/website/.env.dev" \
+            up \
+            --watch ${endflags}
         ;;
     *)
         echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
