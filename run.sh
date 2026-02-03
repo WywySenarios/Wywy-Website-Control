@@ -36,12 +36,12 @@ shift $((OPTIND-1))
 if [[ a -eq 1 ]];
 then
     for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
-        (run_service "$service_name")
+        (run_service "$service_name") &
     done
     exit 0
 fi
 
 # Run each service specified.
 for service_name in $@; do
-    (run_service "$service_name")
+    (run_service "$service_name") &
 done
