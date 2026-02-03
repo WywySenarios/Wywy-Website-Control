@@ -6,12 +6,25 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+project_dir="/usr/local/Wywy-Website/Wywy-Website-Cache"
+docker_dir="$project_dir/docker"
+config_dir="/etc/Wywy-Website-Control/config"
+
 case "$1" in
     prod)
-        sudo docker compose -f docker-compose.prod.yml up
+        docker compose -f "$docker_dir/docker-compose.prod.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.prod" \
+            up
         ;;
     dev)
-        sudo docker compose -f docker-compose.dev.yml up --watch
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            up \
+            --watch
         ;;
     *)
         echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
