@@ -12,7 +12,7 @@ run_service() {
 rebuild=0
 
 # Check for flags
-while getopts "a" opt;
+while getopts "b" opt;
 do
     case "${opt}" in
     b)
@@ -29,4 +29,8 @@ done
 shift $((OPTIND-1))
 
 # Run the service specified.
-run_service "$1"
+if [[ "$rebuild" -eq 1 ]]; then
+    bash "scripts/run/$1.sh" -b "dev"
+else
+    run_service "$1"
+fi
