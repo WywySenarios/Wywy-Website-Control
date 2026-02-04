@@ -42,7 +42,7 @@ done
 # create secrets directory
 mkdir /etc/Wywy-Website-Control/secrets
 chmod 755 /etc/Wywy-Website-Control/secrets
-for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
+for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
     mkdir "/etc/Wywy-Website-Control/secrets/$service_name"
     chmod 755 "/etc/Wywy-Website-Control/secrets/$service_name"
 done
