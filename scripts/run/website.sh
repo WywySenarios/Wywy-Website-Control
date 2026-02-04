@@ -60,7 +60,12 @@ case "$1" in
             sudo chmod +rwx "$project_dir/apps/postgres/pgdata/*"
             sudo chmod +rwx "$project_dir/apps/postgres/pgdata/**/*"
         fi
-
+        
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/website/.env" \
+            --env-file "$config_dir/website/.env.dev" \
+            down
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/website/.env" \
