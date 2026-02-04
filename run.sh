@@ -19,7 +19,7 @@ do
         rebuild=1
         ;;
     *)
-        echo "Invalid flag \"-${opt}\". Expected -b for build" &>2
+        echo "Invalid flag \"-${opt}\". Expected -b for build" >&2
         exit 1
         ;;
     esac
