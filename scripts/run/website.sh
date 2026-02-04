@@ -43,13 +43,14 @@ case "$1" in
             astro)
                 docker compose -f "$docker_dir/prod/docker-compose.astro.yml" \
                     --env-file "$config_dir/.env" \
+                    --env-file "$config_dir/.env.prod" \
                     --env-file "$config_dir/website/.env" \
-                    --env-file "$config_dir/website/.env.dev" \
                     up
                 ;;
         esac
         docker compose -f "$docker_dir/docker-compose.prod.yml" \
             --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.prod" \
             --env-file "$config_dir/website/.env" \
             up
         ;;
