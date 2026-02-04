@@ -7,9 +7,9 @@ Before installing, check <a href=https://raw.githubusercontent.com/WywySenarios/
 Run one of these commands to install:
 
 ```
-curl -o- https://raw.githubusercontent.com/WywySenarios/Wywy-Website-Control/install.sh | bash
+curl -o- https://raw.githubusercontent.com/WywySenarios/Wywy-Website-Control/main/install.sh | bash
 ```
 
 ```
-wget -qO- https://raw.githubusercontent.com/WywySenarios/Wywy-Website-Control/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/WywySenarios/Wywy-Website-Control/main/install.sh | bash
 ```
