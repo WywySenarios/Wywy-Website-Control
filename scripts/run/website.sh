@@ -45,14 +45,14 @@ case "$1" in
                     --env-file "$config_dir/.env" \
                     --env-file "$config_dir/.env.prod" \
                     --env-file "$config_dir/website/.env" \
-                    up
+                    up ${endflags}
                 ;;
         esac
         docker compose -f "$docker_dir/docker-compose.prod.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/.env.prod" \
             --env-file "$config_dir/website/.env" \
-            up
+            up ${endflags}
         ;;
     dev)
         if [ "$rebuild" -eq 1 ];
