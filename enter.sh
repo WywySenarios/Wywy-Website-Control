@@ -15,11 +15,7 @@ case "$1" in
   cache)
     case "$2" in
       sync)
-        sudo docker run -it --rm \
-        -p 2523:2523 \
-        --env-file .env \
-        --mount type=bind,source="$(pwd)/../secrets/admin.txt",target=/run/secrets/admin,readonly \
-        docker-sync /bin/sh
+        docker exec -it wywywebsite-cache_sync bash
         ;;
       mod)
         sudo docker run -it --rm \
