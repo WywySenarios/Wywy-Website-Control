@@ -1,0 +1,1 @@
+git clone https://github.com/WywySenarios/Wywy-Website.git /usr/local/Wywy-Website/Wywy-Website
