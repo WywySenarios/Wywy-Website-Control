@@ -10,7 +10,7 @@ fi
 
 case "$1" in
   backup)
-    sudo docker exec -it wywywebsite_backup bash
+    echo "There is no container to enter to. The backup server does not have any containers!"
     ;;
   cache)
     case "$2" in
