@@ -52,6 +52,7 @@ case "$1" in
     ;;
   website)
     docker exec -it wywywebsite_astro-dev-server bash
+    ;;
   *)
     echo "Unknown service name \"$1\"." &>2
     ;;
