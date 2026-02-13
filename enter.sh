@@ -15,13 +15,13 @@ case "$1" in
   master-database)
     case "$2" in
       sqlr)
-        docker exec -it wywywebsite_master_database-sql_receptionist bash
+        docker exec -it wywy_website_master_database-sql_receptionist bash
         ;;
       pgres)
-        docker exec -it wywywebsite_master_database-postgres bash
+        docker exec -it wywy_website_master_database-postgres bash
         ;;
       create_tables)
-        docker exec -it wywywebsite_master_database-create_tables bash
+        docker exec -it wywy_website_master_database-create_tables bash
         ;;
       *)
         echo "Error: Invalid argument '$2'. Expected 'sqlr', 'pgres', or 'create_tables'."
