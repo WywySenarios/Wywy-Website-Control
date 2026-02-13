@@ -32,21 +32,6 @@ shift $((OPTIND-1))
 
 case "$1" in
     prod)
-        if [ "$rebuild" -eq 1 ];
-        then
-            sudo chmod +rw "$project_dir/apps/postgres/pgdata"
-            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/*"
-            sudo chmod +rw "$project_dir/apps/postgres/pgdata/**/*"
-        fi
-
-        case "$2" in 
-            astro)
-                docker compose -f "$docker_dir/prod/docker-compose.astro.yml" \
-                    --env-file "$config_dir/.env" \
-                    --env-file "$config_dir/website/.env" \
-                    up ${endflags}
-                ;;
-        esac
         docker compose -f "$docker_dir/docker-compose.prod.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/website/.env" \
