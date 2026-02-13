@@ -1,4 +1,10 @@
 #!/bin/bash
+export CONTROL_DIR="/etc/Wywy-Website-Control"
+
+# (non-dev) environment variables
+set -a
+source "$CONTROL_DIR/config/.env"
+set +a
 
 y=0
 
