@@ -8,7 +8,7 @@ fi
 
 rebuild=0
 endflags=""
-project_dir=/usr/local/Wywy-Website/Wywy-Website-
+project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
