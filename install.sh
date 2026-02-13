@@ -26,7 +26,7 @@ done
 shift $((OPTIND-1))
 
 # install the control repo
-sudo -p mkdir /etc/Wywy-Website-Control
+sudo mkdir -p /etc/Wywy-Website-Control
 sudo chmod 755 /etc/Wywy-Website-Control
 sudo chown $USER:$USER /etc/Wywy-Website-Control
 git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
