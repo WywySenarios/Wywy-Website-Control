@@ -31,8 +31,7 @@ sudo chmod 755 /usr/local/Wywy-Website
 sudo chown $USER:$USER /usr/local/Wywy-Website
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
     read -p "Install service $service_name? [y/n]" overwrite
-    if ! [[ $overwrite = "y" ]] && ! [[ $y = "1" ]]
-    then
+    if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
         continue
     fi
 
