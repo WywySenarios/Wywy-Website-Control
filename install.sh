@@ -26,7 +26,7 @@ sudo chown $USER:$USER /etc/Wywy-Website-Control
 git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
 
 # install every service that is desired by the user.
-sudo -p mkdir /usr/local/Wywy-Website
+sudo mkdir -p /usr/local/Wywy-Website
 sudo chmod 755 /usr/local/Wywy-Website
 sudo chown $USER:$USER /usr/local/Wywy-Website
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt); do
