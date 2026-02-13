@@ -53,13 +53,6 @@ case "$1" in
             up ${endflags}
         ;;
     dev)
-        if [ "$rebuild" -eq 1 ];
-        then
-            sudo chmod +rwx "$project_dir/apps/postgres/pgdata"
-            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/*"
-            sudo chmod +rwx "$project_dir/apps/postgres/pgdata/**/*"
-        fi
-        
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/.env.dev" \
