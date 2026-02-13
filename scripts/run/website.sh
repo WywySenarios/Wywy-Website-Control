@@ -43,8 +43,7 @@ case "$1" in
             --env-file "$config_dir/.env.dev" \
             --env-file "$config_dir/website/.env" \
             --env-file "$config_dir/website/.env.dev" \
-            up \
-            --watch ${endflags}
+            up ${endflags}
         ;;
     *)
         echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
