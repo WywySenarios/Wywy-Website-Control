@@ -6,6 +6,20 @@ set -a
 source "$CONTROL_DIR/config/.env"
 set +a
 
+# Ensure that necessary commands are available
+# sudo
+if ! command -v sudo >/dev/null 2>&1; then
+    echo "FATAL: sudo is not installed." >&2
+    exit 1
+# git
+elif ! command -v git >/dev/null 2>&1; then
+    echo "Installing git."
+    if ! sudo apt-get install git; then
+        echo "Failed to install git. Aborting." >&2
+        exit 1
+    fi
+fi
+
 y=0
 
 # Check for flags
