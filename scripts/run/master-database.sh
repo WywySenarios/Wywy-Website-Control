@@ -8,7 +8,7 @@ fi
 
 rebuild=0
 endflags=""
-project_dir=/usr/local/Wywy-Website/Wywy-Website
+project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
@@ -21,7 +21,7 @@ do
         endflags="${endflags} --build"
         ;;
     *)
-        echo "Invalid flag \"-${opt}\". Expected -b for build." &>2
+        echo "Invalid flag \"-${opt}\". Expected -b for build." >&2
         exit 1
         ;;
     esac
@@ -34,16 +34,17 @@ case "$1" in
     prod)
         docker compose -f "$docker_dir/docker-compose.prod.yml" \
             --env-file "$config_dir/.env" \
-            --env-file "$config_dir/website/.env" \
+            --env-file "$config_dir/master-database/.env" \
             up ${endflags}
         ;;
     dev)
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/.env.dev" \
-            --env-file "$config_dir/website/.env" \
-            --env-file "$config_dir/website/.env.dev" \
-            up ${endflags}
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            up \
+            --watch ${endflags}
         ;;
     *)
         echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"

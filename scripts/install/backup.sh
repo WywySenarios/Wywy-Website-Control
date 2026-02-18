@@ -3,6 +3,25 @@ set -a
 source "$CONTROL_DIR/config/backup/.env"
 set +a
 
+# Create backup user
+if ! id "$BACKUP_USER" &>/dev/null; then
+  sudo useradd -m $BACKUP_USER
+  echo "Created new user: $BACKUP_USER"
+fi
+
+# Re-populate SSH key secret
+echo "$(cat /etc/ssh/ssh_host_ed25519_key.pub)" > "$SECRETS_DIR/backup/ssh_host_ed25519_key.pub"
+echo "Repopulated backup host SSH key."
+
+# Re-populate client SSH key
+sudo mkdir -p "/home/$BACKUP_USER/.ssh"
+sudo chmod 700 "/home/$BACKUP_USER/.ssh"
+sudo chown $BACKUP_USER:$BACKUP_USER "/home/$BACKUP_USER/.ssh"
+cat "$SECRETS_DIR/id_ed25519.pub" | sudo tee "/home/$BACKUP_USER/.ssh/authorized_keys" > /dev/null
+sudo chmod 600 "/home/$BACKUP_USER/.ssh/authorized_keys"
+sudo chown $BACKUP_USER:$BACKUP_USER "/home/$BACKUP_USER/.ssh/authorized_keys"
+echo "Re-populated client SSH key."
+
 # Set up WAL & backup destinations
 for TARGET_DIR in /var/lib/Wywy-Website/backup/postgres_WALs /var/lib/Wywy-Website/backup/postgres_backups; do
   sudo mkdir -p $TARGET_DIR

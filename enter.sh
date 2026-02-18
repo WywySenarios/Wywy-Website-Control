@@ -12,6 +12,23 @@ case "$1" in
   backup)
     echo "There is no container to enter to. The backup server does not have any containers!"
     ;;
+  master-database)
+    case "$2" in
+      sqlr)
+        docker exec -it wywy_website_master_database-sql_receptionist bash
+        ;;
+      pgres)
+        docker exec -it wywy_website_master_database-postgres bash
+        ;;
+      create_tables)
+        docker exec -it wywy_website_master_database-create_tables bash
+        ;;
+      *)
+        echo "Error: Invalid argument '$2'. Expected 'sqlr', 'pgres', or 'create_tables'."
+        exit 1
+        ;;
+    esac
+    ;;
   cache)
     case "$2" in
       sync)
@@ -34,24 +51,7 @@ case "$1" in
     esac
     ;;
   website)
-    case "$2" in
-      astro)
-        docker exec -it wywywebsite_astro-dev-server bash
-        ;;
-      sqlr)
-        docker exec -it wywywebsite_sql-receptionist-dev-server bash
-        ;;
-      pgres)
-        docker exec -it wywywebsite_postgres bash
-        ;;
-      create_tables)
-        docker run -it --rm docker-wywywebsite_create_tables bash
-        ;;
-      *)
-        echo "Error: Invalid argument '$2'. Expected 'astro', 'sqlr', or 'pgres'."
-        exit 1
-        ;;
-    esac
+    docker exec -it wywywebsite_astro-dev-server bash
     ;;
   *)
     echo "Unknown service name \"$1\"." &>2
