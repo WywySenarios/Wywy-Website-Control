@@ -60,7 +60,7 @@ echo "Beginning pre-flight checks."
 for secret_path in $(cat /etc/Wywy-Website-Control/secrets.txt); do
   if [[ ! -f "/etc/Wywy-Website-Control/secrets/$secret_path" ]]; then
     echo "MISSING SECRET: secret $secret_path does not exist." >&2
-    preflight=0
+    preflight=1
   fi
 done
 
