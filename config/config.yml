@@ -42,18 +42,6 @@ data:
             comments: true
             description: How alert are you today? Tired? Focused?
 
-          - name: Sleep Quality
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: How would you rate you sleep quality?
-
-          - name: Sleep Behaviour
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: How well did you actions today facilitate a good night's rest? The importance is less on how good you sleep and moreso about how good the actions are.
-
       - tableName: events
         read: true
         write: true
@@ -88,56 +76,16 @@ data:
           #   entrytype: duration textbox
           #   description: An estimate related to the event length. Positive values represent how long the event occured for. Negative values represent how long the event did not actively occur inside the respective time interval.
         descriptors:
-          - name: Bathroom
+          - name: Sleep
             schema:
-              - name: Bathroom Type
-                datatype: enum
-                entrytype: radio
-                values: ["pee", "poo"]
-          - name: Travel
-            schema:
-              - name: Source
-                datatype: string
-                entrytype: textbox
+              - name: Sleep Quality
+                datatype: int
+                entrytype: linearSlider
+                comments: true
+                description: How would you rate you sleep quality?
 
-              - name: Source Resolution
-                datatype: enum
-                entrytype: radio
-                values: ["region", "building", "room"]
-
-              - name: Destination
-                datatype: string
-                entrytype: textbox
-
-              - name: Destination Resolution
-                datatype: enum
-                entrytype: radio
-                values: ["region", "building", "room"]
-          - name: Shower
-            schema:
-              - name: Shampoo
-                datatype: boolean
-                entrytype: switch
-                description: Was shampoo used?
-              - name: Body Wash
-                datatype: boolean
-                entrytype: switch
-                description: Was body wash used?
-          - name: Dental
-            schema:
-              - name: Waterpik
-                datatype: boolean
-                entrytype: switch
-                description: Did you rinse with Waterpik?
-              - name: Toothbrush
-                datatype: boolean
-                entrytype: switch
-                description: Did you brush your teeth?
-              - name: Floss
-                datatype: boolean
-                entrytype: switch
-                description: Did you floss, not including the bridge?
-              - name: Bridge Floss
-                datatype: boolean
-                entrytype: switch
-                description: Did you floss the teeth under your bridge?
+              - name: Sleep Behaviour
+                datatype: int
+                entrytype: linearSlider
+                comments: true
+                description: How well did you actions today facilitate a good night's rest? The importance is less on how good you sleep and moreso about how good the actions are.
