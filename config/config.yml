@@ -63,10 +63,24 @@ data:
           - name: Start Time
             datatype: timestamp
             entrytype: calendar time
+            record_on: start
 
           - name: End time
             datatype: timestamp
             entrytype: calendar time
+            record_on: split
+
+          - name: Start Location
+            datatype: geodetic point
+            entrytype: geodetic point minimal
+            record_on: start
+            optional: true
+
+          - name: End Location
+            datatype: geodetic point
+            entrytype: geodetic point minimal
+            record_on: split
+            optional: true
 
           # - name: Duration
           #   invertible: true
