@@ -1,4 +1,4 @@
-cache
-website
-backup
-master-database
+cache,Wywy-Website-Cache
+website,Wywy-Website
+backup,Wywy-Website-Backup
+master-database,Wywy-Website-Master-Database
