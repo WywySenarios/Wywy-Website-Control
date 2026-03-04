@@ -1,0 +1,54 @@
+---
+title: Dashboard Configuration
+date: 2026-03-04T19:42+00:00
+---
+
+# Dashboard Configuration
+
+The dashboard can be configured per database. It is located under key "dashboard".
+
+The dashboard configuration is an array of dashboard components. The dashboard components appear from top to bottom, spanning the entire width of the screen.
+
+The configuration for every dashboard component must contain:
+
+```
+name: string
+type: string
+metrics: Array<string>
+```
+
+# Dashboard Components
+
+## Radial Chart
+
+The Radial Chart dashboard component displays a single number. This number should have an expected maximum and minimum. The maximum must be larger than the minimum.
+
+The configuration shape for a Radial Chart dashboard component is:
+
+```
+name: string
+type: Radial Chart
+function: string
+selector: string
+metrics: Array<string>
+min: number
+max: number
+```
+
+The selector function selects the row to analyze while the function analyzes the selected row to produce exactly one number of output.
+
+## Events Bar
+
+The events bar displays a color-coded bar chart representing the events that occur over a time period.
+
+The configuration shape for a Events Bar dashboard component is:
+
+```
+name: string
+type: Events Bar
+start function: string
+end function: string
+metrics: Array<string>
+```
+
+Metrics must be an array with length three containing the start time, end time, and event name in exactly that order.
