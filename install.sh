@@ -30,7 +30,7 @@ do
         y=1
         ;;
     *)
-        echo "Invalid flag \"-${opt}\". Expected -y for automatically say yes." &>2
+        echo "Invalid flag \"-${opt}\". Expected -y for automatically say yes." >&2
         exit 1
         ;;
     esac

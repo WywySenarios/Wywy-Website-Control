@@ -4,7 +4,7 @@
 #   $2: Short-hand container name
 
 if [[ -z "$1" || -z "$2" ]]; then
-  echo "Bad arguments. Expected [service name] [short-hand container name]" &>2
+  echo "Bad arguments. Expected [service name] [short-hand container name]" >&2
   exit 1
 fi
 
@@ -54,6 +54,6 @@ case "$1" in
     docker exec -it wywywebsite_astro-dev-server bash
     ;;
   *)
-    echo "Unknown service name \"$1\"." &>2
+    echo "Unknown service name \"$1\"." >&2
     ;;
 esac
