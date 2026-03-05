@@ -3,8 +3,11 @@
 #   $1: Service name (reduced, lower snake case)
 #   $2: Short-hand container name
 
-if [[ -z "$1" || -z "$2" ]]; then
-  echo "Bad arguments. Expected [service name] [short-hand container name]" >&2
+BAD_ARGUMENTS_MESSAGE="Bad arguments. Expected [service name] [short-hand container name]"
+BAD_ARGUMENT_MESSAGE="Bad arguments. Expected [service name] [short-hand container name?]"
+
+if [[ -z "$1" ]]; then
+  echo "$BAD_ARGUMENT_MESSAGE" >&2
   exit 1
 fi
 
@@ -13,6 +16,11 @@ case "$1" in
     echo "There is no container to enter to. The backup server does not have any containers!"
     ;;
   master-database)
+    if [[ -z "$2" ]]; then
+      echo "$BAD_ARGUMENTS_MESSAGE" >&2
+      exit 1
+    fi
+
     case "$2" in
       sqlr)
         docker exec -it wywy_website_master_database-sql_receptionist bash
@@ -30,6 +38,11 @@ case "$1" in
     esac
     ;;
   cache)
+  if [[ -z "$2" ]]; then
+      echo "$BAD_ARGUMENTS_MESSAGE" >&2
+      exit 1
+    fi
+    
     case "$2" in
       sync)
         docker exec -it wywywebsite-cache_sync bash
