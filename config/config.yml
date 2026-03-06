@@ -35,12 +35,20 @@ data:
             entrytype: linearSlider
             comments: true
             description: What % are you feeling today?
-
           - name: Awareness
             datatype: int
             entrytype: linearSlider
             comments: true
             description: How alert are you today? Tired? Focused?
+        metrics:
+          - name: Work Ethic
+            data: [Work Ethic]
+          - name: Time Efficiency
+            args: [Time Efficiency]
+          - name: Happiness
+            data: [Happiness]
+          - name: Awareness
+            data: [Awareness]
 
       - tableName: events
         read: true
@@ -89,3 +97,66 @@ data:
                 entrytype: linearSlider
                 comments: true
                 description: How well did you actions today facilitate a good night's rest? The importance is less on how good you sleep and moreso about how good the actions are.
+            metrics:
+              - name: Sleep Quality
+                data: [Sleep Quality]
+              - name: Sleep Behaviour
+                data: [Sleep Behaviour]
+        metrics:
+          - name: Start Time
+            data: [Start Time]
+          - name: End Time
+            data: [End Time]
+          - name: Duration
+            function: subtraction
+            data: [End Time, Start Time]
+          - name: Event Primary Tag
+            data: [Primary Tag]
+
+    dashboard:
+      - name: Score
+        type: Radial Chart
+        selector: closest_step_selector
+        selector args: [now]
+        metrics:
+          - Work Ethic
+          - Time Efficiency
+          - Happiness
+      - name: Events Totality
+        type: Waterfall Chart
+        selector: step_within
+        selector args: [now, now-86400000] # within 24h
+        metrics: [Start Time, End Time, Event Primary Tag]
+      - name: Events Breakdown
+        type: Gantt
+        selector: step_within
+        selector args: [now, now-86400000] # within 24h
+        metrics: [Start Time, Duration, Event Primary Tag]
+      - name: Work Ethic
+        type: Radial Chart
+        selector: closest_step_selector
+        selector args: [now]
+        metrics: [Work Ethic]
+        min: 0
+        max: 100
+      - name: Time Efficiency
+        type: Radial Chart
+        selector: closest_step_selector
+        selector args: [now]
+        metrics: [Time Efficiency]
+        min: 0
+        max: 100
+      - name: Happiness
+        type: Radial Chart
+        selector: closest_step_selector
+        selector args: [now]
+        metrics: [Happiness]
+        min: 0
+        max: 100
+      - name: Awareness
+        type: Radial Chart
+        selector: closest_step_selector
+        selector args: [now]
+        metrics: [Awareness]
+        min: 0
+        max: 100
