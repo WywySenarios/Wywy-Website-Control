@@ -9,13 +9,29 @@ The dashboard can be configured per database. It is located under key "dashboard
 
 The dashboard configuration is an array of dashboard components. The dashboard components appear from top to bottom, spanning the entire width of the screen.
 
-The configuration for every dashboard component must contain:
+The base shape for every dashboard component is:
 
 ```
 name: string
 type: string
 metrics: Array<string>
+function?: string
+function args?: Array<string>
+selector?: string
+selector args?: Array<string>
 ```
+
+### Data pre-transformations
+
+Some dashboard components expect data to come in a certain shape.
+
+This function defaults to the identity function.
+
+### Selector Functions
+
+Some data transformations expect data to come in a certain shape. The selector function is applied before the data transformation function and is conventionally used to select which data to transform and use.
+
+This function defaults to the identity function.
 
 ## Dashboard Components
 
@@ -26,11 +42,7 @@ The Radial Chart dashboard component displays a single number. This number shoul
 The configuration shape for a Radial Chart dashboard component is:
 
 ```
-name: string
-type: Radial Chart
-function: string
-selector: string
-metrics: Array<string>
+...
 min: number
 max: number
 ```
@@ -44,11 +56,7 @@ The events bar displays a color-coded bar chart representing the events that occ
 The configuration shape for a Events Bar dashboard component is:
 
 ```
-name: string
-type: Events Bar
-start function: string
-end function: string
-metrics: Array<string>
+...
 ```
 
 Metrics must be an array with length three containing the start time, end time, and event name in exactly that order.
