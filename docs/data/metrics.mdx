@@ -21,9 +21,7 @@ ID columns are automatically exported as "\[table name\]\_id" or "\[table name\]
 
 Each metric to export should contain the name of the exported metric, the function to apply before export, the columns to pass into the function, and optionally the arguments to pass into the function.
 
-The function must return a vector with the same length as the number of rows inside the current dataset relating to the current table.
-
-If you do not want a function to be applied, use the identity function to return the same output as the input.
+The function must return a vector with the same length as the number of rows inside the current dataset relating to the current table. The function defaults to the identity function (value does not change).
 
 The function should throw an error if the arguments are invalid (e.g. datatype or input vector lengths mismatch).
 
@@ -35,7 +33,7 @@ The general shape of a single metric is:
 
 ```
 name: string
-function: string
+function?: string
 data: Array<string>
 args?: Array<Unknown>
 ```
