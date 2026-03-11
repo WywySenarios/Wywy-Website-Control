@@ -1,12 +1,12 @@
 #!/bin/bash
-# FOR DEVELOPMENT USE ONLY.
 # Runs the service specified in the positional arguments. Input the reduced lower snake case name of the service.
 
 # Runs a service given the name.
 # Arguments:
 #   $1: Service name (reduced, lower snake case).
+#   $2: Compose file type (e.g. dev, prod, test)
 run_service() {
-    bash "scripts/run/$1.sh" "dev"
+    bash "scripts/run/$1.sh" "$2"
 }
 
 rebuild=0
@@ -30,7 +30,7 @@ shift $((OPTIND-1))
 
 # Run the service specified.
 if [[ "$rebuild" -eq 1 ]]; then
-    bash "scripts/run/$1.sh" -b "dev"
+    bash "scripts/run/$1.sh" -b "$2"
 else
-    run_service "$1"
+    run_service "$1" "$2"
 fi
