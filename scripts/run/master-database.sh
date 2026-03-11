@@ -46,8 +46,26 @@ case "$1" in
             up \
             --watch ${endflags}
         ;;
+    test)
+        # @TODO determine which env files to use
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            config # \
+            # --abort-on-container-exit --exit-code-from wywy_website_master_database-test
+        if [[ $? -eq 0 ]]; then
+            echo "Tests succeeded."
+        else
+            echo "Tests failed."
+        fi
+
+        exit $?
+        ;;
     *)
-        echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
+        echo "Error: Invalid argument '$1'. Expected <'prod'|'dev'|'test'>"
         exit 1
         ;;
 esac
