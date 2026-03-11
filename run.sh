@@ -5,12 +5,8 @@
 
 service_name="$1"
 
-echo "$@"
-
 # do not pass in service_name arg
 shift
-
-echo "$@"
 
 # Run the service specified.
 bash "scripts/run/$service_name.sh" $@
