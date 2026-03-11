@@ -53,7 +53,7 @@ case "$1" in
     test)
         # add abort flags if possible
         if [[ "$compose_command" != "config" ]]; then
-            endflags="$endflags --abort-on-container-exit --exit-code-from wywy_website-master_database-test"
+            endflags="$endflags --abort-on-container-exit --exit-code-from wywy_website_master_database-test"
         fi
 
         # @TODO determine which env files to use
