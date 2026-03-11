@@ -54,8 +54,8 @@ case "$1" in
             --env-file "$config_dir/.env.dev" \
             --env-file "$config_dir/master-database/.env" \
             --env-file "$config_dir/master-database/.env.dev" \
-            config # \
-            # --abort-on-container-exit --exit-code-from wywy_website_master_database-test
+            up \
+            --abort-on-container-exit --exit-code-from wywy_website_master_database-test
         if [[ $? -eq 0 ]]; then
             echo "Tests succeeded."
         else
