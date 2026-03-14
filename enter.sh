@@ -23,7 +23,15 @@ case "$1" in
 
     case "$2" in
       sqlr)
-        docker exec -it wywy_website_master_database-sql_receptionist bash
+        docker_dir="/usr/local/Wywy-Website/Wywy-Website-Master-Database/docker"
+        config_dir="/etc/Wywy-Website-Control/config"
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            exec sql_receptionist bash
         ;;
       pgres)
         docker exec -it wywy_website_master_database-postgres bash
