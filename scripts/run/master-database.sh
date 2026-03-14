@@ -72,7 +72,7 @@ case "$1" in
             if [[ $status -eq 0 ]]; then
                 echo "Tests succeeded."
             else
-                echo "Tests failed."
+                echo "Tests failed with exit code $status."
             fi
 
             exit $status
