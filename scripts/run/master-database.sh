@@ -66,14 +66,16 @@ case "$1" in
             $compose_command \
             ${endflags}
 
+        status=$?
+
         if [[ "$compose_command" != "config" ]]; then
-            if [[ $? -eq 0 ]]; then
+            if [[ $status -eq 0 ]]; then
                 echo "Tests succeeded."
             else
                 echo "Tests failed."
             fi
 
-            exit $?
+            exit $status
         fi
         ;;
     *)
