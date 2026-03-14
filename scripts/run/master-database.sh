@@ -69,6 +69,14 @@ case "$1" in
         status=$?
 
         if [[ "$compose_command" != "config" ]]; then
+            docker compose -f "$docker_dir/docker-compose.dev.yml" \
+                -f "$docker_dir/docker-compose.test.yml" \
+                --env-file "$config_dir/.env" \
+                --env-file "$config_dir/.env.dev" \
+                --env-file "$config_dir/master-database/.env" \
+                --env-file "$config_dir/master-database/.env.dev" \
+                down
+
             if [[ $status -eq 0 ]]; then
                 echo "Tests succeeded."
             else
