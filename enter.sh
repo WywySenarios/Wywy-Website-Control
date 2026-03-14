@@ -5,6 +5,7 @@
 
 BAD_ARGUMENTS_MESSAGE="Bad arguments. Expected [service name] [short-hand container name]"
 BAD_ARGUMENT_MESSAGE="Bad arguments. Expected [service name] [short-hand container name?]"
+config_dir="/etc/Wywy-Website-Control/config"
 
 if [[ -z "$1" ]]; then
   echo "$BAD_ARGUMENT_MESSAGE" >&2
@@ -21,10 +22,10 @@ case "$1" in
       exit 1
     fi
 
+    docker_dir="/usr/local/Wywy-Website/Wywy-Website-Master-Database/docker"
+
     case "$2" in
       sqlr)
-        docker_dir="/usr/local/Wywy-Website/Wywy-Website-Master-Database/docker"
-        config_dir="/etc/Wywy-Website-Control/config"
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             -f "$docker_dir/docker-compose.test.yml" \
             --env-file "$config_dir/.env" \
@@ -34,7 +35,13 @@ case "$1" in
             exec sql_receptionist bash
         ;;
       pgres)
-        docker exec -it wywy_website_master_database-postgres bash
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            exec postgres bash
         ;;
       create_tables)
         docker exec -it wywy_website_master_database-create_tables bash
