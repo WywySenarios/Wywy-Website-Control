@@ -1,6 +1,7 @@
 ---
 title: Dashboard Configuration
 published: 2026-03-04T19:42:00+00:00
+lastmod: 2026-03-15T15:49:34+00:00
 ---
 
 ## Dashboard Configuration
@@ -21,6 +22,8 @@ selector?: string
 selector args?: Array<string>
 ```
 
+Some dashboard component types have additional optional options.
+
 ### Data pre-transformations
 
 Some dashboard components expect data to come in a certain shape.
@@ -35,28 +38,8 @@ This function defaults to the identity function.
 
 ## Dashboard Components
 
-### Radial Chart
+These charts are available as dashboard components:
 
-The Radial Chart dashboard component displays a single number. This number should have an expected maximum and minimum. The maximum must be larger than the minimum.
-
-The configuration shape for a Radial Chart dashboard component is:
-
-```
-...
-min: number
-max: number
-```
-
-The selector function selects the row to analyze while the function analyzes the selected row to produce exactly one number of output.
-
-### Events Bar
-
-The events bar displays a color-coded bar chart representing the events that occur over a time period.
-
-The configuration shape for a Events Bar dashboard component is:
-
-```
-...
-```
-
-Metrics must be an array with length three containing the start time, end time, and event name in exactly that order.
+- Gauge chart
+- Waterfall chart
+- Tree map
