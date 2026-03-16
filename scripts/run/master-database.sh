@@ -51,11 +51,6 @@ case "$1" in
             --watch ${endflags}
         ;;
     test)
-        # add abort flags if possible
-        if [[ "$compose_command" != "config" ]]; then
-            endflags="$endflags --abort-on-container-exit --exit-code-from test"
-        fi
-
         # @TODO determine which env files to use
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             -f "$docker_dir/docker-compose.test.yml" \
@@ -76,14 +71,6 @@ case "$1" in
                 --env-file "$config_dir/master-database/.env" \
                 --env-file "$config_dir/master-database/.env.dev" \
                 down
-
-            if [[ $status -eq 0 ]]; then
-                echo "Tests succeeded."
-            else
-                echo "Tests failed with exit code $status."
-            fi
-
-            exit $status
         fi
         ;;
     *)
