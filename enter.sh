@@ -79,7 +79,13 @@ case "$1" in
     esac
     ;;
   website)
-    docker exec -it wywywebsite_astro-dev-server bash
+    docker_dir=/usr/local/Wywy-Website/Wywy-Website/docker
+    docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/website/.env" \
+            --env-file "$config_dir/website/.env.dev" \
+            exec astro-app bash
     ;;
   *)
     echo "Unknown service name \"$1\"." >&2
