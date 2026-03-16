@@ -60,7 +60,13 @@ case "$1" in
     
     case "$2" in
       sync)
-        docker exec -it wywywebsite-cache_sync bash
+        docker_dir=/usr/local/Wywy-Website/Wywy-Website-Cache/docker
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            exec sync bash
         ;;
       mod)
         sudo docker run -it --rm \
