@@ -44,7 +44,7 @@ data:
           - name: Work Ethic
             data: [Work Ethic]
           - name: Time Efficiency
-            args: [Time Efficiency]
+            data: [Time Efficiency]
           - name: Happiness
             data: [Happiness]
           - name: Awareness
