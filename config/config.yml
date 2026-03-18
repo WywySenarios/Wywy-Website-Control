@@ -104,10 +104,13 @@ data:
                 data: [Sleep Behaviour]
         metrics:
           - name: Start Time
+            datatype: Date
             data: [Start Time]
           - name: End Time
+            datatype: Date
             data: [End Time]
           - name: Duration
+            datatype: Date
             function: subtraction
             data: [End Time, Start Time]
           - name: Event Primary Tag

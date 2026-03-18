@@ -1,6 +1,7 @@
 ---
 title: Metrics
 published: 2026-03-04T19:44:00+00:00
+lastmod: 2026-03-18T19:53:45+00:00
 ---
 
 ## What are metrics?
@@ -27,6 +28,8 @@ The function should throw an error if the arguments are invalid (e.g. datatype o
 
 The vector data should be supplied as an array of strings representing the database column names to pull. This array is validated during website build or pre-flight.
 
+You must manually declare the expected datatype of the output. Metrics will always be coerced to calculateable values (i.e. number, bigint, or string fields), but this declared datatype is what is used in interpretations afterwards.
+
 The (positional) arguments should be supplied as a potentially empty array.
 
 The general shape of a single metric is:
@@ -43,16 +46,16 @@ Here are two examples of metrics:
 ```
 metrics:
   - name: Qualitative Time Efficiency
-    function: identity
     data: [Time Efficiency]
+    args: []
 ```
 
 ```
 metrics:
   - name: Duration
+    datatype: Date
     function: subtraction
     data: [End Time, Start Time]
-    args: []
 ```
 
 Datatype checking may or may not be detected or reported. Please consult the documentation for the specific function to find out.
