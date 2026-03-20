@@ -76,7 +76,7 @@ sudo mkdir -p /usr/local/Wywy-Website
 sudo chmod 755 /usr/local/Wywy-Website
 sudo chown $USER:$USER /usr/local/Wywy-Website
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
-    read -p "Install service $service_name? [y/n]" overwrite
+    read -p "Install service $service_name? [y/n] " overwrite
     if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
         continue
     fi
