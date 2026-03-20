@@ -2,6 +2,7 @@
 
 read -p "Remove all backups? [y/n] " remove
 
-if [[ ! remove =~ [Yy]$ ]]; then
+if [[ "$remove" =~ ^[Yy]$ ]]; then
     sudo rm -rf "/var/lib/Wywy-Website/backup"
+    echo "Successfully removed backups."
 fi
