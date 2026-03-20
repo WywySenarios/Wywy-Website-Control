@@ -57,10 +57,10 @@ case "$1" in
       echo "$BAD_ARGUMENTS_MESSAGE" >&2
       exit 1
     fi
+    docker_dir=/usr/local/Wywy-Website/Wywy-Website-Cache/docker
     
     case "$2" in
       sync)
-        docker_dir=/usr/local/Wywy-Website/Wywy-Website-Cache/docker
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/.env.dev" \
@@ -68,15 +68,13 @@ case "$1" in
             --env-file "$config_dir/cache/.env.dev" \
             exec sync bash
         ;;
-      mod)
-        sudo docker run -it --rm \
-        -p 2325:2325 \
-        --env-file .env \
-        --mount type=bind,source="$(pwd)/../secrets/admin.txt",target=/run/secrets/admin,readonly \
-        docker-mod /bin/sh
-        ;;
       pgres)
-        sudo docker run -it --rm -p 5432:5432 -v "postgres-db:/var/lib/postgresql" docker-postgres /bin/sh
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            exec database bash
         ;;
       *)
         echo "Error: Invalid argument '$1'. Expected 'sync', 'mod', or 'pgres'."
