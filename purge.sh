@@ -1,5 +1,7 @@
 # Purge all docker containers & database values. ONLY USE IN DEV!!!
 
+set -e
+
 echo "Purging the Wywy-Website repository will remove docker containers, docker images, and Wywy-Website databases."
 
 read -p "Do you want to proceed? [y/n] " yn
