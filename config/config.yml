@@ -120,7 +120,7 @@ data:
 
     dashboard:
       - name: Score
-        type: Radial Chart
+        type: Gauge Chart
         selector: Closest Step
         selector args: [now]
         function: mean
@@ -135,28 +135,28 @@ data:
         selector args: [now-86400000, now] # within 24h
         metrics: [Start Time, Start Time, End Time, Event Primary Tag]
       - name: Work Ethic
-        type: Radial Chart
+        type: Gauge Chart
         selector: Closest Step
         selector args: [now]
         metrics: [Date, Work Ethic]
         min: 0
         max: 100
       - name: Time Efficiency
-        type: Radial Chart
+        type: Gauge Chart
         selector: Closest Step
         selector args: [now]
         metrics: [Date, Time Efficiency]
         min: 0
         max: 100
       - name: Happiness
-        type: Radial Chart
+        type: Gauge Chart
         selector: Closest Step
         selector args: [now]
         metrics: [Date, Happiness]
         min: 0
         max: 100
       - name: Awareness
-        type: Radial Chart
+        type: Gauge Chart
         selector: Closest Step
         selector args: [now]
         metrics: [Date, Awareness]
