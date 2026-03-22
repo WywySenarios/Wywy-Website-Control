@@ -123,6 +123,7 @@ data:
         type: Radial Chart
         selector: Closest Step
         selector args: [now]
+        function: mean
         metrics:
           - Date
           - Work Ethic
