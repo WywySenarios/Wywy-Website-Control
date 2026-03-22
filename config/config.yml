@@ -41,6 +41,8 @@ data:
             comments: true
             description: How alert are you today? Tired? Focused?
         metrics:
+          - name: Date
+            data: [Date]
           - name: Work Ethic
             data: [Work Ethic]
           - name: Time Efficiency
@@ -119,47 +121,43 @@ data:
     dashboard:
       - name: Score
         type: Radial Chart
-        selector: closest_step_selector
+        selector: Closest Step
         selector args: [now]
         metrics:
+          - Date
           - Work Ethic
           - Time Efficiency
           - Happiness
-      - name: Events Totality
+      - name: Events
         type: Waterfall Chart
-        selector: step_within
-        selector args: [now, now-86400000] # within 24h
-        metrics: [Start Time, End Time, Event Primary Tag]
-      - name: Events Breakdown
-        type: Gantt
-        selector: step_within
-        selector args: [now, now-86400000] # within 24h
-        metrics: [Start Time, Duration, Event Primary Tag]
+        selector: Step Within
+        selector args: [now-86400000, now] # within 24h
+        metrics: [Start Time, Start Time, End Time, Event Primary Tag]
       - name: Work Ethic
         type: Radial Chart
-        selector: closest_step_selector
+        selector: Closest Step
         selector args: [now]
-        metrics: [Work Ethic]
+        metrics: [Date, Work Ethic]
         min: 0
         max: 100
       - name: Time Efficiency
         type: Radial Chart
-        selector: closest_step_selector
+        selector: Closest Step
         selector args: [now]
-        metrics: [Time Efficiency]
+        metrics: [Date, Time Efficiency]
         min: 0
         max: 100
       - name: Happiness
         type: Radial Chart
-        selector: closest_step_selector
+        selector: Closest Step
         selector args: [now]
-        metrics: [Happiness]
+        metrics: [Date, Happiness]
         min: 0
         max: 100
       - name: Awareness
         type: Radial Chart
-        selector: closest_step_selector
+        selector: Closest Step
         selector args: [now]
-        metrics: [Awareness]
+        metrics: [Date, Awareness]
         min: 0
         max: 100
