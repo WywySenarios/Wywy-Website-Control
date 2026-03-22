@@ -3,8 +3,12 @@
 #   $1: Service name (reduced, lower snake case)
 #   $2: Short-hand container name
 
-if [[ -z "$1" || -z "$2" ]]; then
-  echo "Bad arguments. Expected [service name] [short-hand container name]" >&2
+BAD_ARGUMENTS_MESSAGE="Bad arguments. Expected [service name] [short-hand container name]"
+BAD_ARGUMENT_MESSAGE="Bad arguments. Expected [service name] [short-hand container name?]"
+config_dir="/etc/Wywy-Website-Control/config"
+
+if [[ -z "$1" ]]; then
+  echo "$BAD_ARGUMENT_MESSAGE" >&2
   exit 1
 fi
 
@@ -13,12 +17,31 @@ case "$1" in
     echo "There is no container to enter to. The backup server does not have any containers!"
     ;;
   master-database)
+    if [[ -z "$2" ]]; then
+      echo "$BAD_ARGUMENTS_MESSAGE" >&2
+      exit 1
+    fi
+
+    docker_dir="/usr/local/Wywy-Website/Wywy-Website-Master-Database/docker"
+
     case "$2" in
       sqlr)
-        docker exec -it wywy_website_master_database-sql_receptionist bash
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            exec sql_receptionist bash
         ;;
       pgres)
-        docker exec -it wywy_website_master_database-postgres bash
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            exec postgres bash
         ;;
       create_tables)
         docker exec -it wywy_website_master_database-create_tables bash
@@ -30,19 +53,28 @@ case "$1" in
     esac
     ;;
   cache)
+  if [[ -z "$2" ]]; then
+      echo "$BAD_ARGUMENTS_MESSAGE" >&2
+      exit 1
+    fi
+    docker_dir=/usr/local/Wywy-Website/Wywy-Website-Cache/docker
+    
     case "$2" in
       sync)
-        docker exec -it wywywebsite-cache_sync bash
-        ;;
-      mod)
-        sudo docker run -it --rm \
-        -p 2325:2325 \
-        --env-file .env \
-        --mount type=bind,source="$(pwd)/../secrets/admin.txt",target=/run/secrets/admin,readonly \
-        docker-mod /bin/sh
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            exec sync bash
         ;;
       pgres)
-        sudo docker run -it --rm -p 5432:5432 -v "postgres-db:/var/lib/postgresql" docker-postgres /bin/sh
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            exec database bash
         ;;
       *)
         echo "Error: Invalid argument '$1'. Expected 'sync', 'mod', or 'pgres'."
@@ -51,7 +83,13 @@ case "$1" in
     esac
     ;;
   website)
-    docker exec -it wywywebsite_astro-dev-server bash
+    docker_dir=/usr/local/Wywy-Website/Wywy-Website/docker
+    docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/website/.env" \
+            --env-file "$config_dir/website/.env.dev" \
+            exec astro-app bash
     ;;
   *)
     echo "Unknown service name \"$1\"." >&2

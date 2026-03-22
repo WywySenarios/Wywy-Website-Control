@@ -11,17 +11,21 @@ endflags=""
 project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
+compose_command="up"
 
 # Check for flags
-while getopts "b" opt;
+while getopts "bc" opt;
 do
     case "${opt}" in
     b)
         rebuild=1
         endflags="${endflags} --build"
         ;;
+    c)
+        compose_command="config"
+        ;;
     *)
-        echo "Invalid flag \"-${opt}\". Expected -b for build." >&2
+        echo "Invalid flag \"-${opt}\". Expected -b for build, -c for config." >&2
         exit 1
         ;;
     esac
@@ -35,7 +39,7 @@ case "$1" in
         docker compose -f "$docker_dir/docker-compose.prod.yml" \
             --env-file "$config_dir/.env" \
             --env-file "$config_dir/master-database/.env" \
-            up ${endflags}
+            $compose_command ${endflags}
         ;;
     dev)
         docker compose -f "$docker_dir/docker-compose.dev.yml" \
@@ -43,11 +47,34 @@ case "$1" in
             --env-file "$config_dir/.env.dev" \
             --env-file "$config_dir/master-database/.env" \
             --env-file "$config_dir/master-database/.env.dev" \
-            up \
+            $compose_command \
             --watch ${endflags}
         ;;
+    test)
+        # @TODO determine which env files to use
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/master-database/.env" \
+            --env-file "$config_dir/master-database/.env.dev" \
+            $compose_command \
+            ${endflags}
+
+        status=$?
+
+        if [[ "$compose_command" != "config" ]]; then
+            docker compose -f "$docker_dir/docker-compose.dev.yml" \
+                -f "$docker_dir/docker-compose.test.yml" \
+                --env-file "$config_dir/.env" \
+                --env-file "$config_dir/.env.dev" \
+                --env-file "$config_dir/master-database/.env" \
+                --env-file "$config_dir/master-database/.env.dev" \
+                down
+        fi
+        ;;
     *)
-        echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
+        echo "Error: Invalid argument '$1'. Expected <'prod'|'dev'|'test'>"
         exit 1
         ;;
 esac

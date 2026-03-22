@@ -30,4 +30,8 @@ for TARGET_DIR in /var/lib/Wywy-Website/backup/postgres_WALs /var/lib/Wywy-Websi
 done
 
 # Clone README
-git clone https://github.com/WywySenarios/Wywy-Website-Backup.git /usr/local/Wywy-Website/Wywy-Website-Backup
+if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Backup" ]]; then
+  echo "Backup repository already installed. Skipping source code pull."
+else
+  git clone https://github.com/WywySenarios/Wywy-Website-Backup.git /usr/local/Wywy-Website/Wywy-Website-Backup
+fi
