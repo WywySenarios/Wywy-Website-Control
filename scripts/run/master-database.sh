@@ -2,7 +2,7 @@
 # Check if an argument is provided
 if [ -z "$1" ]; then
   echo "Error: No argument provided." >&2
-  echo "Usage: $0 <prod | dev>" >&2
+  echo "Usage: $0 <prod | dev | test>" >&2
   exit 1
 fi
 
