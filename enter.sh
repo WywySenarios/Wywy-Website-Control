@@ -6,10 +6,17 @@
 BAD_ARGUMENTS_MESSAGE="Bad arguments. Expected [service name] [short-hand container name]"
 BAD_ARGUMENT_MESSAGE="Bad arguments. Expected [service name] [short-hand container name?]"
 config_dir="/etc/Wywy-Website-Control/config"
+compose_files=()
+env_files=(--env-file "$config_dir/.env")
+target=()
 
 if [[ -z "$1" ]]; then
   echo "$BAD_ARGUMENT_MESSAGE" >&2
   exit 1
+fi
+
+if [[ "$3" != "prod" ]]; then
+  env_files+=(--env-file "$config_dir/.env.dev")
 fi
 
 case "$1" in
@@ -53,34 +60,57 @@ case "$1" in
     esac
     ;;
   cache)
-  if [[ -z "$2" ]]; then
+    if [[ -z "$2" ]]; then
       echo "$BAD_ARGUMENTS_MESSAGE" >&2
       exit 1
     fi
     docker_dir=/usr/local/Wywy-Website/Wywy-Website-Cache/docker
-    
-    case "$2" in
-      sync)
-        docker compose -f "$docker_dir/docker-compose.dev.yml" \
-            --env-file "$config_dir/.env" \
-            --env-file "$config_dir/.env.dev" \
-            --env-file "$config_dir/cache/.env" \
-            --env-file "$config_dir/cache/.env.dev" \
-            exec sync bash
+    env_files+=(--env-file "$config_dir/cache/.env")
+
+    case "$3" in
+      prod)
+        compose_files=(
+          -f "$docker_dir/docker-compose.prod.yml"
+        )
         ;;
-      pgres)
-        docker compose -f "$docker_dir/docker-compose.dev.yml" \
-            --env-file "$config_dir/.env" \
-            --env-file "$config_dir/.env.dev" \
-            --env-file "$config_dir/cache/.env" \
-            --env-file "$config_dir/cache/.env.dev" \
-            exec database bash
+      test)
+        compose_files=(
+          -f "$docker_dir/docker-compose.dev.yml"
+          -f "$docker_dir/docker-compose.test.yml"
+        )
+        env_files+=(--env-file "$config_dir/cache/.env.dev")
+        env_files+=(--env-file "$config_dir/.env.dev")
         ;;
       *)
-        echo "Error: Invalid argument '$1'. Expected 'sync', 'mod', or 'pgres'."
+        # dev by default
+        compose_files=(
+          -f "$docker_dir/docker-compose.dev.yml"
+        )
+        env_files+=(--env-file "$config_dir/cache/.env.dev")
+        env_files+=(--env-file "$config_dir/.env.dev")
+        ;;
+    esac
+    
+    case "$2" in
+      create_tables)
+        target="create_tables bash"
+        ;;
+      sync)
+        target="sync bash"
+        ;;
+      pgres)
+        target="database bash"
+        ;;
+      test)
+        target="test bash"
+        ;;
+      *)
+        echo "Error: Invalid argument '$1'. Expected 'sync', 'mod', 'pgres', or 'test'."
         exit 1
         ;;
     esac
+
+    docker compose ${compose_files[@]} ${env_files[@]} exec $target
     ;;
   website)
     docker_dir=/usr/local/Wywy-Website/Wywy-Website/docker
