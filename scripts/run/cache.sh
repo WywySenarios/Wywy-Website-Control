@@ -1,8 +1,8 @@
 #!/bin/bash
 # Check if an argument is provided
 if [ -z "$1" ]; then
-  echo "Error: No argument provided."
-  echo "Usage: $0 <prod | dev>"
+  echo "Error: No argument provided." >&2
+  echo "Usage: $0 <prod | dev | test>" >&2
   exit 1
 fi
 
@@ -44,8 +44,29 @@ case "$1" in
             up \
             --watch ${endflags}
         ;;
+    test)
+        docker compose -f "$docker_dir/docker-compose.dev.yml" \
+            -f "$docker_dir/docker-compose.test.yml" \
+            --env-file "$config_dir/.env" \
+            --env-file "$config_dir/.env.dev" \
+            --env-file "$config_dir/cache/.env" \
+            --env-file "$config_dir/cache/.env.dev" \
+            up ${endflags}
+
+        status=$?
+
+        if [[ "$compose_command" != "config" ]]; then
+            docker compose -f "$docker_dir/docker-compose.dev.yml" \
+                -f "$docker_dir/docker-compose.test.yml" \
+                --env-file "$config_dir/.env" \
+                --env-file "$config_dir/.env.dev" \
+                --env-file "$config_dir/cache/.env" \
+                --env-file "$config_dir/cache/.env.dev" \
+                down
+        fi
+        ;;
     *)
-        echo "Error: Invalid argument '$1'. Expected 'prod' or 'dev'"
+        echo "Error: Invalid argument '$1'. Expected 'prod', 'dev', or 'test'" >&2
         exit 1
         ;;
 esac
