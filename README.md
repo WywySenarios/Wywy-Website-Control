@@ -1,6 +1,8 @@
 # Installation
 
-Installation is per user.
+The installation is global.
+
+Installation requires root permissions (i.e. sudo).
 
 Installation requires the "git" package to be installed.
 
@@ -47,3 +49,13 @@ All secrets are located under `./secrets`. Global secrets are files directly ins
 | admin.txt | The admin password over all services. |
 | id_ed25519 | The private SSH key to use when querying another service. |
 | id_ed25519.pub | The public SSH key to use when querying another service. |
+
+# File Permissions
+
+Every Wywy-Website file except secrets should be readable by GID 2523. The user who installs the services will automatically be added to this group.
+The source code should be owned and modifiable by the user who installed the services.
+
+The secrets folder should be open to write by the installation user during installation.
+After installation, the secrets folder should be locked down to root. More specifically, the permissions on the secrets folder will be 000 and it will be owned by root.
+
+NOTE: The file permissions migration has not been complete yet.

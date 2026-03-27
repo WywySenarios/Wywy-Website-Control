@@ -41,15 +41,15 @@ shift $((OPTIND-1))
 
 # Create secrets directory if necessary
 mkdir -p /etc/Wywy-Website-Control/secrets
-chmod 755 /etc/Wywy-Website-Control/secrets
+chmod 700 /etc/Wywy-Website-Control/secrets
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
     mkdir -p "/etc/Wywy-Website-Control/secrets/$service_name"
-    chmod 755 "/etc/Wywy-Website-Control/secrets/$service_name"
+    chmod 700 "/etc/Wywy-Website-Control/secrets/$service_name"
 done
 
 # install the control repo
 sudo mkdir -p /etc/Wywy-Website-Control
-sudo chmod 755 /etc/Wywy-Website-Control
+sudo chmod 750 /etc/Wywy-Website-Control
 sudo chown $USER:$USER /etc/Wywy-Website-Control
 git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
 
@@ -73,7 +73,7 @@ echo "Pre-flight succeeded. Proceeding with installation."
 
 # install every service that is desired by the user.
 sudo mkdir -p /usr/local/Wywy-Website
-sudo chmod 755 /usr/local/Wywy-Website
+sudo chmod 750 /usr/local/Wywy-Website
 sudo chown $USER:$USER /usr/local/Wywy-Website
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
     read -p "Install service $service_name? [y/n] " overwrite
@@ -83,3 +83,12 @@ for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1
 
     "/etc/Wywy-Website-Control/scripts/install/$service_name.sh"
 done
+
+# lock down secrets folder
+chmod 000 /etc/Wywy-Website-Control/secrets
+chown root /etc/Wywy-Website-Control/secrets
+
+# Add the current user to GID 2523
+sudo usermod -aG 2523 $USER
+
+echo "Installation complete. Enjoy!"
