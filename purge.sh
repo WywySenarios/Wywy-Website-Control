@@ -20,6 +20,11 @@ sleep 1
 echo "Beginning purge."
 sleep 0.1
 
+read -p "Purge logs? [y/n] " logs
+if [[ "$logs" =~ ^[Yy]$ ]]; then
+    sudo rm -rf /var/log/Wywy-Website
+fi
+
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
     read -p "Purge service $service_name? [y/n] " purge
     if [[ ! "$purge" =~ ^[Yy]$ ]]; then
