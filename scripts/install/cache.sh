@@ -1,12 +1,24 @@
 # (non-dev) environment variables
 set -a
-source "$CONTROL_DIR/config/backup/.env"
+source "$CONTROL_DIR/config/cache/.env"
 set +a
 
 # set up postgres database folder
 sudo mkdir -p "/var/lib/Wywy-Website/cache/postgres"
 sudo chown 999 "/var/lib/Wywy-Website/cache/postgres"
 sudo chmod 700 "/var/lib/Wywy-Website/cache/postgres"
+
+# logging folder
+sudo mkdir -p /var/log/Wywy-Website/cache
+sudo chgrp 2523 /var/log/Wywy-Website/cache
+sudo chmod 750 /var/log/Wywy-Website/cache
+sudo chown $USER_ID /var/log/Wywy-Website/cache
+
+# postgres logging foler
+sudo mkdir -p /var/log/Wywy-Website/cache/postgres
+sudo chgrp 2523 /var/log/Wywy-Website/cache/postgres
+sudo chmod 750 /var/log/Wywy-Website/cache/postgres
+sudo chown 999 /var/log/Wywy-Website/cache/postgres
 
 # clone git repository
 if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Cache" ]]; then
