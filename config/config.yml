@@ -119,6 +119,13 @@ data:
             data: [Primary Tag]
 
     dashboard:
+      - name: Events
+        type: Waterfall Chart
+        selector: Step Within
+        selector args: [now-86400000, now] # within 24h
+        metrics: [Start Time, Start Time, End Time, Event Primary Tag]
+        datatype: timestamp
+        invertAxes: true
       - name: Score
         type: Gauge Chart
         selector: Closest Step
@@ -129,13 +136,6 @@ data:
           - Work Ethic
           - Time Efficiency
           - Happiness
-      - name: Events
-        type: Waterfall Chart
-        selector: Step Within
-        selector args: [now-86400000, now] # within 24h
-        metrics: [Start Time, Start Time, End Time, Event Primary Tag]
-        datatype: timestamp
-        invertAxes: true
       - name: Work Ethic
         type: Gauge Chart
         selector: Closest Step
