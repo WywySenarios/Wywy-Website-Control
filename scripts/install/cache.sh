@@ -26,3 +26,8 @@ if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Cache" ]]; then
 else
     git clone https://github.com/WywySenarios/Wywy-Website-Cache.git /usr/local/Wywy-Website/Wywy-Website-Cache
 fi
+
+# Set source code group permissions
+sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website-Cache
+# lock out other users on a best effort basis
+chmod o-rwx /usr/local/Wywy-Website/Wywy-Website-Cache 2>/dev/null || true

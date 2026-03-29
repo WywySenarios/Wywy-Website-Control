@@ -14,3 +14,8 @@ if [[ -d "/usr/local/Wywy-Website/Wywy-Website" ]]; then
 else
     git clone https://github.com/WywySenarios/Wywy-Website.git /usr/local/Wywy-Website/Wywy-Website
 fi
+
+# Set source code group permissions
+sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website
+# lock out other users on a best effort basis
+chmod -R o-rwx /usr/local/Wywy-Website/Wywy-Website 2>/dev/null || true

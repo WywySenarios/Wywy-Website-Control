@@ -35,3 +35,8 @@ if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Backup" ]]; then
 else
   git clone https://github.com/WywySenarios/Wywy-Website-Backup.git /usr/local/Wywy-Website/Wywy-Website-Backup
 fi
+
+# Set source code group permissions
+sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website-Backup
+# lock out other users on a best effort basis
+chmod o-rwx /usr/local/Wywy-Website/Wywy-Website-Backup 2>/dev/null || true

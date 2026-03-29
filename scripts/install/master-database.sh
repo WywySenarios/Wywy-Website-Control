@@ -26,3 +26,8 @@ if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Master-Database" ]]; then
 else
     git clone https://github.com/WywySenarios/Wywy-Website-Master-Database.git /usr/local/Wywy-Website/Wywy-Website-Master-Database
 fi
+
+# Set source code group permissions
+sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website-Master-Database
+# lock out other users on a best effort basis
+chmod -R o-rwx /usr/local/Wywy-Website/Wywy-Website-Master-Database 2>/dev/null || true
