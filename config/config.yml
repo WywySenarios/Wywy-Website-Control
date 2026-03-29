@@ -135,7 +135,7 @@ data:
         selector args: [now-86400000, now] # within 24h
         metrics: [Start Time, Start Time, End Time, Event Primary Tag]
         datatype: timestamp
-        invertAxes: false
+        invertAxes: true
       - name: Work Ethic
         type: Gauge Chart
         selector: Closest Step
