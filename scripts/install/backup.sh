@@ -3,6 +3,8 @@ set -a
 source "$CONTROL_DIR/config/backup/.env"
 set +a
 
+REPO_DIR=/usr/local/Wywy-Website/Wywy-Website-Backup
+
 # Create backup user
 if ! id "$BACKUP_USER" &>/dev/null; then
   sudo useradd -m $BACKUP_USER
@@ -38,5 +40,7 @@ fi
 
 # Set source code group permissions
 sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website-Backup
-# lock out other users on a best effort basis
-chmod o-rwx /usr/local/Wywy-Website/Wywy-Website-Backup 2>/dev/null || true
+# set permissions on a best effort basis
+chmod -R u+rw $REPO_DIR 2>/dev/null || true
+chmod -R g-w+r $REPO_DIR 2>/dev/null || true
+chmod -R o-rwx $REPO_DIR 2>/dev/null || true
