@@ -120,6 +120,11 @@ data:
 
     dashboard:
       - name: Events
+        type: Shallow Treemap
+        selector: Step Within
+        selector args: [now-86400000, now] # within 24h
+        metrics: [Start Time, Event Primary Tag, Duration] # @TODO tag group
+      - name: Events Breakdown
         type: Waterfall Chart
         selector: Step Within
         selector args: [now-86400000, now] # within 24h
