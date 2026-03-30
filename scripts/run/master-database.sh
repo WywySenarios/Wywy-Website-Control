@@ -1,31 +1,26 @@
 #!/bin/bash
-# Check if an argument is provided
-if [ -z "$1" ]; then
-  echo "Error: No argument provided." >&2
-  echo "Usage: $0 <prod | dev | test>" >&2
-  exit 1
-fi
-
-rebuild=0
-endflags=""
 project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
-compose_command="up"
+
+EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev | test> [exec target or alias]?"
+
+compose_files=(-f "$docker_dir/docker-compose.base.yml")
+env_files=(
+    --env-file "$config_dir/.env"
+    --env-file "$config_dir/master-database/.env"
+)
+endflags=()
 
 # Check for flags
-while getopts "bc" opt;
+while getopts "b" opt;
 do
     case "${opt}" in
     b)
-        rebuild=1
-        endflags="${endflags} --build"
-        ;;
-    c)
-        compose_command="config"
+        endflags+=(--build)
         ;;
     *)
-        echo "Invalid flag \"-${opt}\". Expected -b for build, -c for config." >&2
+        echo "Invalid flag \"-${opt}\". Expected -b for build." >&2
         exit 1
         ;;
     esac
@@ -34,47 +29,64 @@ done
 # shift args so that position arguments make sense
 shift $((OPTIND-1))
 
-case "$1" in
+# Do not validate. The command will fail by itself if this is invalid.
+compose_command=$1
+shift
+development_environment=$1
+shift
+# Do not validate. The command will fail by itself if this is invalid. This will automatically be ignored if the compose command is not exec.
+exec_target=$1
+shift
+
+if [[  -z "$development_environment" ]]; then
+    echo "Error: Missing development environment." >&2
+    echo "$EXPECTED_FORMAT" >&2
+fi
+
+case "$development_environment" in
     prod)
-        docker compose -f "$docker_dir/docker-compose.prod.yml" \
-            --env-file "$config_dir/.env" \
-            --env-file "$config_dir/master-database/.env" \
-            $compose_command ${endflags}
+        compose_files+=(-f "$docker_dir/docker-compose.prod.yml")
         ;;
     dev)
-        docker compose -f "$docker_dir/docker-compose.dev.yml" \
-            --env-file "$config_dir/.env" \
-            --env-file "$config_dir/.env.dev" \
-            --env-file "$config_dir/master-database/.env" \
-            --env-file "$config_dir/master-database/.env.dev" \
-            $compose_command \
-            --watch ${endflags}
+        compose_files+=(-f "$docker_dir/docker-compose.dev.yml")
+        env_files+=(
+            --env-file "$config_dir/.env.dev"
+            --env-file "$config_dir/master-database/.env.dev"
+        )
+        endflags+=(--watch)
         ;;
     test)
-        # @TODO determine which env files to use
-        docker compose -f "$docker_dir/docker-compose.dev.yml" \
-            -f "$docker_dir/docker-compose.test.yml" \
-            --env-file "$config_dir/.env" \
-            --env-file "$config_dir/.env.dev" \
-            --env-file "$config_dir/master-database/.env" \
-            --env-file "$config_dir/master-database/.env.dev" \
-            $compose_command \
-            ${endflags}
-
-        status=$?
-
-        if [[ "$compose_command" != "config" ]]; then
-            docker compose -f "$docker_dir/docker-compose.dev.yml" \
-                -f "$docker_dir/docker-compose.test.yml" \
-                --env-file "$config_dir/.env" \
-                --env-file "$config_dir/.env.dev" \
-                --env-file "$config_dir/master-database/.env" \
-                --env-file "$config_dir/master-database/.env.dev" \
-                down
-        fi
+        compose_files+=(
+            -f "$docker_dir/docker-compose.dev.yml"
+            -f "$docker_dir/docker-compose.test.yml"
+        )
+        env_files+=(
+            --env-file "$config_dir/.env.dev"
+            --env-file "$config_dir/master-database/.env.dev"
+        )
         ;;
     *)
-        echo "Error: Invalid argument '$1'. Expected <'prod'|'dev'|'test'>"
+        echo "Error: Invalid argument '$development_environment'. Expected <'prod'|'dev'|'test'>"
         exit 1
         ;;
 esac
+
+if [[ "$compose_command" == "exec" ]]; then
+    case "$exec_target" in
+        sqlr)
+            exec_target="sql-receptionist"
+            ;;
+        pgres | psql | database)
+            exec_target="postgres"
+            ;;
+    esac
+
+    compose_command="$compose_command $exec_target bash"
+fi
+
+docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
+
+# take down testing dockers
+if [[ "$compose_command" == "up" && "$development_environment" == "test" ]]; then
+    docker compose ${compose_files[@]} ${env_files[@]} down
+fi

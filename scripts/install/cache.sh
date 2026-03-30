@@ -3,6 +3,8 @@ set -a
 source "$CONTROL_DIR/config/cache/.env"
 set +a
 
+REPO_DIR=/usr/local/Wywy-Website/Wywy-Website-Cache
+
 # set up postgres database folder
 sudo mkdir -p "/var/lib/Wywy-Website/cache/postgres"
 sudo chown 999 "/var/lib/Wywy-Website/cache/postgres"
@@ -26,3 +28,10 @@ if [[ -d "/usr/local/Wywy-Website/Wywy-Website-Cache" ]]; then
 else
     git clone https://github.com/WywySenarios/Wywy-Website-Cache.git /usr/local/Wywy-Website/Wywy-Website-Cache
 fi
+
+# Set source code group permissions
+sudo chgrp -R 2523 /usr/local/Wywy-Website/Wywy-Website-Cache
+# set permissions on a best effort basis
+chmod -R u+rw $REPO_DIR 2>/dev/null || true
+chmod -R g-w+r $REPO_DIR 2>/dev/null || true
+chmod -R o-rwx $REPO_DIR 2>/dev/null || true

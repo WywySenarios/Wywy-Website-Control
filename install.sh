@@ -103,6 +103,12 @@ for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1
     "/etc/Wywy-Website-Control/scripts/install/$service_name.sh"
 done
 
+# set permissions for the control repository
+chmod -R u+rw /etc/Wywy-Website-Control
+chmod -R g-w+r /etc/Wywy-Website-Control
+chmod -R o-rwx /etc/Wywy-Website-Control
+sudo chgrp -R 2523 /etc/Wywy-Website-Control
+
 # lock down secrets folder
 chmod 000 /etc/Wywy-Website-Control/secrets
 sudo chown root /etc/Wywy-Website-Control/secrets

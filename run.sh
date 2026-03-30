@@ -9,4 +9,4 @@ service_name="$1"
 shift
 
 # Run the service specified.
-bash "scripts/run/$service_name.sh" $@
+bash "scripts/run/$service_name.sh" up $@
