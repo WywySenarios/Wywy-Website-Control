@@ -3,7 +3,7 @@ project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
-EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev | test> [exec target or alias]?"
+EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev | test> [exec target or alias]? ...[docker compose flags]"
 
 compose_files=(-f "$docker_dir/docker-compose.base.yml")
 env_files=(
@@ -11,20 +11,6 @@ env_files=(
     --env-file "$config_dir/master-database/.env"
 )
 endflags=()
-
-# Check for flags
-while getopts "b" opt;
-do
-    case "${opt}" in
-    b)
-        endflags+=(--build)
-        ;;
-    *)
-        echo "Invalid flag \"-${opt}\". Expected -b for build." >&2
-        exit 1
-        ;;
-    esac
-done
 
 # shift args so that position arguments make sense
 shift $((OPTIND-1))
@@ -34,9 +20,12 @@ compose_command=$1
 shift
 development_environment=$1
 shift
-# Do not validate. The command will fail by itself if this is invalid. This will automatically be ignored if the compose command is not exec.
-exec_target=$1
-shift
+if [[ "$compose_command" == "exec" ]]; then
+    # Do not validate. The command will fail by itself if this is invalid. This will automatically be ignored if the compose command is not exec.
+    exec_target=$1
+    shift
+fi
+endflags+=("$@")
 
 if [[  -z "$development_environment" ]]; then
     echo "Error: Missing development environment." >&2
@@ -73,6 +62,7 @@ case "$development_environment" in
         ;;
 esac
 
+# exec target aliases
 if [[ "$compose_command" == "exec" ]]; then
     case "$exec_target" in
         sqlr)
