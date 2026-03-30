@@ -1,7 +1,4 @@
 #!/bin/bash
-# Arguments:
-#   $1: Service name (reduced, lower snake case)
-#   $2: Short-hand container name
 
 service_name=$1
 shift
