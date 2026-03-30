@@ -1,5 +1,5 @@
 #!/bin/bash
-project_dir=/usr/local/Wywy-Website/Wywy-Website-Master-Database
+project_dir=/usr/local/Wywy-Website/Wywy-Website
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
