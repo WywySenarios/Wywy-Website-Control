@@ -53,7 +53,6 @@ case "$development_environment" in
             --env-file "$config_dir/.env.dev"
             --env-file "$config_dir/website/.env.dev"
         )
-        endflags+=(--watch)
         ;;
     *)
         echo "Error: Invalid argument '$development_environment'. Expected < prod | dev >"
