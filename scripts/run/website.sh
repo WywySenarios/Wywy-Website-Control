@@ -60,4 +60,8 @@ case "$development_environment" in
         ;;
 esac
 
+if [[ "$compose_command" == "exec" ]]; then
+    compose_command="$compose_command $exec_target bash"
+fi
+
 docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
