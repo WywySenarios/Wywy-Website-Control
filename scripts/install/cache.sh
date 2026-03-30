@@ -10,6 +10,14 @@ sudo mkdir -p "/var/lib/Wywy-Website/cache/postgres"
 sudo chown 999 "/var/lib/Wywy-Website/cache/postgres"
 sudo chmod 700 "/var/lib/Wywy-Website/cache/postgres"
 
+# set up cache temporary file
+if [[ ! -f "/var/lib/Wywy-Website/cache/cache.json" ]]; then
+    echo "{}" | sudo tee /var/lib/Wywy-Website/cache/cache.json > /dev/null
+fi
+sudo chown $USER_ID /var/lib/Wywy-Website/cache/cache.json
+sudo chgrp 2523 /var/lib/Wywy-Website/cache/cache.json
+sudo chmod 740 /var/lib/Wywy-Website/cache/cache.json
+
 # logging folder
 sudo mkdir -p /var/log/Wywy-Website/cache
 sudo chgrp 2523 /var/log/Wywy-Website/cache
