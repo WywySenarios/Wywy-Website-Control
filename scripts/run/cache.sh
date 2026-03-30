@@ -53,7 +53,9 @@ case "$development_environment" in
             --env-file "$config_dir/.env.dev"
             --env-file "$config_dir/cache/.env.dev"
         )
-        endflags+=(--watch)
+        if [[ "$compose_command" == "up" ]]; then
+            endflags+=(--watch)
+        fi
         ;;
     test)
         compose_files+=(
@@ -70,6 +72,16 @@ case "$development_environment" in
         exit 1
         ;;
 esac
+
+if [[ "$compose_command" == "exec" ]]; then
+    case "$exec_target" in
+        pgres | psql | postgres)
+            exec_target="database"
+            ;;
+    esac
+
+    compose_command="$compose_command $exec_target bash"
+fi
 
 docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
 

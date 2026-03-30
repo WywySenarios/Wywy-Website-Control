@@ -53,7 +53,9 @@ case "$development_environment" in
             --env-file "$config_dir/.env.dev"
             --env-file "$config_dir/master-database/.env.dev"
         )
-        endflags+=(--watch)
+        if [[ "$compose_command" == "up" ]]; then
+            endflags+=(--watch)
+        fi
         ;;
     test)
         compose_files+=(
