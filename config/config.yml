@@ -70,13 +70,13 @@ data:
 
           - name: Start Location
             datatype: geodetic point
-            entrytype: geodetic point minimal
+            entrytype: none
             record_on: start
             optional: true
 
           - name: End Location
             datatype: geodetic point
-            entrytype: geodetic point minimal
+            entrytype: none
             record_on: split
             optional: true
 
