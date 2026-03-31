@@ -4,19 +4,10 @@ config_dir="/etc/Wywy-Website-Control/config"
 
 read -p "Remove all cache data? [y/n] " remove
 
-# stop docker containers
-# prod
-docker compose -f "$docker_dir/docker-compose.prod.yml" \
-    --env-file "$config_dir/.env" \
-    --env-file "$config_dir/cache/.env" \
-    down --remove-orphans --rmi all --volumes
-# dev
-docker compose -f "$docker_dir/docker-compose.dev.yml" \
-    --env-file "$config_dir/.env" \
-    --env-file "$config_dir/.env.dev" \
-    --env-file "$config_dir/cache/.env" \
-    --env-file "$config_dir/cache/.env.dev" \
-    down --remove-orphans --rmi all --volumes
+# clean docker containers
+/etc/Wywy-Website-Control/scripts/run/cache.sh down prod --remove-orphans --rmi all --volumes
+/etc/Wywy-Website-Control/scripts/run/cache.sh down dev --remove-orphans --rmi all --volumes
+/etc/Wywy-Website-Control/scripts/run/cache.sh down test --remove-orphans --rmi all --volumes
 
 if [[ "$remove" =~ ^[Yy]$ ]]; then
     sudo rm -rf "/var/lib/Wywy-Website/cache"
