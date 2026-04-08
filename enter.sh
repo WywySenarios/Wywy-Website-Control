@@ -27,7 +27,7 @@ case "$service_name" in
     bash "scripts/run/$service_name.sh" exec $development_environment $container_name
     ;;
   website)
-    bash "scripts/run/$service_name.sh" exec $development_environment $container_name
+    bash "scripts/run/$service_name.sh" exec $container_name astro-app
     ;;
   *)
     echo "Unknown service name \"$service_name\"." >&2
