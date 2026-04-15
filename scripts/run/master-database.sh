@@ -66,7 +66,7 @@ esac
 if [[ "$compose_command" == "exec" ]]; then
     case "$exec_target" in
         sqlr)
-            exec_target="sql-receptionist"
+            exec_target="sql_receptionist"
             ;;
         pgres | psql | database)
             exec_target="postgres"
