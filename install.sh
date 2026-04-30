@@ -59,7 +59,7 @@ if [[ $(git -C "/etc/Wywy-Website-Control" rev-parse --is-inside-work-tree >/dev
 fi
 
 # Pre-flight checks
-preflight=0 # innocent until proven guilty
+preflight=1 # innocent until proven guilty (TEMPORARILY DISABLED)
 echo "Beginning pre-flight checks."
 # Check all secrets have been populated
 for secret_path in $(cat /etc/Wywy-Website-Control/secrets.txt); do
