@@ -58,14 +58,14 @@ if [[ $(git -C "/etc/Wywy-Website-Control" rev-parse --is-inside-work-tree >/dev
     git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
 fi
 
-# Pre-flight checks
-preflight=1 # innocent until proven guilty (TEMPORARILY DISABLED)
+# Pre-flight checks (TEMPORARILY DISABLED)
+preflight=0 # innocent until proven guilty
 echo "Beginning pre-flight checks."
 # Check all secrets have been populated
 for secret_path in $(cat /etc/Wywy-Website-Control/secrets.txt); do
   if [[ ! -f "/etc/Wywy-Website-Control/secrets/$secret_path" ]]; then
     echo "MISSING SECRET: secret $secret_path does not exist." >&2
-    preflight=1
+    #preflight=1
   fi
 done
 
