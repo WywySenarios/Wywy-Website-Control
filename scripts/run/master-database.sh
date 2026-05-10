@@ -71,6 +71,9 @@ if [[ "$compose_command" == "exec" ]]; then
         pgres | psql | database)
             exec_target="postgres"
             ;;
+        unittest)
+            exec_target="unit_test"
+            ;;
     esac
 
     compose_command="$compose_command $exec_target bash"
