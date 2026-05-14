@@ -6,52 +6,6 @@ websiteIcon: "/favicon.svg"
 data:
   - dbname: WywyWebsite
     tables:
-      - tableName: daily
-        read: true
-        write: true
-        entrytype: form
-        schema:
-          # Please note that the datatype is what the PostgreSQL database will recognize (e.g. Typescript has no way of differentiating an integer from a float).
-          - name: Date
-            parser: date # the datatype that the parser should attempt to cast to
-            datatype: timestamp
-            entrytype: calendar time
-            description: The estimate of when you gained conciousness at the start of this (sleep-based) day.
-
-          - name: Work Ethic
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: How much drive did you have to do work today?
-
-          - name: Time Efficiency
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: How much % of time did you productivity exploit to achieve your (any type of) goals today? Compare to the feasible maximum.
-
-          - name: Happiness
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: What % are you feeling today?
-          - name: Awareness
-            datatype: int
-            entrytype: linearSlider
-            comments: true
-            description: How alert are you today? Tired? Focused?
-        metrics:
-          - name: Date
-            data: [Date]
-          - name: Work Ethic
-            data: [Work Ethic]
-          - name: Time Efficiency
-            data: [Time Efficiency]
-          - name: Happiness
-            data: [Happiness]
-          - name: Awareness
-            data: [Awareness]
-
       - tableName: events
         read: true
         write: true
@@ -62,29 +16,20 @@ data:
             datatype: timestamp
             entrytype: calendar time
             record_on: start
-
           - name: End time
             datatype: timestamp
             entrytype: calendar time
             record_on: split
-
           - name: Start Location
             datatype: geodetic point
             entrytype: none
             record_on: start
             optional: true
-
           - name: End Location
             datatype: geodetic point
             entrytype: none
             record_on: split
             optional: true
-
-          # - name: Duration
-          #   invertible: true
-          #   datatype: interval
-          #   entrytype: duration textbox
-          #   description: An estimate related to the event length. Positive values represent how long the event occured for. Negative values represent how long the event did not actively occur inside the respective time interval.
         descriptors:
           - name: Sleep
             schema:
@@ -93,7 +38,6 @@ data:
                 entrytype: linearSlider
                 comments: true
                 description: How would you rate you sleep quality?
-
               - name: Sleep Behaviour
                 datatype: int
                 entrytype: linearSlider
@@ -117,6 +61,49 @@ data:
             data: [End Time, Start Time]
           - name: Event Primary Tag
             data: [Primary Tag]
+
+      - tableName: daily
+        read: true
+        write: true
+        entrytype: form
+        schema:
+          # Please note that the datatype is what the PostgreSQL database will recognize (e.g. Typescript has no way of differentiating an integer from a float).
+          - name: Date
+            parser: date # the datatype that the parser should attempt to cast to
+            datatype: timestamp
+            entrytype: calendar time
+            description: The estimate of when you gained conciousness at the start of this (sleep-based) day.
+          - name: Work Ethic
+            datatype: int
+            entrytype: linearSlider
+            comments: true
+            description: How much drive did you have to do work today?
+          - name: Time Efficiency
+            datatype: int
+            entrytype: linearSlider
+            comments: true
+            description: How much % of time did you productivity exploit to achieve your (any type of) goals today? Compare to the feasible maximum.
+          - name: Happiness
+            datatype: int
+            entrytype: linearSlider
+            comments: true
+            description: What % are you feeling today?
+          - name: Awareness
+            datatype: int
+            entrytype: linearSlider
+            comments: true
+            description: How alert are you today? Tired? Focused?
+        metrics:
+          - name: Date
+            data: [Date]
+          - name: Work Ethic
+            data: [Work Ethic]
+          - name: Time Efficiency
+            data: [Time Efficiency]
+          - name: Happiness
+            data: [Happiness]
+          - name: Awareness
+            data: [Awareness]
 
     dashboard:
       - name: Events
