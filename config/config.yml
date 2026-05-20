@@ -105,6 +105,31 @@ data:
           - name: Awareness
             data: [Awareness]
 
+      - tableName: Thought Journal
+        read: true
+        write: true
+        tagging: true
+        entrytype: form
+        schema:
+          - name: Thought name
+            datatype: text
+            entrytype: textbox
+          - name: Thought
+            datatype: text
+            entrytype: textbox
+        descriptors:
+          - name: Related Item
+            schema:
+              - name: Related Item
+                datatype: polypointer
+                entrytype: polypointer
+                references:
+                  - Events Sleep Descriptors
+                  - Events
+                  - Daily
+          # @TODO files
+        metrics: []
+
     dashboard:
       - name: Events
         type: Shallow Treemap
