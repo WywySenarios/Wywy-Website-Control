@@ -1,0 +1,22 @@
+---
+title: Shared Conventions (Language-Agnostic)
+published: 2026-05-22T00:00:00
+---
+
+## Function documentation
+
+Every exported function MUST have a JSDoc comment (`/** ... */`) or a single-line comment (`// ...`) immediately above its definition. Every non-exported function MUST have either a JSDoc comment or a single-line comment above its definition. This applies to all functions directly related to code being edited.
+
+When you encounter an undocumented function during an edit, add a comment and warn the user. After editing a function, update its documentation if the function's observable behaviour (return value, params, side effects) has changed.
+
+## TODO awareness
+
+When you encounter a `@TODO` or `TODO` comment during an edit, report it to the user along with the file path and line number. Tell them what the TODO says so they can decide whether to address it now or defer. This applies to any `@TODO` / `TODO` encountered while reading or modifying files.
+
+## Convention awareness
+
+When you encounter code during an edit that violates a convention documented in this file, report it to the user along with the file path, line number, which convention is broken, and what should change. This applies to all conventions across all sections of this file, whether you are editing the violating code or merely reading/observing it. Do not proactively scan for violations outside the scope of your current work.
+
+## Type awareness (all languages)
+
+When you encounter an existing `any` type (TypeScript) or equivalent untyped pattern in another language during an edit, report it to the user along with the file path and line number. Tell them what it's used for so they can decide whether to address it now or defer.
