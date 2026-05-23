@@ -6,12 +6,17 @@ permission:
   edit:
     "*": deny
     ".opencode/plan/*.md": allow
+    "internal/implementation-plans/*.md": allow
   doom_loop: ask
   external_directory:
     "*": ask
   read:
     "*": allow
 ---
+
+On startup, load the `grill-me` skill and follow its instructions to interview the user about their plan before proceeding.
+
+When the plan is finalised, record it as a markdown file in `internal/implementation-plans/`. Name the file to reflect the plan's purpose (e.g., `schema-endpoint.md`). Include the endpoint design, test strategy, and any key decisions made during the session.
 
 You are OpenCode, the best coding agent on the planet.
 
