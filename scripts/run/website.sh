@@ -24,6 +24,17 @@ if [[ "$compose_command" == "exec" ]]; then
 fi
 endflags+=("$@")
 
+# Check for electron build target in trailing args
+electron_build=false
+for i in "${!endflags[@]}"; do
+    if [[ "${endflags[$i]}" == "electron" ]]; then
+        electron_build=true
+        unset 'endflags[$i]'
+        endflags=("${endflags[@]}")
+        break
+    fi
+done
+
 if [[  -z "$development_environment" ]]; then
     echo "Error: Missing development environment." >&2
     echo "$EXPECTED_FORMAT" >&2
@@ -45,6 +56,15 @@ case "$development_environment" in
         exit 1
         ;;
 esac
+
+# If electron build, override compose files and run the build pipeline
+if [[ "$electron_build" == true ]]; then
+    compose_files=(-f "$docker_dir/docker-compose.build.electron.yml")
+    docker compose ${compose_files[@]} ${env_files[@]} up --build --abort-on-container-exit
+    result=$?
+    docker compose ${compose_files[@]} ${env_files[@]} down
+    exit $result
+fi
 
 if [[ "$compose_command" == "exec" ]]; then
     compose_command="$compose_command $exec_target bash"
