@@ -81,3 +81,8 @@ if [[ "$compose_command" == "exec" ]]; then
 fi
 
 docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${compose_service_target} ${endflags[@]}
+
+# take down testing dockers
+if [[ "$compose_command" == "up" && "$development_environment" == "test" ]]; then
+    docker compose ${compose_files[@]} ${env_files[@]} down
+fi
