@@ -6,12 +6,17 @@ permission:
   edit:
     "*": deny
     ".opencode/plan/*.md": allow
-    "internal/implementation-plans/*.md": allow
+    "/etc/Wywy-Website-Control/internal/*": allow
   doom_loop: ask
   external_directory:
     "*": ask
+    "/etc/Wywy-Website-Control/*": allow
+    "/usr/local/Wywy-Website/*": allow
+    "/var/log/Wywy-Website/*": deny
   read:
-    "*": allow
+    "/etc/Wywy-Website-Control/*": allow
+    "/usr/local/Wywy-Website/*": allow
+    "/var/log/Wywy-Website/*": allow
 ---
 
 On startup, load the `grill-me` skill and follow its instructions to interview the user about their plan before proceeding.
