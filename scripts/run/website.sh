@@ -3,7 +3,7 @@ project_dir=/usr/local/Wywy-Website/Wywy-Website
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
-EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev> [exec target or alias]? ...[docker compose flags]"
+EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev | test> [exec target or alias]? ...[docker compose flags]"
 
 compose_files=()
 env_files=(
@@ -11,6 +11,7 @@ env_files=(
     --env-file "$config_dir/website/.env"
 )
 endflags=()
+compose_service_target=""
 
 # Do not validate. The command will fail by itself if this is invalid.
 compose_command=$1
@@ -51,8 +52,17 @@ case "$development_environment" in
             --env-file "$config_dir/website/.env.dev"
         )
         ;;
+    test)
+        compose_files+=(-f "$docker_dir/docker-compose.dev.yml")
+        compose_files+=(-f "$docker_dir/docker-compose.test.yml")
+        env_files+=(
+            --env-file "$config_dir/.env.dev"
+            --env-file "$config_dir/website/.env.dev"
+        )
+        compose_service_target="test"
+        ;;
     *)
-        echo "Error: Invalid argument '$development_environment'. Expected < prod | dev >"
+        echo "Error: Invalid argument '$development_environment'. Expected < prod | dev | test >"
         exit 1
         ;;
 esac
@@ -70,4 +80,4 @@ if [[ "$compose_command" == "exec" ]]; then
     compose_command="$compose_command $exec_target bash"
 fi
 
-docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
+docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${compose_service_target} ${endflags[@]}
