@@ -6,6 +6,40 @@ websiteIcon: "/favicon.svg"
 data:
   - dbname: WywyWebsite
     tables:
+      - tableName: location
+        read: true
+        write: true
+        entrytype: none
+        schema:
+          - name: latitude
+            datatype: float
+            entrytype: none
+          - name: longitude
+            datatype: float
+            entrytype: none
+          - name: accuracy
+            datatype: float
+            entrytype: none
+            optional: true
+          - name: altitude
+            datatype: float
+            entrytype: none
+            optional: true
+          - name: altitude_accuracy
+            datatype: float
+            entrytype: none
+            optional: true
+          - name: speed
+            datatype: float
+            entrytype: none
+            optional: true
+          - name: heading
+            datatype: float
+            entrytype: none
+            optional: true
+          - name: timestamp
+            datatype: integer
+            entrytype: none
       - tableName: events
         read: true
         write: true
@@ -181,3 +215,10 @@ data:
         metrics: [Date, Awareness]
         min: 0
         max: 100
+
+# data pipelines
+pipelines:
+  - target:
+      database_name: WywyWebsite
+      table_name: location
+    type: location
