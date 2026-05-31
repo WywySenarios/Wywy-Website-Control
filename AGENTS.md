@@ -10,6 +10,10 @@ Plans are at [`internal/implementation-plans/`](internal/implementation-plans/).
 
 See [`internal/conventions/naming.mdx`](internal/conventions/naming.mdx).
 
+## Git workflow
+
+After making changes, stage them with `git add` for the next commit.
+
 ## Language-specific conventions
 
 See [`internal/conventions/languages/`](internal/conventions/languages/). When writing code, ALWAYS check the applicable language convention files (at minimum `_shared.mdx`).
