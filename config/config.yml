@@ -38,7 +38,7 @@ data:
             entrytype: none
             optional: true
           - name: timestamp
-            datatype: integer
+            datatype: timestamp
             entrytype: none
       - tableName: events
         read: true
