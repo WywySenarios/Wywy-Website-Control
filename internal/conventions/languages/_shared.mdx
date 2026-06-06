@@ -5,7 +5,22 @@ published: 2026-05-22T00:00:00
 
 ## Function documentation
 
-Every exported function MUST have a JSDoc comment (`/** ... */`) or a single-line comment (`// ...`) immediately above its definition. Every non-exported function MUST have either a JSDoc comment or a single-line comment above its definition. This applies to all functions directly related to code being edited.
+### Functions \<=5 lines
+
+Make sure that the names of these functions are descriptive of their behaviour. If this is not sufficient, refer to [the normal function proceedure](#normal-functions)
+
+Inform the user if you change an existing function name.
+
+### Normal Functions
+
+Every exported/public function MUST have a documentation comment in the language's native format immediately above its definition:
+
+- TypeScript: JSDoc (`/** ... */`)
+- Python: docstring (`"""..."""`)
+- C: Javadoc-style (`/** ... */`) or single-line (`//`)
+- Bash: single-line comment (`#`) above the function
+
+Every non-exported/private function MUST have at least a single-line comment above its definition. This applies to all functions directly related to code being edited.
 
 When you encounter an undocumented function during an edit, add a comment and warn the user. After editing a function, update its documentation if the function's observable behaviour (return value, params, side effects) has changed.
 

@@ -1,0 +1,115 @@
+---
+title: Configuration Conventions
+published: 2026-06-05T00:00:00
+---
+
+## Environment files
+
+### Location
+
+- Per-service env files: `config/<service>/.env` (production) and `config/<service>/.env.dev` (development overrides).
+- Universal env files: `config/.env` and `config/.env.dev`.
+- Service-specific env files override universal ones.
+
+### Format
+
+`KEY=VALUE` format, no `export` prefix. Comments use `#`.
+
+```bash
+# START - Sync app
+DATABASE_PORT=5432
+POSTGRES_USER=postgres
+BACKUP_HOST=sshbackup.ericzhu.me
+# END - Sync app
+```
+
+### Override pattern
+
+`.env` defines the production defaults. `.env.dev` overrides only the values that differ for development. Never duplicate all values — `.env.dev` contains only the delta.
+
+### Priority
+
+```
+service .env.dev > service .env > universal .env.dev > universal .env
+```
+
+### Value conventions
+
+- Booleans: `TRUE`/`FALSE` (uppercase).
+- Numeric values: unquoted (`DATABASE_PORT=5432`).
+- String values: unquoted (`BACKUP_HOST=...`).
+- `###################################################################################` for section separators.
+
+## YAML config
+
+### Root config
+
+`config/config.yml` — site-wide configuration:
+
+```yaml
+websiteTitle: "Wywy Website"
+websiteIcon: "favicon.svg"
+
+data:
+  - dbname: main
+    tableName: entries
+    entrytype: entry
+    datatype: number
+```
+
+- `.yml` extension (not `.yaml`).
+- camelCase keys for human-readable config fields.
+- API-facing fields (db names, table names, column names) should use `lower_snake_case` (see [`naming.mdx`](../naming.mdx)).
+
+### Test config
+
+`config/test_config.yml` — minimal subset for test environments.
+
+## Pipeline config
+
+### Location
+
+`config/agentic/pipeline.yml`
+
+### Schema
+
+```yaml
+defaults:
+  timeout_seconds: 600
+  max_retries: 3
+  max_iterations: 5
+  retry_backoff: [30, 60, 120]
+  test_timeout_seconds: 60
+
+stages:
+  coder:
+    timeout_seconds: 1200
+```
+
+- All timeouts in seconds.
+- All values have documented defaults.
+- Stage-specific overrides override `defaults`.
+
+### Env var overrides
+
+Environment variables override YAML config values:
+
+```
+PIPELINE_TIMEOUT_SECONDS=900
+```
+
+Env var names are `PIPELINE_<YAML_KEY>_<YAML_SUBKEY>` uppercased.
+
+## Loading config
+
+Docker Compose loads env files via `--env-file`:
+
+```bash
+docker compose \
+  -f docker/docker-compose.base.yml \
+  -f docker/docker-compose.dev.yml \
+  --env-file /etc/Wywy-Website-Control/config/cache/.env.cache.dev \
+  up --build
+```
+
+Compose files reference config via environment variables — never hardcode paths or values.
