@@ -8,10 +8,6 @@ permission:
     "*": ask
     "/etc/Wywy-Website-Control/*": allow
     "/usr/local/Wywy-Website/*": allow
-    "/var/log/Wywy-Website/*": deny
-  read:
-    "/etc/Wywy-Website-Control/*": allow
-    "/usr/local/Wywy-Website/*": allow
     "/var/log/Wywy-Website/*": allow
 ---
 

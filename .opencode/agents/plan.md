@@ -12,7 +12,7 @@ permission:
     "*": ask
     "/etc/Wywy-Website-Control/*": allow
     "/usr/local/Wywy-Website/*": allow
-    "/var/log/Wywy-Website/*": deny
+    "/var/log/Wywy-Website/*": allow
   read:
     "/etc/Wywy-Website-Control/*": allow
     "/usr/local/Wywy-Website/*": allow
