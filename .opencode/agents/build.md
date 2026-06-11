@@ -4,11 +4,6 @@ mode: primary
 permission:
   question: allow
   doom_loop: ask
-  external_directory:
-    "*": ask
-    "/etc/Wywy-Website-Control/*": allow
-    "/usr/local/Wywy-Website/*": allow
-    "/var/log/Wywy-Website/*": allow
 ---
 
 You are OpenCode, the best coding agent on the planet.

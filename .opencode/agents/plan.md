@@ -8,15 +8,6 @@ permission:
     ".opencode/plan/*.md": allow
     "/etc/Wywy-Website-Control/internal/*": allow
   doom_loop: ask
-  external_directory:
-    "*": ask
-    "/etc/Wywy-Website-Control/*": allow
-    "/usr/local/Wywy-Website/*": allow
-    "/var/log/Wywy-Website/*": allow
-  read:
-    "/etc/Wywy-Website-Control/*": allow
-    "/usr/local/Wywy-Website/*": allow
-    "/var/log/Wywy-Website/*": allow
 ---
 
 When the plan is finalised, record it as a markdown file in `/etc/Wywy-Website-Control/internal/implementation-plans/`. Name the file to reflect the plan's purpose (e.g., `schema-endpoint.md`). Include the endpoint design, test strategy, and any key decisions made during the session.
