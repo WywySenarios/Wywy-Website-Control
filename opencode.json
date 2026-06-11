@@ -4,8 +4,13 @@
   "instructions": ["/etc/Wywy-Website-Control/AGENTS.shared.md", "AGENTS.md"],
   "permission": {
     "external_directory": {
+      "*": "deny",
+      "/tmp/opencode": "allow",
       "/etc/Wywy-Website-Control/**": "allow",
-      "/usr/local/Wywy-Website/**": "allow"
+      "/usr/local/Wywy-Website/**": "allow",
+      "/var/log/Wywy-Website": "allow",
+      "/var/lib/Wywy-Website": "allow",
+      "/var/workspace/Wywy-Website": "allow"
     }
   }
 }
