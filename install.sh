@@ -53,10 +53,11 @@ done
 # install the control repo
 sudo mkdir -p /etc/Wywy-Website-Control
 sudo chmod 750 /etc/Wywy-Website-Control
-sudo chown $USER:$USER /etc/Wywy-Website-Control
+sudo chown $USER:Wywy-Website /etc/Wywy-Website-Control
 if [[ $(git -C "/etc/Wywy-Website-Control" rev-parse --is-inside-work-tree >/dev/null 2>&1) ]]; then
     git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
 fi
+sudo chown -R $USER:Wywy-Website /etc/Wywy-Website-Control
 
 # Pre-flight checks (TEMPORARILY DISABLED)
 preflight=0 # innocent until proven guilty
@@ -77,7 +78,7 @@ fi
 echo "Pre-flight succeeded. Proceeding with installation."
 
 # Create GID 2523
-if [[ $(getent group Wywy-Website >/dev/null) ]]; then
+if ! getent group Wywy-Website >/dev/null 2>&1; then
     sudo groupadd -g 2523 Wywy-Website
 fi
 
