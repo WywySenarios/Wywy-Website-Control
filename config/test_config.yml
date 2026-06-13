@@ -1,0 +1,76 @@
+websiteTitle: "Eric's Website"
+websiteIcon: "/favicon.svg"
+
+data:
+  - dbname: main
+    tables:
+      - tableName: Pointed
+        read: true
+        write: true
+      - tableName: Pointee
+        read: true
+        write: true
+      - tableName: Pointers
+        read: true
+        write: true
+        schema:
+          - name: Pointer pointer
+            datatype: pointer
+            references:
+              - pointed
+      - tableName: Polymorphic Pointers
+        read: true
+        write: true
+        schema:
+          - name: Polymorphic Pointer polymorphic pointer
+            datatype: polymorphic pointer
+            references:
+              - Pointed
+          - name: Polymorphic Pointer polypointer
+            datatype: polypointer
+            references:
+              - Pointed
+      # @TODO
+      # - tableName: unwriteable
+      # - tableName: unreadable
+      # - tableName: Strings
+      #   read: true
+      #   write: true
+      #   schema:
+      #     - name: String str
+      #       datatype: str
+      #     - name: String string
+      #       datatype: string
+      #     - name: String text
+      #       datatype: text
+      # - tableName: Definitely Not Tagging Table
+      #   read: true
+      #   write: true
+      #   tagging: false
+      #   schema: []
+      # - tableName: Not Tagging Table
+      #   read: true
+      #   write: true
+      #   schema: []
+      # - tableName: Tagging Table
+      #   read: true
+      #   write: true
+      #   tagging: true
+      #   schema: []
+      # - tableName: Descriptor Table
+      #   read: true
+      #   write: true
+      #   schema: []
+      #   descriptors:
+      #     - name: Descriptor One
+      #       schema:
+      #         - name: String str
+      #           datatype: str
+      #         - name: String string
+      #           datatype: str
+      #     - name: Descriptor Two
+      #       schema:
+      #         - name: Number int
+      #           datatype: int
+      #         - name: Number number
+      #           datatype: number

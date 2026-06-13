@@ -1,0 +1,23 @@
+#!/bin/bash
+# /etc/cron.monthly/wywy-agentic-log-purge
+#
+# Removes agentic pipeline log directories older than 30 days.
+# State.json files persist as permanent pipeline summaries — only
+# log directories under /var/log/Wywy-Website/agentic/ are purged.
+#
+# This script is installed by the Wywy-Codes orchestrator install step.
+# It follows the Bash conventions at internal/conventions/languages/bash.mdx.
+
+set -euo pipefail
+
+LOG_BASE_DIR="/var/log/Wywy-Website/agentic"
+
+if [[ ! -d "$LOG_BASE_DIR" ]]; then
+    exit 0
+fi
+
+# Remove contents of subdirectories older than 30 days, preserving the
+# directory structure itself so re-creation is never necessary.
+while IFS= read -r -d '' dir; do
+    find "$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+done < <(find "$LOG_BASE_DIR" -maxdepth 1 -type d -mtime +30 ! -path "$LOG_BASE_DIR" -print0)

@@ -1,5 +1,5 @@
 #!/bin/bash
-project_dir="/usr/local/Wywy-Website/Wywy-Website-Cache"
+project_dir="/usr/local/Wywy-Website/Wywy-Codes"
 docker_dir="$project_dir/docker"
 config_dir="/etc/Wywy-Website-Control/config"
 
@@ -8,7 +8,7 @@ EXPECTED_FORMAT="Usage: $0 [compose command] <prod | dev | test> [exec target or
 compose_files=(-f "$docker_dir/docker-compose.base.yml")
 env_files=(
     --env-file "$config_dir/.env"
-    --env-file "$config_dir/cache/.env"
+    --env-file "$config_dir/agentic/.env"
 )
 endflags=()
 
@@ -24,7 +24,7 @@ if [[ "$compose_command" == "exec" ]]; then
 fi
 endflags+=("$@")
 
-if [[  -z "$development_environment" ]]; then
+if [[ -z "$development_environment" ]]; then
     echo "Error: Missing development environment." >&2
     echo "$EXPECTED_FORMAT" >&2
 fi
@@ -35,23 +35,14 @@ case "$development_environment" in
         ;;
     dev)
         compose_files+=(-f "$docker_dir/docker-compose.dev.yml")
-        env_files+=(
-            --env-file "$config_dir/.env.dev"
-            --env-file "$config_dir/cache/.env.dev"
-        )
-        if [[ "$compose_command" == "up" ]]; then
-            endflags+=(--watch)
-        fi
+        env_files+=(--env-file "$config_dir/.env.dev")
         ;;
     test)
         compose_files+=(
             -f "$docker_dir/docker-compose.dev.yml"
             -f "$docker_dir/docker-compose.test.yml"
         )
-        env_files+=(
-            --env-file "$config_dir/.env.dev"
-            --env-file "$config_dir/cache/.env.dev"
-        )
+        env_files+=(--env-file "$config_dir/.env.dev")
         ;;
     *)
         echo "Error: Invalid argument '$development_environment'. Expected <'prod'|'dev'|'test'>"
@@ -62,27 +53,17 @@ esac
 # exec target aliases
 if [[ "$compose_command" == "exec" ]]; then
     case "$exec_target" in
-        pgres | psql | postgres)
-            exec_target="database"
+        py | python)
+            exec_target="django"
             ;;
     esac
 
     compose_command="$compose_command $exec_target bash"
 fi
 
+docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
+
+# take down testing dockers
 if [[ "$compose_command" == "up" && "$development_environment" == "test" ]]; then
-    # Detached + wait: starts services, waits for test to exit, auto-teardowns.
-    # Logs stream in background for real-time visibility.
-    docker compose ${compose_files[@]} ${env_files[@]} up --detach --wait ${endflags[@]}
-    docker compose ${compose_files[@]} ${env_files[@]} logs -f &
-    LOGS_PID=$!
-    test_cid=$(docker compose ${compose_files[@]} ${env_files[@]} ps -q test)
-    docker wait "$test_cid"
-    exit_code=$?
     docker compose ${compose_files[@]} ${env_files[@]} down
-    kill $LOGS_PID 2>/dev/null
-    wait $LOGS_PID 2>/dev/null
-    exit $exit_code
-else
-    docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
 fi

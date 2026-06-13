@@ -79,9 +79,25 @@ if [[ "$compose_command" == "exec" ]]; then
     compose_command="$compose_command $exec_target bash"
 fi
 
-docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
-
-# take down testing dockers
 if [[ "$compose_command" == "up" && "$development_environment" == "test" ]]; then
+    # Detached + wait: starts services, waits for both test containers to exit, auto-teardowns.
+    # Logs stream in background for real-time visibility.
+    docker compose ${compose_files[@]} ${env_files[@]} up --detach --wait ${endflags[@]}
+    docker compose ${compose_files[@]} ${env_files[@]} logs -f &
+    LOGS_PID=$!
+    test_cid=$(docker compose ${compose_files[@]} ${env_files[@]} ps -q test)
+    unit_cid=$(docker compose ${compose_files[@]} ${env_files[@]} ps -q unit_test)
+    docker wait "$test_cid"
+    test_exit=$?
+    docker wait "$unit_cid"
+    unit_exit=$?
     docker compose ${compose_files[@]} ${env_files[@]} down
+    kill $LOGS_PID 2>/dev/null
+    wait $LOGS_PID 2>/dev/null
+    exit_code=0
+    [[ $test_exit -ne 0 ]] && exit_code=$test_exit
+    [[ $unit_exit -ne 0 ]] && exit_code=$unit_exit
+    exit $exit_code
+else
+    docker compose ${compose_files[@]} ${env_files[@]} $compose_command ${endflags[@]}
 fi

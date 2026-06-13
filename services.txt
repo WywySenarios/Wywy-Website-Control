@@ -2,3 +2,5 @@ cache,Wywy-Website-Cache
 website,Wywy-Website
 backup,Wywy-Website-Backup
 master-database,Wywy-Website-Master-Database
+agentic,Wywy-Codes
+ci-cd,Wywy-CI-CD,2526

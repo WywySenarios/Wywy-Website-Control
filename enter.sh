@@ -29,6 +29,9 @@ case "$service_name" in
   website)
     bash "scripts/run/$service_name.sh" exec $container_name astro-app
     ;;
+  agentic)
+    bash "scripts/run/$service_name.sh" exec $development_environment $container_name
+    ;;
   *)
     echo "Unknown service name \"$service_name\"." >&2
     ;;
