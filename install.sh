@@ -20,6 +20,13 @@ elif ! command -v git >/dev/null 2>&1; then
         echo "Failed to install git. Aborting." >&2
         exit 1
     fi
+# acl (needed for setfacl on source trees)
+elif ! command -v setfacl >/dev/null 2>&1; then
+    echo "Installing acl."
+    if ! sudo apt-get install -y acl; then
+        echo "Failed to install acl. Aborting." >&2
+        exit 1
+    fi
 fi
 
 y=0
@@ -52,7 +59,7 @@ done
 
 # install the control repo
 sudo mkdir -p /etc/Wywy-Website-Control
-sudo chmod 750 /etc/Wywy-Website-Control
+sudo chmod 2750 /etc/Wywy-Website-Control
 sudo chown $USER:Wywy-Website /etc/Wywy-Website-Control
 if [[ $(git -C "/etc/Wywy-Website-Control" rev-parse --is-inside-work-tree >/dev/null 2>&1) ]]; then
     git clone https://github.com/WywySenarios/Wywy-Website-Control.git /etc/Wywy-Website-Control
@@ -92,9 +99,9 @@ sudo chmod 050 /var/log/Wywy-Website
 
 # install every service that is desired by the user.
 sudo mkdir -p /usr/local/Wywy-Website
-sudo chmod 750 /usr/local/Wywy-Website
+sudo chmod 2750 /usr/local/Wywy-Website
 sudo chgrp 2523 /usr/local/Wywy-Website
-sudo chown $USER:$USER /usr/local/Wywy-Website
+sudo setfacl -d -m g:2523:rx /usr/local/Wywy-Website
 for service_name in $(cat /etc/Wywy-Website-Control/services.txt | cut -d',' -f1); do
     read -p "Install service $service_name? [y/n] " overwrite
     if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
@@ -106,7 +113,9 @@ done
 
 # set permissions for the control repository
 chmod -R u+rw /etc/Wywy-Website-Control
-chmod -R g-w+r /etc/Wywy-Website-Control
+chmod -R g=rX /etc/Wywy-Website-Control
+sudo chmod g+s /etc/Wywy-Website-Control
+sudo setfacl -R -d -m g:2523:rx /etc/Wywy-Website-Control
 chmod -R o-rwx /etc/Wywy-Website-Control
 sudo chgrp -R 2523 /etc/Wywy-Website-Control
 

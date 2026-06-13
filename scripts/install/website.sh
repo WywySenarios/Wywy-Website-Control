@@ -21,5 +21,7 @@ fi
 sudo chgrp -R 2523 $REPO_DIR
 # set permissions on a best effort basis
 chmod -R u+rw $REPO_DIR 2>/dev/null || true
-chmod -R g-w+r $REPO_DIR 2>/dev/null || true
+chmod -R g=rX $REPO_DIR 2>/dev/null || true
+sudo chmod g+s "$REPO_DIR"
+sudo setfacl -R -d -m g:2523:rx "$REPO_DIR"
 chmod -R o-rwx $REPO_DIR 2>/dev/null || true
