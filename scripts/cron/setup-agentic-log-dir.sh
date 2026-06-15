@@ -10,7 +10,7 @@
 set -euo pipefail
 
 LOG_BASE_DIR="/var/log/Wywy-Website/agentic"
-CONTAINER_UID="${CONTAINER_UID:-25230}"
+CONTAINER_UID="${CONTAINER_UID:-25233}"
 CONTAINER_GID="${CONTAINER_GID:-2523}"
 
 function setup_log_dir() {
