@@ -126,7 +126,7 @@ sudo chgrp -R 2523 "$REPO_DIR"
 chmod -R u+rw "$REPO_DIR"
 chmod -R g=rX "$REPO_DIR"
 chmod -R o-rwx "$REPO_DIR"
-sudo chmod g+s "$REPO_DIR"
+find "$REPO_DIR" -type d -exec sudo chmod g+s {} +
 sudo setfacl -R -d -m g:2523:rx "$REPO_DIR"
 ```
 

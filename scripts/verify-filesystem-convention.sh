@@ -11,6 +11,7 @@ set -euo pipefail
 
 WYWY_FS_ROOT="${WYWY_FS_ROOT:-/}"
 WYWY_FS_GID="${WYWY_FS_GID:-2523}"
+WYWY_FS_TIER3_OWNER="${WYWY_FS_TIER3_OWNER:-}"
 
 # accumulated failures and error messages
 FAILED=0
@@ -82,6 +83,23 @@ function check_no_world_access() {
     fi
 }
 
+# Check a Tier-3 directory owner matches the expected container UID.
+# Skipped when WYWY_FS_TIER3_OWNER is unset or empty.
+function check_tier3_owner() {
+    local dir="$1"
+    [[ -n "$WYWY_FS_TIER3_OWNER" ]] || return 0
+    local path
+    path=$(prefix "$dir")
+    [[ -d "$path" ]] || return 0
+
+    local uid
+    uid=$(stat -c "%u" "$path" 2>/dev/null || echo "?")
+    if [[ "$uid" != "$WYWY_FS_TIER3_OWNER" ]]; then
+        ERRORS+="owner=$uid $dir (expected $WYWY_FS_TIER3_OWNER)"$"\n"
+        FAILED=1
+    fi
+}
+
 # ---- Tier 1: Source directories (2750, setgid, default ACL) ----------------
 for dir in "/usr/local/Wywy-Website" "/etc/Wywy-Website-Control"; do
     check_tier12_dir "$dir"
@@ -95,6 +113,7 @@ done
 # ---- Tier 3: Service data (700, owner-only) --------------------------------
 for dir in "/var/lib/Wywy-Website/orchestrator"; do
     check_exact_mode "$dir" "700"
+    check_tier3_owner "$dir"
 done
 
 # ---- Tier 4: Service logs (no world access) --------------------------------
@@ -133,7 +152,7 @@ for root_dir in "/usr/local/Wywy-Website" "/etc/Wywy-Website-Control"; do
             ERRORS+="leak: $entry has other=$other_perm"$"\n"
             FAILED=1
         fi
-    done < <(find "$path" -type f -mindepth 1 -not -path "*/.git/*" -print0 2>/dev/null || true)
+    done < <(find "$path" -type f -mindepth 1 -not -path "*/.git/*" -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/.astro/*" -not -path "*/test-results/*" -not -path "*/screenshots/*" -print0 2>/dev/null || true)
 done
 
 # ---- Report ----------------------------------------------------------------

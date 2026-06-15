@@ -7,12 +7,12 @@ REPO_DIR=/usr/local/Wywy-Website/Wywy-Codes
 
 # logging folder
 sudo mkdir -p /var/log/Wywy-Website/agentic
-sudo chown "$USER_ID":2523 /var/log/Wywy-Website/agentic
+sudo chown "$CONTAINER_UID":2523 /var/log/Wywy-Website/agentic
 sudo chmod 750 /var/log/Wywy-Website/agentic
 
-# orchestrator data folder (needs group write for container user in GID 2523)
+# orchestrator data folder (Tier 3 — owner-only, container UID)
 sudo mkdir -p /var/lib/Wywy-Website/orchestrator
-sudo chgrp 2523 /var/lib/Wywy-Website/orchestrator
+sudo chown "$CONTAINER_UID" /var/lib/Wywy-Website/orchestrator
 sudo chmod 700 /var/lib/Wywy-Website/orchestrator
 
 # pipeline workspace (needs group write for container user in GID 2523)
@@ -32,7 +32,7 @@ sudo chgrp -R 2523 "$REPO_DIR"
 # set permissions on a best effort basis
 chmod -R u+rw "$REPO_DIR" 2>/dev/null || true
 chmod -R g=rX "$REPO_DIR" 2>/dev/null || true
-sudo chmod g+s "$REPO_DIR"
+find "$REPO_DIR" -type d -exec sudo chmod g+s {} +
 sudo setfacl -R -d -m g:2523:rx "$REPO_DIR"
 chmod -R o-rwx "$REPO_DIR" 2>/dev/null || true
 
