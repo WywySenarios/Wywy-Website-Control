@@ -9,7 +9,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 CONTROL_DIR="${CONTROL_DIR:-/etc/Wywy-Website-Control}"
-REPO_DIR="/usr/local/Wywy-Website/Wywy-CI-CD"
+REPO_DIR="/usr/local/Wywy-Website/Wywy-CI"
 LOG_DIR="/var/log/Wywy-Website/ci-cd/runs"
 DATA_DIR="/var/lib/Wywy-Website/ci-cd"
 WYWY_CODES_ASTRO="/usr/local/Wywy-Website/Wywy-Codes/apps/astro"
@@ -131,7 +131,6 @@ go get github.com/coder/websocket@latest
 go mod tidy
 
 echo "Go dependencies ready."
-go build ./... 2>/dev/null || echo "(Expected: no .go source files yet — will compile after TDD cycles.)"
 
 # ── 6. Astro project scaffolding (idempotent) ──────────────────────
 ASTRO_DIR="$REPO_DIR/astro"
@@ -336,12 +335,7 @@ cd "$ASTRO_DIR"
 echo "Installing npm dependencies..."
 npm install
 
-# ── 8. npm build (verify project compiles) ─────────────────────────
-echo "Building Astro frontend..."
-npm run build
-echo "Astro build successful."
-
-# ── 9. Register port in .env.network (idempotent) ─────────────────
+# ── 8. Register port in .env.network (idempotent) ─────────────────
 PORT_ENTRY="CI_CD_PORT=2526"
 if grep -qxF "$PORT_ENTRY" "$ENV_NETWORK"; then
     echo "Already registered in .env.network."
@@ -350,7 +344,7 @@ else
     echo "Added to .env.network: $PORT_ENTRY"
 fi
 
-# ── 10. Group permissions on repo ───────────────────────────────────
+# ── 9. Group permissions on repo ────────────────────────────────────
 sudo chgrp -R "$GID" "$REPO_DIR"
 chmod -R u+rw "$REPO_DIR" 2>/dev/null || true
 chmod -R g=rX "$REPO_DIR" 2>/dev/null || true
@@ -358,7 +352,7 @@ sudo chmod g+s "$REPO_DIR"
 sudo setfacl -R -d -m "g:${GID}:rx" "$REPO_DIR" 2>/dev/null || true
 chmod -R o-rwx "$REPO_DIR" 2>/dev/null || true
 
-# ── 11. Summary ─────────────────────────────────────────────────────
+# ── 10. Summary ─────────────────────────────────────────────────────
 echo ""
 echo "=== Wywy-CI-CD installation complete ==="
 echo "  Repo:     $REPO_DIR"

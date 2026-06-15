@@ -3,7 +3,7 @@
 # Invoked via: /etc/Wywy-Website-Control/run.sh ci-cd <test>
 set -euo pipefail
 
-REPO_DIR="/usr/local/Wywy-Website/Wywy-CI-CD"
+REPO_DIR="/usr/local/Wywy-Website/Wywy-CI"
 CONTROL_DIR="${CONTROL_DIR:-/etc/Wywy-Website-Control}"
 
 # Ensure Go is on PATH.
