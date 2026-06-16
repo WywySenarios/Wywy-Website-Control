@@ -2,6 +2,7 @@
 name: plan
 mode: primary
 color: "#FFAC1C"
+hidden: true
 permission:
   question: allow
   edit:
