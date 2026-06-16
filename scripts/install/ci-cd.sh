@@ -126,9 +126,9 @@ else
 fi
 
 echo "Installing Go dependencies..."
+go mod tidy
 go get modernc.org/sqlite@latest
 go get github.com/coder/websocket@latest
-go mod tidy
 
 echo "Go dependencies ready."
 
