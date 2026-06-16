@@ -107,6 +107,8 @@ sudo mkdir -p "$REPO_DIR"
 sudo mkdir -p "$LOG_DIR"
 sudo mkdir -p "$DATA_DIR"
 
+USER_ID=$(id -u "${SUDO_USER:-$(whoami)}")
+
 sudo chown "$USER_ID:$GID" "$REPO_DIR"
 sudo chown "$USER_ID:$GID" "$LOG_DIR"
 sudo chown "$USER_ID:$GID" "$DATA_DIR"
@@ -330,12 +332,19 @@ else
     echo "Astro project already exists — skipping scaffold."
 fi
 
-# ── 7. npm install (idempotent) ────────────────────────────────────
+# ── 7. astro permissions (before npm install) ──────────────────────
+# Build directory must be group-writable so developers can npm install
+# without sudo. Setgid ensures new files inherit the Wywy-Website group.
+sudo chmod 2770 "$ASTRO_DIR"
+sudo chgrp "$GID" "$ASTRO_DIR"
+sudo setfacl -R -d -m "g:${GID}:rwx" "$ASTRO_DIR" 2>/dev/null || true
+
+# ── 8. npm install (idempotent) ────────────────────────────────────
 cd "$ASTRO_DIR"
 echo "Installing npm dependencies..."
 npm install
 
-# ── 8. Register port in .env.network (idempotent) ─────────────────
+# ── 9. Register port in .env.network (idempotent) ─────────────────
 PORT_ENTRY="CI_CD_PORT=2526"
 if grep -qxF "$PORT_ENTRY" "$ENV_NETWORK"; then
     echo "Already registered in .env.network."
@@ -344,15 +353,28 @@ else
     echo "Added to .env.network: $PORT_ENTRY"
 fi
 
-# ── 9. Group permissions on repo ────────────────────────────────────
-sudo chgrp -R "$GID" "$REPO_DIR"
+# ── 10. Group permissions on repo ───────────────────────────────────
+sudo chown -R "$USER_ID:$GID" "$REPO_DIR"
 chmod -R u+rw "$REPO_DIR" 2>/dev/null || true
 chmod -R g=rX "$REPO_DIR" 2>/dev/null || true
 sudo chmod g+s "$REPO_DIR"
 sudo setfacl -R -d -m "g:${GID}:rx" "$REPO_DIR" 2>/dev/null || true
 chmod -R o-rwx "$REPO_DIR" 2>/dev/null || true
 
-# ── 10. Summary ─────────────────────────────────────────────────────
+# ── 10a. Build directories need group write ─────────────────────────
+# astro/ is a build directory — npm install and build tools need to
+# create files inside it. Override the restrictive group permissions
+# with 2770 (group-writable + setgid).
+if [ -d "$ASTRO_DIR" ]; then
+    sudo chmod 2770 "$ASTRO_DIR"
+    sudo setfacl -R -d -m "g:${GID}:rwx" "$ASTRO_DIR" 2>/dev/null || true
+    # Ensure node_modules (if it exists) is also group-writable
+    if [ -d "$ASTRO_DIR/node_modules" ]; then
+        sudo chmod -R g+w "$ASTRO_DIR/node_modules" 2>/dev/null || true
+    fi
+fi
+
+# ── 11. Summary ─────────────────────────────────────────────────────
 echo ""
 echo "=== Wywy-CI-CD installation complete ==="
 echo "  Repo:     $REPO_DIR"
