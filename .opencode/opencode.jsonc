@@ -16,7 +16,7 @@
   //   // Structured Bash Tool — custom bash tool with typed structured inputs
   //   // (command, description, workdir, timeout, env, allow_failure).
   //   // Adds a `structured_bash` tool alongside the built-in `bash` tool.
-  //   ".opencode/experimental-plugins/structured-bash.ts"
+  //   "experimental-plugins/structured-bash.ts"
   // ],
 
   "permission": {
