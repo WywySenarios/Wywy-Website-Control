@@ -4,7 +4,26 @@
   "instructions": [
     "{file:/etc/Wywy-Website-Control/AGENTS.shared.md}"
   ],
+
+  /*
+   * EXPERIMENTAL PLUGINS — disabled by default.
+   *
+   * To enable a plugin, uncomment its entry below and restart opencode.
+   * These plugins are experimental and may change or break without notice.
+   */
+
+  // "plugin": [
+  //   // Structured Bash Tool — custom bash tool with typed structured inputs
+  //   // (command, description, workdir, timeout, env, allow_failure).
+  //   // Adds a `structured_bash` tool alongside the built-in `bash` tool.
+  //   ".opencode/experimental-plugins/structured-bash.ts"
+  // ],
+
   "permission": {
+    "bash": {
+      "/etc/Wywy-Website-Control/run.sh *": "allow",
+      "/etc/Wywy-Website-Control/enter.sh *": "allow"
+    },
     "external_directory": {
       "*": "deny",
       "/tmp/opencode/**": "allow",
