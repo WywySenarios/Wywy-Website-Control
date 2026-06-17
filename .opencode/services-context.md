@@ -9,6 +9,6 @@ The following services and their repository locations are available:
 | `backup` | `Wywy-Website-Backup` | `/usr/local/Wywy-Website/Wywy-Website-Backup` |
 | `master-database` | `Wywy-Website-Master-Database` | `/usr/local/Wywy-Website/Wywy-Website-Master-Database` |
 | `agentic` | `Wywy-Codes` | `/usr/local/Wywy-Website/Wywy-Codes` |
-| `ci-cd` | `Wywy-CI-CD` | `/usr/local/Wywy-Website/Wywy-CI-CD` |
+| `ci` | `Wywy-CI` | `/usr/local/Wywy-Website/Wywy-CI` |
 
 Control commands: `./run.sh <service> dev|prod|test`, `./enter.sh <service> <container> dev|prod`, `./pull.sh`, `./purge.sh`

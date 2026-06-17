@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install Wywy-CI-CD — bare-metal Go + Astro test orchestration service.
+# Install Wywy-CI — bare-metal Go + Astro test orchestration service.
 # Idempotent: safe to re-run. Existing state is never damaged.
 set -euo pipefail
 
@@ -10,19 +10,19 @@ fi
 
 CONTROL_DIR="${CONTROL_DIR:-/etc/Wywy-Website-Control}"
 REPO_DIR="/usr/local/Wywy-Website/Wywy-CI"
-LOG_DIR="/var/log/Wywy-Website/ci-cd/runs"
-DATA_DIR="/var/lib/Wywy-Website/ci-cd"
+LOG_DIR="/var/log/Wywy-Website/ci/runs"
+DATA_DIR="/var/lib/Wywy-Website/ci"
 WYWY_CODES_ASTRO="/usr/local/Wywy-Website/Wywy-Codes/apps/astro"
 ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 GID=2523
 GO_VERSION="1.24.0"
 GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"
 
-echo "=== Wywy-CI-CD Installation ==="
+echo "=== Wywy-CI Installation ==="
 
 # ── 1. Environment ──────────────────────────────────────────────────
 set -a
-source "$CONTROL_DIR/config/ci-cd/.env"
+source "$CONTROL_DIR/config/ci/.env"
 set +a
 
 # ── 2. Go runtime (idempotent) ─────────────────────────────────────
@@ -122,7 +122,7 @@ cd "$REPO_DIR"
 
 if [ ! -f go.mod ]; then
     echo "Initializing Go module..."
-    go mod init wywy-website/ci-cd
+    go mod init wywy-website/ci
 else
     echo "Go module already initialized."
 fi
@@ -345,7 +345,7 @@ echo "Installing npm dependencies..."
 npm install
 
 # ── 9. Register port in .env.network (idempotent) ─────────────────
-PORT_ENTRY="CI_CD_PORT=2526"
+PORT_ENTRY="CI_PORT=2526"
 if grep -qxF "$PORT_ENTRY" "$ENV_NETWORK"; then
     echo "Already registered in .env.network."
 else
@@ -376,7 +376,7 @@ fi
 
 # ── 11. Summary ─────────────────────────────────────────────────────
 echo ""
-echo "=== Wywy-CI-CD installation complete ==="
+echo "=== Wywy-CI installation complete ==="
 echo "  Repo:     $REPO_DIR"
 echo "  Logs:     $LOG_DIR"
 echo "  Data:     $DATA_DIR"
