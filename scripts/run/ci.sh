@@ -25,13 +25,20 @@ case "$mode" in
         go test ./... -v -count=1 "${endflags[@]}"
         go_exit=$?
         echo ""
-        echo "--- Astro Tests ---"
+        echo "--- Astro Check (compilation & imports) ---"
         cd "$ASTRO_DIR"
+        npx astro check "${endflags[@]}" 2>&1 || true
+        astro_check_exit=$?
+        echo ""
+        echo "--- Astro Tests ---"
         npx vitest run "${endflags[@]}"
-        astro_exit=$?
-        # Exit with failure if either suite failed.
-        [ "$go_exit" -eq 0 ] && [ "$astro_exit" -eq 0 ]
-        exit $?
+        astro_vitest_exit=$?
+        echo ""
+        # Exit with failure if any step failed.
+        if [ "$go_exit" -ne 0 ] || [ "$astro_check_exit" -ne 0 ] || [ "$astro_vitest_exit" -ne 0 ]; then
+            exit 1
+        fi
+        exit 0
         ;;
     go-test)
         cd "$REPO_DIR"
@@ -45,9 +52,19 @@ case "$mode" in
         if [ ! -d "$ASTRO_DIR/node_modules" ]; then
             cd "$ASTRO_DIR" && npm install
         fi
+        echo "--- Astro Check (compilation & imports) ---"
         cd "$ASTRO_DIR"
+        npx astro check "${endflags[@]}" 2>&1 || true
+        astro_check_exit=$?
+        echo ""
+        echo "--- Astro Vitest ---"
         npx vitest run "${endflags[@]}"
-        exit $?
+        astro_vitest_exit=$?
+        echo ""
+        if [ "$astro_check_exit" -ne 0 ] || [ "$astro_vitest_exit" -ne 0 ]; then
+            exit 1
+        fi
+        exit 0
         ;;
     server)
         cd "$REPO_DIR"
