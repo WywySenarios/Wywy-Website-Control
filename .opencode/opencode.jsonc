@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "red",
+  "default_agent": "scribe",
   "instructions": [
     "{file:/etc/Wywy-Website-Control/AGENTS.shared.md}"
   ],
