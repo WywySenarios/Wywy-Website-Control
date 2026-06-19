@@ -19,7 +19,8 @@
       "/var/workspace/Wywy-Website/**": "allow"
     },
     "read": {
-      "**/.env": "allow"
+      "**/.env": "allow",
+      "**/.env.*": "allow"
     }
   }
 }
