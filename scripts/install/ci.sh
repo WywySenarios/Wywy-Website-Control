@@ -48,7 +48,18 @@ else
     echo "Go installed: $(go version)"
 fi
 
-# ── 3. Node.js ──────────────────────────────────────────────────────
+# ── 3. C build tools (for CGO / -race) ─────────────────────────────
+# The Go race detector compiles a C++ runtime via CGO, which requires
+# gcc and the C standard library headers.
+if ! command -v gcc &>/dev/null; then
+    echo "Installing build-essential (gcc, libc6-dev)..."
+    apt-get update -qq
+    apt-get install -y -qq build-essential
+else
+    echo "C build tools already available: $(gcc --version | head -1)"
+fi
+
+# ── 4. Node.js ──────────────────────────────────────────────────────
 # Under sudo, nvm-managed node is not on PATH. Search common locations.
 
 find_node() {
@@ -101,7 +112,7 @@ if [ "$NODE_VERSION" -lt 18 ]; then
 fi
 echo "Node.js OK: $(node --version) (via ${NODE_PATH})"
 
-# ── 4. Directories ─────────────────────────────────────────────────
+# ── 5. Directories ─────────────────────────────────────────────────
 echo "Creating directories..."
 sudo mkdir -p "$REPO_DIR"
 sudo mkdir -p "$LOG_DIR"
@@ -117,7 +128,7 @@ sudo chmod 750 "$REPO_DIR"
 sudo chmod 750 "$LOG_DIR"
 sudo chmod 750 "$DATA_DIR"
 
-# ── 5. Go module (idempotent) ──────────────────────────────────────
+# ── 6. Go module (idempotent) ──────────────────────────────────────
 cd "$REPO_DIR"
 
 if [ ! -f go.mod ]; then
@@ -134,7 +145,7 @@ go get github.com/coder/websocket@latest
 
 echo "Go dependencies ready."
 
-# ── 6. Astro project scaffolding (idempotent) ──────────────────────
+# ── 7. Astro project scaffolding (idempotent) ──────────────────────
 ASTRO_DIR="$REPO_DIR/astro"
 
 if [ ! -f "$ASTRO_DIR/package.json" ]; then
@@ -332,19 +343,19 @@ else
     echo "Astro project already exists — skipping scaffold."
 fi
 
-# ── 7. astro permissions (before npm install) ──────────────────────
+# ── 8. astro permissions (before npm install) ──────────────────────
 # Build directory must be group-writable so developers can npm install
 # without sudo. Setgid ensures new files inherit the Wywy-Website group.
 sudo chmod 2770 "$ASTRO_DIR"
 sudo chgrp "$GID" "$ASTRO_DIR"
 sudo setfacl -R -d -m "g:${GID}:rwx" "$ASTRO_DIR" 2>/dev/null || true
 
-# ── 8. npm install (idempotent) ────────────────────────────────────
+# ── 9. npm install (idempotent) ────────────────────────────────────
 cd "$ASTRO_DIR"
 echo "Installing npm dependencies..."
 npm install
 
-# ── 9. Register port in .env.network (idempotent) ─────────────────
+# ── 10. Register port in .env.network (idempotent) ─────────────────
 PORT_ENTRY="CI_PORT=2526"
 if grep -qxF "$PORT_ENTRY" "$ENV_NETWORK"; then
     echo "Already registered in .env.network."
@@ -353,7 +364,7 @@ else
     echo "Added to .env.network: $PORT_ENTRY"
 fi
 
-# ── 10. Group permissions on repo ───────────────────────────────────
+# ── 11. Group permissions on repo ───────────────────────────────────
 sudo chown -R "$USER_ID:$GID" "$REPO_DIR"
 chmod -R u+rw "$REPO_DIR" 2>/dev/null || true
 chmod -R g=rX "$REPO_DIR" 2>/dev/null || true
@@ -361,7 +372,7 @@ sudo chmod g+s "$REPO_DIR"
 sudo setfacl -R -d -m "g:${GID}:rx" "$REPO_DIR" 2>/dev/null || true
 chmod -R o-rwx "$REPO_DIR" 2>/dev/null || true
 
-# ── 10a. Build directories need group write ─────────────────────────
+# ── 11a. Build directories need group write ─────────────────────────
 # astro/ is a build directory — npm install and build tools need to
 # create files inside it. Override the restrictive group permissions
 # with 2770 (group-writable + setgid).
@@ -374,7 +385,7 @@ if [ -d "$ASTRO_DIR" ]; then
     fi
 fi
 
-# ── 11. Summary ─────────────────────────────────────────────────────
+# ── 12. Summary ─────────────────────────────────────────────────────
 echo ""
 echo "=== Wywy-CI installation complete ==="
 echo "  Repo:     $REPO_DIR"
