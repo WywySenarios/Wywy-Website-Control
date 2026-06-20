@@ -2,11 +2,9 @@
 
 ## CRITICAL: Test modification during GREEN
 
-**You MUST NEVER modify tests during the GREEN stage without explicit user approval.** The test is the specification. The test was written to describe the missing feature or bug — if the test does not pass, the production code is wrong, not the test.
+**You MUST NEVER modify tests during the GREEN stage without explicit user approval.** The test is the specification. The test was written to describe the missing feature or bug — if the test does not pass, the production code is wrong, not the test. Request tests sparingly, if at all.
 
-If you are tempted to change the test to make it pass, stop. Ask the user for approval first. Modifying the test to match your implementation defeats the purpose of TDD and silently erases the specification.
-
-The only exception is fixing trivial errors in the test itself (typos, syntax errors, wrong import paths) that are clearly not specification changes. If in doubt, ask.
+If you need to modify any test, STOP. **Load the `request-test-edit` skill and fill out the request template.**
 
 ## Write the minimum code
 

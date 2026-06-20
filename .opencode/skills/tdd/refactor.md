@@ -15,6 +15,7 @@ Priorities:
 2. **Improve names** — variable, function, test names that are now misleading.
 3. **Simplify structure** — extract helpers, reduce nesting, flatten conditionals.
 4. **Update test helpers** — add shared fixtures/factories discovered during Green.
+   - When a test edit is needed, **load the `request-test-edit` skill** and fill out the template before making the change.
 
 ## Final check
 
