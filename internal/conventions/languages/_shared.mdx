@@ -24,6 +24,29 @@ Every non-exported/private function MUST have at least a single-line comment abo
 
 When you encounter an undocumented function during an edit, add a comment and warn the user. After editing a function, update its documentation if the function's observable behaviour (return value, params, side effects) has changed.
 
+### Thread safety annotations
+
+Every function that **may be called in a multithreaded context** or **reads or mutates a shared resource** MUST have a thread-safety comment above its definition (within or adjacent to the documentation comment). The comment must declare one of:
+
+- **`Thread-safe`** — safe to call from any thread without external locking
+- **`Not thread-safe`** — must not be called from multiple threads, or caller must provide external synchronization
+- **`Thread-safe (atomic)`** — safe without locks because the operation is inherently atomic (e.g., a single word-sized store on supported architectures)
+- **`Thread-safe (locked: &lt;mutex/doc ref&gt;)`** — safe because the function acquires a specific lock internally; name the lock
+
+This applies to all languages. Examples:
+
+```typescript
+// Thread-safe
+function incrementCounter(): void { ... }
+```
+
+```python
+# Not thread-safe — caller must hold cache_lock
+def update_cache(key: str, value: Any) -> None: ...
+```
+
+If a function is trivially thread-safe by construction (pure function, no shared state, no I/O), no annotation is required — the compiler/reader can infer it. When in doubt, annotate.
+
 ## TODO awareness
 
 When you encounter a `@TODO` or `TODO` comment during an edit, report it to the user along with the file path and line number. Tell them what the TODO says so they can decide whether to address it now or defer. This applies to any `@TODO` / `TODO` encountered while reading or modifying files.
