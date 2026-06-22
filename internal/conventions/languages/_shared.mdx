@@ -58,3 +58,9 @@ When you encounter code during an edit that violates a convention documented in 
 ## Type awareness (all languages)
 
 When you encounter an existing `any` type (TypeScript) or equivalent untyped pattern in another language during an edit, report it to the user along with the file path and line number. Tell them what it's used for so they can decide whether to address it now or defer.
+
+## Tech stack conventions
+
+Frameworks, tools, databases, and infrastructure conventions live in [`tech-stack/`](../tech-stack/). Each language file in `languages/` links to its associated tech-stack items (e.g. `python.mdx` → [`django.mdx`](../tech-stack/django.mdx)). When adding a new convention for a framework or tool, add it to `tech-stack/` and cross-reference it from the relevant language file.
+
+

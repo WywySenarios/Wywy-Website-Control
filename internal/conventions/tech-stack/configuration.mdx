@@ -3,6 +3,8 @@ title: Configuration Conventions
 published: 2026-06-05T00:00:00
 ---
 
+> **Cross-cutting** — applies to all services regardless of language.
+
 ## Consolidation
 
 All configuration values that could vary across deployments or environments **MUST** live in the control repo (`/etc/Wywy-Website-Control/config/`) and be loaded via env files, YAML config, or Docker secrets. Never embed an environment-dependent value directly in application code or service-level `.env` files.
@@ -65,7 +67,7 @@ data:
 
 - `.yml` extension (not `.yaml`).
 - camelCase keys for human-readable config fields.
-- API-facing fields (db names, table names, column names) should use `lower_snake_case` (see [`naming.mdx`](../naming.mdx)).
+- API-facing fields (db names, table names, column names) should use `lower_snake_case` (see [`naming.mdx`](../../naming.mdx)).
 
 ### Test config
 
