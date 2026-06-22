@@ -13,12 +13,12 @@ permission:
     "**/vitest.config.*": allow
     "**/docker-compose.test.yml": allow
   bash:
-    "*": deny
-    "/etc/Wywy-Website-Control/run.sh * test": allow
-    "grep *": allow
-    "ls *": allow
-    "find *": allow
-    "cat *": allow
+    "*": allow
+  #   "/etc/Wywy-Website-Control/run.sh * test": allow
+  #   "grep *": allow
+  #   "ls *": allow
+  #   "find *": allow
+  #   "cat *": allow
   doom_loop: ask
 ---
 
