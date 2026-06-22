@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run Wywy-CI — Go server, Astro frontend, or test suites.
-# Invoked via: /etc/Wywy-Website-Control/run.sh ci <dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build>
+# Invoked via: /etc/Wywy-Website-Control/run.sh ci <dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build|playwright>
 set -euo pipefail
 
 REPO_DIR="/usr/local/Wywy-Website/Wywy-CI"
@@ -130,8 +130,56 @@ case "$mode" in
         npx astro build "${endflags[@]}"
         exit $?
         ;;
+    playwright)
+        echo "=== Wywy-CI Playwright E2E Tests ==="
+        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
+            cd "$ASTRO_DIR" && npm install
+        fi
+
+        # Ensure port 2526 is free before starting a fresh server with
+        # the script override for the real-output E2E test.
+        fuser -k 2526/tcp 2>/dev/null || true
+        sleep 1
+
+        # Start the Go API server in the background with real script execution
+        # for the E2E test that validates non-placeholder output.
+        echo "Starting Go API server on port 2526..."
+        cd "$REPO_DIR"
+        CI_SCRIPT_OVERRIDE="bash $REPO_DIR/scripts/tests/e2e-real-output.sh" \
+        go run . &
+        go_pid=$!
+        # Poll until the Go API responds (max 20 s).
+        for i in $(seq 1 40); do
+            # Try bash's /dev/tcp built-in (requires --enable-net-redirections).
+            if (exec 3<>/dev/tcp/localhost/2526) 2>/dev/null; then
+                exec 3>&-
+                break
+            fi
+            # Fallback: any available tool.
+            if command -v curl >/dev/null 2>&1 && curl -sf http://localhost:2526/api/runs >/dev/null 2>&1; then
+                break
+            fi
+            if ! kill -0 "$go_pid" 2>/dev/null; then
+                echo "ERROR: Go server process died during startup." >&2
+                exit 1
+            fi
+            sleep 0.5
+        done
+        echo "Go API server is ready."
+
+        # Run the Playwright tests (Playwright's webServer config handles Astro).
+        cd "$ASTRO_DIR"
+        npx playwright test "${endflags[@]}"
+        playwright_exit=$?
+
+        # Clean up the Go server.
+        kill "$go_pid" 2>/dev/null || true
+        wait "$go_pid" 2>/dev/null || true
+
+        exit $playwright_exit
+        ;;
     *)
-        echo "Error: Invalid mode '$mode'. Expected: dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build" >&2
+        echo "Error: Invalid mode '$mode'. Expected: dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build|playwright" >&2
         exit 1
         ;;
 esac

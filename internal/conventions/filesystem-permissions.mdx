@@ -63,7 +63,7 @@ Data directories owned exclusively by a single container process.
 | **Default ACL**| None                            |
 | **Mount**      | `:rw`                           |
 
-**Path**: `/var/lib/Wywy-Website/orchestrator`
+**Paths**: `/var/lib/Wywy-Website/orchestrator`, `/var/lib/Wywy-Website/ci`
 
 ### Tier 4 — Service logs
 
@@ -145,6 +145,10 @@ sudo setfacl -d -m g:2523:rwx /var/workspace/Wywy-Website
 sudo mkdir -p /var/lib/Wywy-Website/orchestrator
 sudo chown "$CONTAINER_UID" /var/lib/Wywy-Website/orchestrator
 sudo chmod 700 /var/lib/Wywy-Website/orchestrator
+
+sudo mkdir -p /var/lib/Wywy-Website/ci
+sudo chown "$CONTAINER_UID" /var/lib/Wywy-Website/ci
+sudo chmod 700 /var/lib/Wywy-Website/ci
 ```
 
 ### Correct — Tier 4 (Logs)
