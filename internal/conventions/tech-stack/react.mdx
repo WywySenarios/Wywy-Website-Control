@@ -14,9 +14,41 @@ React 19, used as Astro islands (see [`astro.mdx`](./astro.mdx)).
 - Domain components: PascalCase `.tsx` (e.g., `NavDrawer.tsx`, `SettingsForm.tsx`).
 - shadcn/ui primitives: kebab-case `.tsx` (e.g., `button.tsx`, `scroll-area.tsx`).
 
+## Component preference
+
+Use **shadcn/ui** components by default for all UI elements. Do not hand-roll custom components when a shadcn/ui primitive already exists — consistency across the codebase is more important than minor customisation.
+
+**Exception:** Charts — use `echarts` (see [Charting](#charting) below). Do not use shadcn/ui chart blocks.
+
 ## shadcn/ui
 
-shadcn/ui components live in `src/components/ui/` and are styled via the `cn()` utility (`src/lib/utils.ts`). Use new-york style (the project default).
+shadcn/ui components live in `src/components/ui/` and are styled via the `cn()` utility (`src/lib/utils.ts`).
+
+### Styling per project
+
+| Repo / service | shadcn/ui style |
+|----------------|-----------------|
+| Website        | `new-york`      |
+
+### Installation — IMPORTANT
+
+ShadCN components MUST be added using `npx shadcn@latest add <component-name>` from the project root.  
+**Never** copy component source from:
+- `shadcn/ui` documentation examples
+- Your training memory / knowledge base
+- The internet (blog posts, GitHub gists, etc.)
+- Other projects in this monorepo
+
+Using `npx` ensures the component is correctly patched for the project's style (`new-york` vs `default`), Tailwind version, and dependency tree. Copying from memory or external sources will almost certainly produce a component that does not match the project's styling configuration.
+
+```sh
+# ✅ CORRECT — install via npx
+npx shadcn@latest add button dialog command
+```
+
+```sh
+# ❌ WRONG — do not copy source manually
+```
 
 When a parent component is already hydrated (has `client:load` or `client:only="react"`), use shadcn/ui as children — do not add a second client directive on the shadcn component itself.
 
