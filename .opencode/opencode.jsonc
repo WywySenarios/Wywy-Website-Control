@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "scribe",
   "instructions": [
     "{file:/etc/Wywy-Website-Control/AGENTS.shared.md}"
   ],
@@ -10,17 +9,11 @@
       "/etc/Wywy-Website-Control/enter.sh *": "allow"
     },
     "external_directory": {
-      "*": "deny",
-      "/tmp/opencode/**": "allow",
       "/etc/Wywy-Website-Control/**": "allow",
       "/usr/local/Wywy-Website/**": "allow",
       "/var/log/Wywy-Website/**": "allow",
       "/var/lib/Wywy-Website/**": "allow",
       "/var/workspace/Wywy-Website/**": "allow"
-    },
-    "read": {
-      "**/.env": "allow",
-      "**/.env.*": "allow"
     }
   }
 }
