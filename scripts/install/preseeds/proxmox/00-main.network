@@ -1,0 +1,14 @@
+# Template for systemd-networkd configuration.
+#
+# Tags are substituted by build-proxmox-iso.sh at ISO build time:
+#   <interface>  ← --interface flag  (default: eth0)
+#   <ip>         ← --ip flag         (no default — required)
+#   <gateway>    ← --gateway flag    (default: 192.168.2.1)
+#   <dns>        ← --dns flag        (default: 192.168.2.1)
+[Match]
+Name=<interface>
+
+[Network]
+Address=<ip>/24
+Gateway=<gateway>
+DNS=<dns>
