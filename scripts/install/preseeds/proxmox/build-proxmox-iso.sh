@@ -4,7 +4,7 @@
 #
 # Takes a Debian Trixie netinst ISO, a hostname, a static IP, an
 # interface name, SSH public keys, and a preseed template, and produces
-# a hybrid (BIOS+UEFI) ISO that installs Proxmox VE 8.x with the least
+# a hybrid (BIOS+UEFI) ISO that installs Proxmox VE 9.x with the least
 # manual intervention possible.
 #
 # The generated ISO is intentionally GENERIC:
