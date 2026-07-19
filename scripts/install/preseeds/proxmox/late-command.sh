@@ -40,6 +40,57 @@ curl -fsSL https://enterprise.proxmox.com/debian/proxmox-archive-keyring-trixie.
 echo "  -> GPG key imported"
 
 # ==================================================================
+# Reconfigure LVM layout: remove scratch (overflow placeholder),
+# create vz (16 GB), create "data" thin pool (rest of VG).
+#
+# Background: partman's recipe creates LV "scratch" with max=-1 so
+# it absorbs all VG overflow (partman's last-LV behavior swallows
+# remaining space).  We tear it down here and reallocate properly.
+# ==================================================================
+step "Reconfigure LVM volumes in VG 'pve'"
+
+if vgs pve >/dev/null 2>&1; then
+	# --------------------------------------------------
+	# Remove scratch LV (overflow placeholder from recipe)
+	# --------------------------------------------------
+	if lvs pve/scratch >/dev/null 2>&1; then
+		echo "  -> Removing scratch LV (overflow placeholder)"
+		umount /mnt/scratch 2>/dev/null || true
+		rmdir /mnt/scratch 2>/dev/null || true
+		sed -i '\|/mnt/scratch|d' /etc/fstab 2>/dev/null || true
+		lvremove -f pve/scratch
+		echo "  -> scratch LV removed"
+	fi
+
+	# --------------------------------------------------
+	# Create vz LV (16 GB, btrfs) for /var/lib/vz
+	# --------------------------------------------------
+	if ! lvs pve/vz >/dev/null 2>&1; then
+		lvcreate -L 16G -n vz pve
+		mkfs.btrfs /dev/pve/vz
+		echo '/dev/pve/vz /var/lib/vz btrfs defaults 0 2' >>/etc/fstab
+		mkdir -p /var/lib/vz
+		echo "  -> vz LV created (16 GB, btrfs) — added to fstab"
+	else
+		echo "  -> vz LV already exists — skipping"
+	fi
+
+	# --------------------------------------------------
+	# Create "data" thin pool (rest of VG) for VM disk images
+	# LVM auto-creates data_tmeta (100M) + data_tdata.
+	# --------------------------------------------------
+	free_extents=$(vgdisplay pve -c 2>/dev/null | cut -d: -f16)
+	if [ "$free_extents" -gt 0 ] 2>/dev/null; then
+		lvcreate --type thin-pool -n data -l 100%FREE pve
+		echo "  -> Thin pool 'data' created ($free_extents extents)"
+	else
+		echo "  -> No free extents in VG 'pve' — skipping thin pool creation"
+	fi
+else
+	echo "  -> VG 'pve' not found — skipping LVM reconfiguration"
+fi
+
+# ==================================================================
 # Enable systemd-networkd (network config was staged by copy-files.sh)
 # ==================================================================
 step "Enable systemd-networkd"
