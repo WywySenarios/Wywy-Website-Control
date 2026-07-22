@@ -61,12 +61,13 @@ esac
 
 ## Paths
 
-Prefer absolute paths or paths relative to the script's directory via `$0`.
+Scripts must be resilient against symlinks and independent of the caller's working directory. Always resolve the script's own location using `readlink -f`:
 
 ```bash
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-source "$SCRIPT_DIR/../config/.env"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 ```
+
+Use `SCRIPT_DIR` to reference sibling files (configs, templates, subdirectories). Do not rely on `$0`, relative paths from `$PWD`, or `cd "$(dirname ...)" && pwd` without symlink resolution.
 
 ## Exit codes
 
@@ -93,6 +94,6 @@ shift $((OPTIND - 1))
 
 ## Related tech stack
 
-| Tool | Convention file |
-|------|----------------|
+| Tool   | Convention file                                                   |
+| ------ | ----------------------------------------------------------------- |
 | Docker | [`tech-stack/docker-images.mdx`](../tech-stack/docker-images.mdx) |
