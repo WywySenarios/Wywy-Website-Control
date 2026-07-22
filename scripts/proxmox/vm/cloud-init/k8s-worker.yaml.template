@@ -1,0 +1,15 @@
+#cloud-config
+---
+package_update: true
+packages:
+  - containerd
+  - gnupg
+
+write_files:
+  - path: /root/k8s-bootstrap.sh
+    content: "{{BOOTSTRAP_B64}}"
+    encoding: b64
+    permissions: "0755"
+
+runcmd:
+  - NODE_ROLE="{{NODE_ROLE}}" /root/k8s-bootstrap.sh
