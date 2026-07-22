@@ -91,32 +91,6 @@ else
 fi
 
 # ==================================================================
-# Enable systemd-networkd (network config was staged by copy-files.sh)
-# ==================================================================
-step "Enable systemd-networkd"
-
-systemctl enable systemd-networkd
-echo "  -> systemd-networkd enabled"
-
-# ==================================================================
-# Enable wpa_supplicant for each wireless interface with a config
-# ==================================================================
-step "Enable wpa_supplicant for wireless interface(s)"
-
-found=false
-for conf in /etc/wpa_supplicant/wpa_supplicant-*.conf; do
-	if [ -f "$conf" ]; then
-		iface=$(basename "$conf" .conf | sed 's/wpa_supplicant-//')
-		systemctl enable "wpa_supplicant@${iface}"
-		echo "  -> wpa_supplicant@${iface} enabled"
-		found=true
-	fi
-done
-if [ "$found" = false ]; then
-	echo "  -> No wpa_supplicant-*.conf found — WiFi not configured"
-fi
-
-# ==================================================================
 # Done
 # ==================================================================
 echo ""

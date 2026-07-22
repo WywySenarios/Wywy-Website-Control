@@ -213,7 +213,7 @@ fi
 
 [ ! -f "$PRESEED_TEMPLATE" ] && die "Preseed template not found: $PRESEED_TEMPLATE"
 
-NETWORK_TEMPLATE="$SCRIPT_DIR/00-main.network"
+NETWORK_TEMPLATE="$SCRIPT_DIR/interfaces"
 [ ! -f "$NETWORK_TEMPLATE" ] && die "Network template not found: $NETWORK_TEMPLATE"
 
 WPA_TEMPLATE="$SCRIPT_DIR/wpa_supplicant.conf"
@@ -311,14 +311,19 @@ for script in copy-files.sh late-command.sh cleanup.sh in-target.sh; do
 	fi
 done
 
-cp "$NETWORK_TEMPLATE" "$WORK_DIR/00-main.network"
+cp "$NETWORK_TEMPLATE" "$WORK_DIR/interfaces"
 sed -i \
 	-e "s/<interface>/$INTERFACE/g" \
 	-e "s/<ip>/$TARGET_IP/g" \
 	-e "s/<gateway>/$GATEWAY/g" \
 	-e "s/<dns>/$DNS/g" \
-	"$WORK_DIR/00-main.network"
-echo "  ✓ 00-main.network generated ($TARGET_IP/24 @ $INTERFACE)"
+	"$WORK_DIR/interfaces"
+if [ "$WIFI_CONFIGURED" = true ]; then
+	sed -i "s|<wifiline>|    wpa-conf /etc/wpa_supplicant/wpa_supplicant-${INTERFACE}.conf|" "$WORK_DIR/interfaces"
+else
+	sed -i '/<wifiline>/d' "$WORK_DIR/interfaces"
+fi
+echo "  ✓ /etc/network/interfaces generated ($TARGET_IP/24 @ $INTERFACE)"
 
 ## Generate and bundle wpa_supplicant config
 if [ "$WIFI_CONFIGURED" = true ]; then

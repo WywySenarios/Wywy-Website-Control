@@ -53,28 +53,25 @@ chmod 440 /target/etc/sudoers.d/wywy
 echo "  -> /target/etc/sudoers.d/wywy created"
 
 # ==================================================================
-# Configure systemd-networkd
+# Configure /etc/network/interfaces (ifupdown2)
 # ==================================================================
-step "Configure systemd-networkd"
+step "Configure /etc/network/interfaces (ifupdown2)"
 
-mkdir -p /target/etc/systemd/network
-echo "  -> /target/etc/systemd/network/ created"
-
-if [ -f /cdrom/00-main.network ]; then
-	cp /cdrom/00-main.network /target/etc/systemd/network/00-main.network
-	chmod 644 /target/etc/systemd/network/00-main.network
-	echo "  -> 00-main.network copied from /cdrom"
+if [ -f /cdrom/interfaces ]; then
+	cp /cdrom/interfaces /target/etc/network/interfaces
+	chmod 644 /target/etc/network/interfaces
+	echo "  -> /etc/network/interfaces copied from /cdrom"
 else
-	echo "  -> No 00-main.network on CDROM — DHCP will be used"
+	echo "  -> No interfaces file on CDROM — DHCP will be used (if available)"
 fi
 
 # ==================================================================
-# Write /etc/hosts with the static IP from 00-main.network
+# Write /etc/hosts with the static IP from /etc/network/interfaces
 # ==================================================================
-step "Write /etc/hosts from 00-main.network"
+step "Write /etc/hosts from /etc/network/interfaces"
 
-if [ -f /target/etc/systemd/network/00-main.network ]; then
-	IP=$(sed -n 's/^Address=\([0-9.]*\).*/\1/p' /target/etc/systemd/network/00-main.network)
+if [ -f /target/etc/network/interfaces ]; then
+	IP=$(sed -n 's/^\s*address\s*\([0-9.]*\).*/\1/p' /target/etc/network/interfaces)
 	if [ -n "$IP" ]; then
 		HOSTNAME=$(cat /target/etc/hostname 2>/dev/null || echo "proxmox")
 		cat >/target/etc/hosts <<HOSTSEOF
@@ -90,10 +87,10 @@ ff02::2 ip6-allrouters
 HOSTSEOF
 		echo "  -> /etc/hosts — $HOSTNAME resolves to $IP"
 	else
-		echo "  -> No Address= in 00-main.network — /etc/hosts not modified"
+		echo "  -> No address in /etc/network/interfaces — /etc/hosts not modified"
 	fi
 else
-	echo "  -> 00-main.network not found — /etc/hosts not modified"
+	echo "  -> /etc/network/interfaces not found — /etc/hosts not modified"
 fi
 
 # ==================================================================
