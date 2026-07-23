@@ -58,6 +58,7 @@ process_target() {
     sudo qm create $vmid \
       --memory 4096 \
       --cores 2 \
+      --cpu x86-64-v2-AES \
       --net0 virtio,bridge=$BRIDGE \
       --name $name
 
