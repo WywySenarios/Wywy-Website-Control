@@ -30,16 +30,19 @@ case "${1:-}" in
 esac
 
 JOIN_CMD="$1"
-[ -z "$JOIN_CMD" ] && {
+case "$JOIN_CMD" in
+--* | '')
 	echo "Usage: $0 <join-command> [--dev|--prod|<host>...]" >&2
 	echo ""
-	echo "  Generate the join command with:" >&2
-	echo "    \"\$(sudo kubeadm token create --print-join-command)\"" >&2
+	echo "  The join command is the first positional argument." >&2
+	echo "  Generate it with:" >&2
+	echo "    \"\$([sudo] kubeadm token create --print-join-command)\"" >&2
 	echo ""
 	echo "  Example:" >&2
-	echo "    $0 \"\$(sudo kubeadm token create --print-join-command)\" --dev" >&2
+	echo "    $0 \"\$(kubeadm token create --print-join-command)\" --dev" >&2
 	exit 1
-}
+	;;
+esac
 shift
 
 # ---- Define callback ----
