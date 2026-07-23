@@ -1,0 +1,15 @@
+[Unit]
+Description=Linkerd viz port-forward (kubectl)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=HOME=%h
+Environment=KUBECONFIG=%h/.kube/config
+ExecStart=/usr/bin/kubectl -n linkerd-viz port-forward svc/web 8082:8084
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

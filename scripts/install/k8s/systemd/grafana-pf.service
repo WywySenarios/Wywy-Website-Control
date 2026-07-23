@@ -1,0 +1,15 @@
+[Unit]
+Description=Grafana port-forward (kubectl)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=HOME=%h
+Environment=KUBECONFIG=%h/.kube/config
+ExecStart=/usr/bin/kubectl -n monitoring port-forward svc/prometheus-stack-grafana 8081:80
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
