@@ -6,7 +6,7 @@ published: 2026-06-13T00:00:00
 ## Overview
 
 All directories and files on the Wywy server must follow a 5-tier
-permission model.  Every tier uses two mechanisms to guarantee correct
+permission model. Every tier uses two mechanisms to guarantee correct
 permissions regardless of the creating process's umask:
 
 1. **setgid bit** (`chmod g+s`) — new files and subdirectories inherit the
@@ -16,7 +16,7 @@ permissions regardless of the creating process's umask:
    umask (e.g. 077).
 
 Container processes run as `:2523` (no assigned user, group `Wywy-Website`).
-All source trees must be readable by GID 2523.  Workspace directories must
+All source trees must be readable by GID 2523. Workspace directories must
 be read-write.
 
 ---
@@ -27,13 +27,13 @@ be read-write.
 
 Source code trees that containers read but never write.
 
-| Property       | Value                           |
-|----------------|---------------------------------|
-| **Mode**       | `2750`                          |
-| **Owner:Group**| `debian:2523`                   |
-| **Setgid**     | Yes                             |
-| **Default ACL**| `setfacl -d -m g:2523:rx`       |
-| **Mount**      | `:ro`                           |
+| Property        | Value                     |
+| --------------- | ------------------------- |
+| **Mode**        | `2750`                    |
+| **Owner:Group** | `debian:2523`             |
+| **Setgid**      | Yes                       |
+| **Default ACL** | `setfacl -d -m g:2523:rx` |
+| **Mount**       | `:ro`                     |
 
 **Paths**: `/usr/local/Wywy-Website/*`, `/etc/Wywy-Website-Control`
 
@@ -41,13 +41,13 @@ Source code trees that containers read but never write.
 
 Shared workspace that multiple agent containers read and write.
 
-| Property       | Value                           |
-|----------------|---------------------------------|
-| **Mode**       | `2770`                          |
-| **Owner:Group**| `root:2523`                     |
-| **Setgid**     | Yes                             |
-| **Default ACL**| `setfacl -d -m g:2523:rwx`      |
-| **Mount**      | `:rw`                           |
+| Property        | Value                      |
+| --------------- | -------------------------- |
+| **Mode**        | `2770`                     |
+| **Owner:Group** | `root:2523`                |
+| **Setgid**      | Yes                        |
+| **Default ACL** | `setfacl -d -m g:2523:rwx` |
+| **Mount**       | `:rw`                      |
 
 **Path**: `/var/workspace/Wywy-Website`
 
@@ -55,27 +55,27 @@ Shared workspace that multiple agent containers read and write.
 
 Data directories owned exclusively by a single container process.
 
-| Property       | Value                           |
-|----------------|---------------------------------|
-| **Mode**       | `700`                           |
-| **Owner:Group**| container UID                   |
-| **Setgid**     | No                              |
-| **Default ACL**| None                            |
-| **Mount**      | `:rw`                           |
+| Property        | Value         |
+| --------------- | ------------- |
+| **Mode**        | `700`         |
+| **Owner:Group** | container UID |
+| **Setgid**      | No            |
+| **Default ACL** | None          |
+| **Mount**       | `:rw`         |
 
 **Paths**: `/var/lib/Wywy-Website/orchestrator`, `/var/lib/Wywy-Website/ci`
 
 ### Tier 4 — Service logs
 
-Log directories.  Must not be world-accessible.
+Log directories. Must not be world-accessible.
 
-| Property       | Value                           |
-|----------------|---------------------------------|
-| **Mode**       | `750` or `770`                  |
-| **Owner:Group**| container UID, optionally `:2523`|
-| **Setgid**     | No                              |
-| **Default ACL**| None                            |
-| **Mount**      | `:rw`                           |
+| Property        | Value                             |
+| --------------- | --------------------------------- |
+| **Mode**        | `750` or `770`                    |
+| **Owner:Group** | container UID, optionally `:2523` |
+| **Setgid**      | No                                |
+| **Default ACL** | None                              |
+| **Mount**       | `:rw`                             |
 
 **Paths**: `/var/log/Wywy-Website/*`
 
@@ -107,7 +107,7 @@ The setgid bit and default ACL work together to neutralize umask
 variation:
 
 | Umask | ACL group effective | ACL other | Container can read? |
-|-------|---------------------|-----------|---------------------|
+| ----- | ------------------- | --------- | ------------------- |
 | 077   | r--                 | ---       | Yes                 |
 | 022   | r--                 | ---       | Yes                 |
 | 027   | r--                 | ---       | Yes                 |
@@ -194,7 +194,7 @@ sudo chmod 2750 /path   # missing: setfacl -d
 ## Compliance Verification
 
 A verification script at `/etc/Wywy-Website-Control/scripts/verify-filesystem-convention.sh`
-checks every path against its tier's expected permissions.  Run it after
+checks every path against its tier's expected permissions. Run it after
 installation or any manual permission change:
 
 ```bash
@@ -203,10 +203,10 @@ installation or any manual permission change:
 
 The script accepts two environment variables for testing:
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `WYWY_FS_ROOT` | `/` | Redirect all path checks to a temp directory |
-| `WYWY_FS_GID` | `2523` | Override the expected group ID |
+| Variable       | Default | Purpose                                      |
+| -------------- | ------- | -------------------------------------------- |
+| `WYWY_FS_ROOT` | `/`     | Redirect all path checks to a temp directory |
+| `WYWY_FS_GID`  | `2523`  | Override the expected group ID               |
 
 BATS tests live at `/etc/Wywy-Website-Control/tests/` and can be run with:
 
@@ -218,6 +218,6 @@ bats /etc/Wywy-Website-Control/tests/
 
 ## Dependencies
 
-The `acl` package must be installed for `setfacl`.  The main install
+The `acl` package must be installed for `setfacl`. The main install
 script (`/etc/Wywy-Website-Control/install.sh`) checks for `setfacl` and
 installs the `acl` package if missing.
