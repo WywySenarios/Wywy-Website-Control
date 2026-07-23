@@ -79,20 +79,25 @@ Log directories.  Must not be world-accessible.
 
 **Paths**: `/var/log/Wywy-Website/*`
 
-### Tier 5 — Host-only
+### Tier 5 — Host-only (SOPS-encrypted secrets)
 
-Secrets directory — no process (container or host user) may read it
-directly.  Docker mounts individual secret files at runtime.
+Secrets directory — contains SOPS-encrypted files committed to the
+repository. Files are encrypted at rest in git and decrypted in memory
+by ArgoCD's Config Management Plugin using the cluster-stored age key.
+Plaintext secrets are never written to disk on the server.
 
-| Property       | Value                           |
-|----------------|---------------------------------|
-| **Mode**       | `000`                           |
-| **Owner:Group**| `root:root`                     |
-| **Setgid**     | No                              |
-| **Default ACL**| None                            |
-| **Mount**      | Docker secrets                  |
+| Property        | Value                           |
+| --------------- | ------------------------------- |
+| **Mode**        | `2750` (inherits Tier 1)        |
+| **Owner:Group** | `debian:2523` (inherits Tier 1) |
+| **Setgid**      | Yes                             |
+| **Default ACL** | `setfacl -d -m g:2523:rx`       |
+| **Decryption**  | ArgoCD CMP (cluster-side)       |
 
 **Path**: `/etc/Wywy-Website-Control/secrets`
+
+The age private key used for decryption is stored as a Kubernetes Secret
+in the `argocd` namespace — never on the host filesystem.
 
 ---
 
