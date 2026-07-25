@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  labels:
+    app: github-runner
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      containers:
+        # ──────────────────────────────────────────────────────────────────
+        # GitHub Actions self-hosted runner
+        # ──────────────────────────────────────────────────────────────────
+        - name: runner
+          image: myoung34/github-runner:latest
+          env:
+            - name: RUNNER_SCOPE
+              value: "repo"
+            - name: REPO_URL
+              value: "https://github.com/WywySenarios/Wywy-Website-Control"
+            - name: ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-pat
+                  key: token
+            - name: RUNNER_LABELS
+              value: "self-hosted,wywy"
+            - name: DOCKER_HOST
+              value: "tcp://localhost:2375"
+            - name: DOCKER_TLS_VERIFY
+              value: ""
+            - name: EPHEMERAL
+              value: "true"
+            - name: DISABLE_AUTO_UPDATE
+              value: "true"
+
+        # ──────────────────────────────────────────────────────────────────
+        # Docker daemon sidecar (no TLS, plain TCP on 2375)
+        # ──────────────────────────────────────────────────────────────────
+        - name: dind
+          image: docker:dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          volumeMounts:
+            - name: docker-data
+              mountPath: /var/lib/docker
+
+      imagePullSecrets:
+        - name: regcred-ghcr
+      volumes:
+        - name: docker-data
+          emptyDir: {}

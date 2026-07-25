@@ -1,0 +1,30 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: github-runner-auth
+spec:
+  secretTargetRef:
+    - parameter: personalAccessToken
+      name: github-runner-pat
+      key: token
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: github-runner
+spec:
+  scaleTargetRef:
+    name: github-runner
+  minReplicaCount: 0
+  maxReplicaCount: 5
+  pollingInterval: 30
+  cooldownPeriod: 300
+  triggers:
+    - type: github-runner
+      metadata:
+        owner: WywySenarios
+        repos: Wywy-Website-Control
+        runnerScope: repo
+        targetWorkflowQueueLength: "1"
+      authenticationRef:
+        name: github-runner-auth

@@ -1,0 +1,11 @@
+title = "Wywy-Website-Control gitleaks config"
+
+# Uses gitleaks' built-in rules for API keys, tokens, passwords, etc.
+# This config only adds project-level overrides and allowlists.
+
+[allowlist]
+# SOPS-encrypted files are safe to commit — skip entropy checks
+paths = [
+  '''(.*\.sops)$''',
+  '''(.*\.pub)$''',
+]
