@@ -49,6 +49,31 @@ echo "  -> Package index updated"
 apt-get remove -y os-prober
 
 # ==================================================================
+# Install age for SOPS-compatible secret decryption
+# ==================================================================
+step "Installing age"
+
+apt-get install -y age
+
+echo "  -> age installed"
+
+# ==================================================================
+# Install sops (SOPS CLI, not available as apt package)
+# ==================================================================
+step "Installing sops"
+
+SOPS_VERSION="v3.13.2"
+if ! command -v sops &>/dev/null; then
+	curl -fsSL --retry 3 \
+		"https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64" \
+		-o /usr/local/bin/sops
+	chmod 755 /usr/local/bin/sops
+	echo "  -> sops ${SOPS_VERSION} installed"
+else
+	echo "  -> sops already installed ($(sops --version 2>/dev/null || echo "unknown"))"
+fi
+
+# ==================================================================
 # Install postfix (interactive — will prompt for mail configuration)
 # ==================================================================
 step "Installing postfix"

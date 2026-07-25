@@ -44,6 +44,23 @@ step "SSH authorized_keys"
 ) || echo "  \342\232\240 SSH authorized_keys step failed (non-fatal, continuing)"
 
 # ==================================================================
+# Install age private key at /home/wywy/.config/sops/age/keys.txt
+# ==================================================================
+step "Age key for SOPS decryption"
+(
+	set -e
+	mkdir -p /target/home/wywy/.config/sops/age
+	if [ -f /cdrom/age-key.txt ]; then
+		cp /cdrom/age-key.txt /target/home/wywy/.config/sops/age/keys.txt
+		chmod 600 /target/home/wywy/.config/sops/age/keys.txt
+		chroot /target chown wywy:wywy /home/wywy/.config/sops/age/keys.txt
+		echo "  -> age key installed"
+	else
+		echo "  -> No age-key.txt on CDROM — skipping"
+	fi
+) || echo "  ⚠ age key step failed (non-fatal, continuing)"
+
+# ==================================================================
 # Grant passwordless sudo to wywy
 # ==================================================================
 step "Grant passwordless sudo to wywy"

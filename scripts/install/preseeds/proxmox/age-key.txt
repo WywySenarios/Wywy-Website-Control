@@ -1,0 +1,14 @@
+# Place the Proxmox host's age secret key here.
+# Generate one with: age-keygen -o ~/.config/sops/age/keys.txt
+#
+# This file is copied to /home/wywy/.config/sops/age/keys.txt on the
+# Proxmox host during installation. It is used to decrypt secrets at
+# provision time (e.g., the GitHub runner PAT).
+#
+# Keep this file safe — it is the only way to decrypt secrets encrypted
+# with the corresponding public key (shown in the comment line below).
+#
+# Example content:
+#   # created: 2026-07-23T22:00:00+00:00
+#   # public key: age1abc123def456...
+#   AGE-SECRET-KEY-1...
