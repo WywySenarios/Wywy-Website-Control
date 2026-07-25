@@ -24,6 +24,7 @@ spec:
       metadata:
         owner: WywySenarios
         repos: Wywy-Website-Control
+        labels: "wywy"
         runnerScope: repo
         targetWorkflowQueueLength: "1"
       authenticationRef:
