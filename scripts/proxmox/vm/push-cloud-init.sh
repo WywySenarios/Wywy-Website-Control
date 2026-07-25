@@ -16,19 +16,19 @@ SYSUSER="wywy"
 ROLES=(general "master-db,wywy.io/storage-class=db")
 
 # ---- Require input files ----
-BOOTSTRAP_SCRIPT="$CLOUD_INIT_DIR/k8s-bootstrap.sh"
-TEMPLATE="$CLOUD_INIT_DIR/k8s-worker.yaml.template"
+K8S_BOOTSTRAP="$CLOUD_INIT_DIR/k8s-bootstrap.sh"
+K8S_TEMPLATE="$CLOUD_INIT_DIR/k8s-worker.yaml.template"
 
-for f in "$BOOTSTRAP_SCRIPT" "$TEMPLATE"; do
+for f in "$K8S_BOOTSTRAP" "$K8S_TEMPLATE"; do
 	[ -f "$f" ] || {
 		echo "Error: $f not found" >&2
 		exit 1
 	}
 done
 
-# ---- Generate YAML files from template (once, before the loop) ----
-echo "==> Generating snippet(s)…"
-BOOTSTRAP_B64=$(base64 -w0 <"$BOOTSTRAP_SCRIPT")
+# ---- Generate k8s YAML snippets from template (once, before the loop) ----
+echo "==> Generating k8s worker snippets…"
+BOOTSTRAP_B64=$(base64 -w0 <"$K8S_BOOTSTRAP")
 GENERATED=()
 
 for role in "${ROLES[@]}"; do
@@ -39,7 +39,7 @@ for role in "${ROLES[@]}"; do
 
 	sed -e "s|{{BOOTSTRAP_B64}}|$BOOTSTRAP_B64|g" \
 		-e "s|{{NODE_ROLE}}|$role|g" \
-		"$TEMPLATE" >"/tmp/$out"
+		"$K8S_TEMPLATE" >"/tmp/$out"
 
 	GENERATED+=("/tmp/$out")
 	echo "  ✓ /tmp/$out"
@@ -57,7 +57,7 @@ process_target() {
 	ssh "$SYSUSER@$host" bash -s <<REMOTE
     set -euo pipefail
 
-    echo "  -> Installing to /var/lib/vz/snippets/…"
+    echo "  -> Installing k8s snippets to /var/lib/vz/snippets/…"
     sudo cp -v ~/k8s-worker-*.yaml /var/lib/vz/snippets/
 
     echo "  -> Reapplying --cicustom to VM $template_vmid…"
