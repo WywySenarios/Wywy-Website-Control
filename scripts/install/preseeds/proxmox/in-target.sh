@@ -17,7 +17,7 @@ set -eu
 # Safety check — must be run as root
 # ==================================================================
 if [ "$(id -u)" -ne 0 ]; then
-	echo "This script must be run as root (use sudo)." >&2
+	echo "This script must be run as root (use sudo)."
 	exit 1
 fi
 
@@ -63,7 +63,7 @@ echo "  -> age installed"
 step "Installing sops"
 
 SOPS_VERSION="v3.13.2"
-if ! command -v sops &>/dev/null; then
+if ! command -v sops; then
 	curl -fsSL --retry 3 \
 		"https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64" \
 		-o /usr/local/bin/sops
@@ -88,8 +88,8 @@ echo "  -> postfix installed"
 step "Installing open-iscsi"
 
 apt-get install -y open-iscsi
-
-echo "  -> open-iscsi installed"
+systemctl enable iscsid iscsid.socket
+echo "  -> open-iscsi installed, iscsid enabled"
 
 # ==================================================================
 # Install proxmox-ve (interactive — may prompt for configuration)
