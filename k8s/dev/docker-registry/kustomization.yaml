@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: github-runner
+
+resources:
+  - pvc.yaml
+  - service.yaml
+  - deployment.yaml
+
+# Pre-create secrets with:
+#   sudo bash scripts/init-k8s-secrets.sh
+#
+# Or generate the htpasswd line manually:
+#   ~/dotfiles/scripts/pswd/pswd.sh --bcrypt common 24 \
+#     | kubectl create secret generic registry-auth -n github-runner \
+#       --from-file=htpasswd=/dev/stdin
+#
+# SOPS source: secrets/registry-auth.sops (encrypted with --input-type raw)

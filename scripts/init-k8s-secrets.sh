@@ -54,6 +54,7 @@ declare -a SECRET_MAP=(
 	"admin.txt.sops|master-db-admin|password"
 	"github-runner-token.sops|github-runner-pat|token"
 	"backup/ssh_host_ed25519_key.pub|backup-ssh-key|ssh_host_ed25519_key.pub"
+	"registry-auth.sops|registry-auth|htpasswd"
 )
 
 # --- Resolve actual values ---
