@@ -68,8 +68,8 @@ process_target() {
     step "Attach disk"
     sudo qm set $vmid --scsihw virtio-scsi-pci --scsi0 ${STORAGE}:vm-${vmid}-disk-0
 
-    step "Resize disk to 32G"
-    sudo qm resize $vmid scsi0 32G
+    step "Resize disk to 64G"
+    sudo qm resize $vmid scsi0 64G
 
     step "Attach cloud-init drive"
     sudo qm set $vmid --ide2 ${STORAGE}:cloudinit
