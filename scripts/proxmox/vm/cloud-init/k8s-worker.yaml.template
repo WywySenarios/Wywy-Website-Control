@@ -4,6 +4,7 @@ package_update: true
 packages:
   - containerd
   - gnupg
+  - open-iscsi
 
 write_files:
   - path: /root/k8s-bootstrap.sh

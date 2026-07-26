@@ -54,6 +54,12 @@ apt-mark hold kubelet kubeadm kubectl
 echo "  -> installed v1.36, held"
 
 # ---------------------------------------------------------------------------
+step "Enable open-iscsi (iscsid) — required by Longhorn"
+# ---------------------------------------------------------------------------
+systemctl enable --now iscsid iscsid.socket
+echo "  -> iscsid enabled"
+
+# ---------------------------------------------------------------------------
 step "Enable IP forwarding"
 # ---------------------------------------------------------------------------
 sysctl -w net.ipv4.ip_forward=1
