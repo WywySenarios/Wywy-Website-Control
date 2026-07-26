@@ -9,7 +9,9 @@ fresh cluster. All are idempotent — safe to re-run.
 3. **prometheus-stack.sh** — monitoring
    kube-prometheus-stack (Prometheus + Grafana + Alertmanager), grafana port-forward systemd service
 4. **linkerd.sh** — service mesh
-5. **argocd.sh** — GitOps
+5. **keda.sh** — event-driven autoscaling (KEDA + ScaledObject for runners)
+6. **longhorn.sh** — distributed block storage
+7. **argocd.sh** — GitOps
 
 Orchestration wrappers:
 
