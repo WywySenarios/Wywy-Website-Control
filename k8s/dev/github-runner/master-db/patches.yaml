@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+spec:
+  template:
+    spec:
+      containers:
+        - name: runner
+          env:
+            - name: REPO_URL
+              value: https://github.com/WywySenarios/Wywy-Website-Master-Database
+            - name: RUNNER_LABELS
+              value: self-hosted,wywy,dind

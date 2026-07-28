@@ -5,6 +5,7 @@ namespace: github-runner
 resources:
   - deployment.yaml
   - scaled-object.yaml
+  - network-policy.yaml
 
 # Pre-create secrets with:
 #   kubectl create secret generic github-runner-pat -n github-runner \

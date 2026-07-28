@@ -1,0 +1,16 @@
+services:
+  runner:
+    build: .
+    privileged: true
+    environment:
+      REPO_URL: https://github.com/WywySenarios/Wywy-Website-Master-Database
+      ACCESS_TOKEN: "${GITHUB_PAT}"
+      RUNNER_LABELS: self-hosted,wywy,dind
+      EPHEMERAL: "true"
+      DISABLE_AUTO_UPDATE: "true"
+    volumes:
+      - docker-data:/var/lib/docker
+    restart: unless-stopped
+
+volumes:
+  docker-data:
