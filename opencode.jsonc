@@ -16,5 +16,12 @@
       "/var/lib/Wywy-Website/**": "allow",
       "/var/workspace/Wywy-Website/**": "allow"
     }
+  },
+  "mcp": {
+    "wywy-docs": {
+      "type": "remote",
+      "url": "http://127.0.0.1:2530/sse",
+      "description": "Wywy-Docs RAG — search documentation"
+    }
   }
 }
