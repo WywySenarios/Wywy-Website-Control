@@ -1,3 +1,27 @@
+# Security: Self-Hosted Runner PR Protection
+
+**This repository uses self-hosted GitHub Actions runners.**
+
+A self-hosted runner executes code on our own infrastructure. Any pull request from an outside collaborator (i.e., anyone who is not a repository maintainer) can inject arbitrary code into that runner — including access to internal network services, the Docker daemon, and cluster resources.
+
+## Required GitHub Setting
+
+**You MUST enable the following setting on EVERY Wywy repository:**
+
+1. Go to **Settings → Actions → General → Fork pull request workflows from outside collaborators**
+2. Select **"Require approval for all outside collaborators"**
+
+Without this setting, any external contributor can open a pull request and have their code execute automatically on our self-hosted runners. This is a **remote code execution** vulnerability with no intermediate gate.
+
+Verify this setting is applied before merging any pull request from an external contributor.
+
+## Additional Recommendations
+
+- If a workflow step executes scripts from the checked-out repository (a `run:` step), that code runs on our infrastructure. Minimize or audit such steps.
+- Pin all action versions to immutable commit SHAs (not just major-version tags) to prevent tag hijacking.
+
+---
+
 # Installation
 
 The installation is global.
@@ -44,11 +68,12 @@ The environment variables between services should not clash (otherwise they woul
 # Global Secrets
 
 All secrets are located under `./secrets`. Global secrets are files directly inside that directory.
-| Secret File Name | purpose |
-|---|---|
-| admin.txt | The admin password over all services. |
-| id_ed25519 | The private SSH key to use when querying another service. |
-| id_ed25519.pub | The public SSH key to use when querying another service. |
+
+| Secret File Name | purpose                                                   |
+| ---------------- | --------------------------------------------------------- |
+| admin.txt        | The admin password over all services.                     |
+| id_ed25519       | The private SSH key to use when querying another service. |
+| id_ed25519.pub   | The public SSH key to use when querying another service.  |
 
 # File Permissions
 
