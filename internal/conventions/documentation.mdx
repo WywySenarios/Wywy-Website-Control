@@ -7,10 +7,10 @@ published: 2026-06-26T03:27:48+00:00
 
 The repository has two documentation directories with distinct audiences and purposes:
 
-| Directory | Audience | Purpose | Examples |
-|---|---|---|---|
-| `docs/` | **Operators** setting up or running the system | Hardware requirements, architecture, API reference, data model, operational commands | Architecture docs, API serialization, data model, control commands |
-| `internal/` | **Developers** writing code or planning changes | Conventions, implementation plans, reports, service definitions | This file, migration plan, reports |
+| Directory   | Audience                                        | Purpose                                                                              | Examples                                                           |
+| ----------- | ----------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `docs/`     | **Operators** setting up or running the system  | Hardware requirements, architecture, API reference, data model, operational commands | Architecture docs, API serialization, data model, control commands |
+| `internal/` | **Developers** writing code or planning changes | Conventions, implementation plans, reports, service definitions                      | This file, migration plan, reports                                 |
 
 ### docs/ — operations / setup
 
@@ -30,6 +30,7 @@ Docs should be clear enough that someone can set up the entire infrastructure fr
 Everything in `internal/` is written for someone **writing code or planning development work**. It is not relevant to setting up or operating the system.
 
 Contents include:
+
 - **Conventions** (naming, code style, filesystem permissions, agent prompts)
 - **Implementation plans** (step-by-step plans for specific features or migrations)
 - **Reports** (test results, audits, analyses)
@@ -70,6 +71,7 @@ status: target (in progress)
 ```
 
 Valid status values:
+
 - `target (in progress)` — design for something being actively built
 - `target (draft)` — initial sketch, not yet approved
 - `target (complete)` — implemented, but the old system still coexists
