@@ -86,15 +86,20 @@ published: 2026-06-26T03:27:48+00:00
 ---
 ```
 
+The `published` and `last_updated` fields are **auto-populated** by the `write_doc` tool and **must not be set manually** in frontmatter — they are reserved for server-side management. `published` is set on creation and preserved on updates; `last_updated` is updated on every write.
+
 Documents describing a target or in-progress state SHOULD include a `status` field:
 
 ```yaml
 ---
 title: Infrastructure
 published: 2026-06-26T03:27:48+00:00
+last_updated: 2026-06-26T03:27:48+00:00
 status: target (in progress)
 ---
 ```
+
+> **Note:** `published` and `last_updated` are auto-managed by `write_doc`. Do not include them when calling `write_doc` — they will be rejected with a validation error.
 
 Valid status values:
 
