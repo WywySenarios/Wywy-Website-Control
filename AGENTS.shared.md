@@ -2,6 +2,10 @@
 
 This file lives in the [Wywy-Website-Control](https://github.com/wywy/website-control) repo and is symlinked (or copied) into every Wywy repo at the root. It is the single source of truth for how agents should operate across all Wywy projects.
 
+## Testing
+
+ALWAYS prefer to use root level test.sh to run tests. That is the default entrypoint for CI.
+
 ## Wywy-Docs MCP tools
 
 The tools and their parameters are listed in your system prompt. Use them.
