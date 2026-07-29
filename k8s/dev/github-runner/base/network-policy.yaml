@@ -32,7 +32,8 @@ spec:
         - port: 53
           protocol: TCP
 
-    # HTTPS outbound, but NOT to private/internal IP ranges
+    # HTTP/S outbound, but NOT to private/internal IP ranges
+    # Port 80 is needed for apt-get (Debian repos serve over HTTP).
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -42,6 +43,8 @@ spec:
               - 192.168.0.0/16 # K8s pod/service CIDRs (common)
       ports:
         - port: 443
+          protocol: TCP
+        - port: 80
           protocol: TCP
 
     # # Uncomment if the runner needs to pull from an internal registry
