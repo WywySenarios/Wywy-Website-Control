@@ -8,6 +8,8 @@
 #
 # Idempotent — safe to re-run.
 #
+# Does NOT create the associated GitHub PAT secret. Refer to documentation for instructions on how to create the GitHub PAT secret.
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
