@@ -49,6 +49,32 @@ Documents in `internal/` may describe in-progress or aspirational states. They a
 
 **Avoid:** `01-infrastructure.mdx`, `architecture-overview.md`, `README.md`
 
+## Prose formatting
+
+Do not manually wrap lines in prose paragraphs. Write each paragraph
+as a single long line — the formatter (or editor) will handle display
+wrapping. Manual line breaks in the middle of paragraphs produce
+noisy diffs and are invisible in rendered output, making the source
+deceptive.
+
+**Bad** — semantic line wrapping:
+
+```md
+This is a paragraph that has been manually
+wrapped at around 70 characters. It looks
+fine in the editor but makes diffs noisier.
+```
+
+**Good** — single line, let the formatter handle width:
+
+```md
+This is a paragraph that is one long line. The formatter or editor handles display wrapping.
+```
+
+This applies to all documentation files (`docs/*.mdx` and
+`internal/*.mdx`). Code blocks, tables, and lists are exempt —
+format those for readability in source.
+
 ## Frontmatter
 
 All documentation files SHOULD include frontmatter with at minimum:
