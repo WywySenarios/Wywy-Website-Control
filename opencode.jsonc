@@ -1,9 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": [
-    "{file:/etc/Wywy-Website-Control/AGENTS.shared.md}",
-    "AGENTS.md"
-  ],
+  "instructions": ["/etc/Wywy-Website-Control/AGENTS.shared.md"],
   "permission": {
     "external_directory": {
       "/etc/Wywy-Website-Control/**": "allow",
