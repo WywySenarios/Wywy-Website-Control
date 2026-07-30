@@ -5,10 +5,6 @@
     "AGENTS.md"
   ],
   "permission": {
-    "bash": {
-      "/etc/Wywy-Website-Control/run.sh *": "allow",
-      "/etc/Wywy-Website-Control/enter.sh *": "allow"
-    },
     "external_directory": {
       "/etc/Wywy-Website-Control/**": "allow",
       "/usr/local/Wywy-Website/**": "allow",
@@ -20,6 +16,7 @@
   "mcp": {
     "wywy-docs": {
       "type": "remote",
+      // PORT env var can override this port (default: 2530)
       "url": "http://127.0.0.1:2530/sse",
       "description": "Wywy-Docs RAG — search documentation"
     }
