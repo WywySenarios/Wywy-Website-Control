@@ -19,6 +19,7 @@ CONTROL_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 OVERLAYS=(
 	control
 	master-db
+	docs
 )
 
 for overlay in "${OVERLAYS[@]}"; do
