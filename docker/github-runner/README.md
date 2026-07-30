@@ -20,11 +20,11 @@ echo "$GHCR_PAT" | docker login ghcr.io -u WywySenarios --password-stdin
 docker build \
   --build-arg DOCKER_VERSION=29.6.2-dind \
   --build-arg RUNNER_VERSION=2.336.0 \
-  -t ghcr.io/wywy/gh-runner:2.336.0 \
+  -t ghcr.io/wywysenarios/gh-runner:2.336.0 \
   .
 
 # 3. Push to GHCR.
-docker push ghcr.io/wywy/gh-runner:2.336.0
+docker push ghcr.io/wywysenarios/gh-runner:2.336.0
 ```
 
 After the push, KEDA will pull the image automatically when scaling up.
@@ -42,6 +42,6 @@ When you need a newer Docker or runner version:
 
 ```bash
 # Check that Docker CLI and runner binaries are present.
-docker run --rm ghcr.io/wywy/gh-runner:2.336.0 \
+docker run --rm ghcr.io/wywysenarios/gh-runner:2.336.0 \
   /bin/bash -c 'docker --version && ls /actions-runner/bin/'
 ```
