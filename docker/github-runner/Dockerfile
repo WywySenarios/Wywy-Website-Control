@@ -57,6 +57,13 @@ RUN mkdir -p /actions-runner \
     && rm "actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
     && chown -R root:root /actions-runner
 
+# ── Docker daemon config ─────────────────────────────────────────────
+# Sets a sane default nofile ulimit so containers spawned inside this
+# DinD runner don't inherit an enormous RLIMIT_NOFILE that crashes
+# tools like Valgrind (https://bugs.kde.org/show_bug.cgi?id=458106).
+RUN mkdir -p /etc/docker
+COPY daemon.json /etc/docker/daemon.json
+
 # ── Entrypoint ──────────────────────────────────────────────────────
 # Overrides docker:dind's entrypoint (which only starts dockerd).
 # Ours starts dockerd in background + configures and runs the runner.
