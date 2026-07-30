@@ -4,7 +4,7 @@ This file lives in the [Wywy-Website-Control](https://github.com/wywy/website-co
 
 ## Testing
 
-ALWAYS prefer to use root level test.sh to run tests. That is the default entrypoint for CI.
+When root-level `test.sh` (or `run-tests.sh`) exists, you MUST use it exclusively to run tests — never invoke test runners (`pytest`, `bats`, etc.) directly. Only use direct invocation if no test script exists. If none exist, remind the user to create one.
 
 ## Wywy-Docs MCP tools
 
