@@ -1,185 +1,181 @@
 #!/bin/bash
-# Run Wywy-CI — Go server, Astro frontend, or test suites.
-# Invoked via: /etc/Wywy-Website-Control/run.sh ci <dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build|playwright>
+# ci.sh — Wywy-Website-Control CI runner
+#
+# Spins up a two-container CI runner (runner + dind sidecar) that mirrors
+# the K8s runner pod architecture: both containers share a network namespace
+# so the runner reaches dockerd via 127.0.0.1:2375.
+#
+# Usage:
+#   ./scripts/run/ci.sh <path-to-test-sh> [<script-arg>...]
+#
+# Examples:
+#   ./scripts/run/ci.sh ../Wywy-Website-Master-Database/test.sh
+
 set -euo pipefail
 
-REPO_DIR="/usr/local/Wywy-Website/Wywy-CI"
-ASTRO_DIR="$REPO_DIR/astro"
-CONTROL_DIR="${CONTROL_DIR:-/etc/Wywy-Website-Control}"
+# ---- Config ----
+DIND_IMAGE="docker:28-dind"
+RUNNER_IMAGE="docker:28"
+RUNNER_ID="github-runner-test"
 
-# Ensure Go is on PATH.
-export PATH="$PATH:/usr/local/go/bin"
+# ---- Args ----
+if [ $# -lt 1 ]; then
+	echo "Usage: $0 <path-to-test-sh> [<script-arg>...]" >&2
+	exit 1
+fi
 
-compose_command="${1:-up}"
-shift 2>/dev/null || true
-mode="${1:-test}"
-shift 2>/dev/null || true
-endflags=("$@")
+SCRIPT="$(readlink -f "$1")"
+shift
 
-case "$mode" in
-    test)
-        echo "=== Wywy-CI All Tests ==="
-        echo "--- Go Tests ---"
-        cd "$REPO_DIR"
-        go mod tidy 2>/dev/null || true
-        go test ./... -v -count=1 "${endflags[@]}"
-        go_exit=$?
-        echo ""
-        echo "--- Astro Check (compilation & imports) ---"
-        cd "$ASTRO_DIR"
-        npx astro check "${endflags[@]}" 2>&1 || true
-        astro_check_exit=$?
-        echo ""
-        echo "--- Astro Tests ---"
-        npx vitest run "${endflags[@]}"
-        astro_vitest_exit=$?
-        echo ""
-        # Exit with failure if any step failed.
-        if [ "$go_exit" -ne 0 ] || [ "$astro_check_exit" -ne 0 ] || [ "$astro_vitest_exit" -ne 0 ]; then
-            exit 1
-        fi
-        exit 0
-        ;;
-    go-test)
-        cd "$REPO_DIR"
-        echo "=== Wywy-CI Go Tests ==="
-        go mod tidy 2>/dev/null || true
-        go test ./... -v -count=1 "${endflags[@]}"
-        exit $?
-        ;;
-    astro-test)
-        echo "=== Wywy-CI Astro Tests ==="
-        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
-            cd "$ASTRO_DIR" && npm install
-        fi
-        echo "--- Astro Check (compilation & imports) ---"
-        cd "$ASTRO_DIR"
-        npx astro check "${endflags[@]}" 2>&1 || true
-        astro_check_exit=$?
-        echo ""
-        echo "--- Astro Vitest ---"
-        npx vitest run "${endflags[@]}"
-        astro_vitest_exit=$?
-        echo ""
-        if [ "$astro_check_exit" -ne 0 ] || [ "$astro_vitest_exit" -ne 0 ]; then
-            exit 1
-        fi
-        exit 0
-        ;;
-    server)
-        cd "$REPO_DIR"
-        echo "Starting Wywy-CI server..."
-        go run . "${endflags[@]}"
-        exit $?
-        ;;
-    server-dev)
-        cd "$REPO_DIR"
-        echo "Starting Wywy-CI server (dev mode)..."
-        ENV=dev go run . "${endflags[@]}"
-        exit $?
-        ;;
-    dev)
-        echo "=== Wywy-CI Dev Mode ==="
-        echo "Starting Go server (port 2526) + Astro dev server (port 3001)..."
-        # Ensure Go dependencies are ready before backgrounding.
-        cd "$REPO_DIR"
-        go mod tidy 2>/dev/null || true
-        # Ensure npm dependencies are installed.
-        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
-            echo "Installing npm dependencies..."
-            cd "$ASTRO_DIR" && npm install
-        fi
-        # Kill both on Ctrl+C / SIGTERM.
-        cleanup() {
-            echo ""
-            echo "Shutting down both servers..."
-            kill "$go_pid" "$astro_pid" 2>/dev/null || true
-            wait "$go_pid" "$astro_pid" 2>/dev/null || true
-            exit 0
-        }
-        trap cleanup SIGINT SIGTERM
-        # Start Go server in background.
-        cd "$REPO_DIR"
-        ENV=dev go run . &
-        go_pid=$!
-        # Brief pause so Go can bind port before Astro output interleaves.
-        sleep 1
-        # Start Astro dev server in background.
-        cd "$ASTRO_DIR"
-        npx astro dev --port 3001 "${endflags[@]}" &
-        astro_pid=$!
-        # Wait for either to finish (Ctrl+C triggers cleanup via trap).
-        wait "$go_pid" "$astro_pid" 2>/dev/null || true
-        cleanup
-        ;;
-    astro-dev)
-        echo "Starting Astro dev server on port 3001..."
-        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
-            cd "$ASTRO_DIR" && npm install
-        fi
-        cd "$ASTRO_DIR"
-        npx astro dev --port 3001 "${endflags[@]}"
-        exit $?
-        ;;
-    astro-build)
-        echo "Building Astro (static site)..."
-        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
-            cd "$ASTRO_DIR" && npm install
-        fi
-        cd "$ASTRO_DIR"
-        npx astro build "${endflags[@]}"
-        exit $?
-        ;;
-    playwright)
-        echo "=== Wywy-CI Playwright E2E Tests ==="
-        if [ ! -d "$ASTRO_DIR/node_modules" ]; then
-            cd "$ASTRO_DIR" && npm install
-        fi
+if [ ! -f "$SCRIPT" ]; then
+	echo "ERROR: '$SCRIPT' not found" >&2
+	exit 1
+fi
 
-        # Ensure port 2526 is free before starting a fresh server with
-        # the script override for the real-output E2E test.
-        fuser -k 2526/tcp 2>/dev/null || true
-        sleep 1
+# Resolve repo root (git, or fall back to script's parent).
+if REPO_DIR="$(cd "$(dirname "$SCRIPT")" && git rev-parse --show-toplevel 2>/dev/null)"; then
+	:
+else
+	REPO_DIR="$(dirname "$SCRIPT")"
+fi
+REPO_NAME="$(basename "$REPO_DIR")"
 
-        # Start the Go API server in the background with real script execution
-        # for the E2E test that validates non-placeholder output.
-        echo "Starting Go API server on port 2526..."
-        cd "$REPO_DIR"
-        CI_SCRIPT_OVERRIDE="bash $REPO_DIR/scripts/tests/e2e-real-output.sh" \
-        go run . &
-        go_pid=$!
-        # Poll until the Go API responds (max 20 s).
-        for i in $(seq 1 40); do
-            # Try bash's /dev/tcp built-in (requires --enable-net-redirections).
-            if (exec 3<>/dev/tcp/localhost/2526) 2>/dev/null; then
-                exec 3>&-
-                break
-            fi
-            # Fallback: any available tool.
-            if command -v curl >/dev/null 2>&1 && curl -sf http://localhost:2526/api/runs >/dev/null 2>&1; then
-                break
-            fi
-            if ! kill -0 "$go_pid" 2>/dev/null; then
-                echo "ERROR: Go server process died during startup." >&2
-                exit 1
-            fi
-            sleep 0.5
-        done
-        echo "Go API server is ready."
+SCRIPT_REL="${SCRIPT#"$REPO_DIR"/}"
+if [ "$SCRIPT_REL" = "$SCRIPT" ]; then
+	SCRIPT_REL="$(basename "$SCRIPT")"
+fi
 
-        # Run the Playwright tests (Playwright's webServer config handles Astro).
-        cd "$ASTRO_DIR"
-        npx playwright test "${endflags[@]}"
-        playwright_exit=$?
+CI_WORKSPACE="/_work/${RUNNER_ID}/${REPO_NAME}"
 
-        # Clean up the Go server.
-        kill "$go_pid" 2>/dev/null || true
-        wait "$go_pid" 2>/dev/null || true
+echo "============================================================"
+echo "  Wywy CI runner"
+echo "============================================================"
+echo ""
+echo "  Script:       $SCRIPT"
+echo "  Repo dir:     $REPO_DIR"
+echo "  Repo name:    $REPO_NAME"
+echo "  CI workspace: $CI_WORKSPACE"
+echo "  Relative:     $SCRIPT_REL"
+echo "  Extra args:   $*"
+echo ""
 
-        exit $playwright_exit
-        ;;
-    *)
-        echo "Error: Invalid mode '$mode'. Expected: dev|test|go-test|astro-test|server|server-dev|astro-dev|astro-build|playwright" >&2
-        exit 1
-        ;;
-esac
+# ---- Pre-flight ----
+if ! command -v docker &>/dev/null; then
+	echo "ERROR: docker not found in PATH" >&2
+	exit 1
+fi
+
+# ---- Cleanup ----
+cleanup() {
+	echo "Cleaning up..."
+	docker kill "${RUNNER_CID:-}" 2>/dev/null || true
+	docker kill "${DIND_CID:-}" 2>/dev/null || true
+	docker rm "${RUNNER_CID:-}" "${DIND_CID:-}" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# ---- Start dind sidecar ----
+echo ""
+echo "--- Starting dind sidecar ---"
+DIND_CID=$(docker run -d --privileged \
+	"$DIND_IMAGE" \
+	dockerd \
+	--host=unix:///var/run/docker.sock \
+	--host=tcp://127.0.0.1:2375)
+echo "  Container: $DIND_CID"
+
+# Wait for dockerd.
+echo "  Waiting for dockerd..."
+for i in $(seq 1 15); do
+	if docker exec "$DIND_CID" docker info &>/dev/null 2>&1; then
+		echo "  dockerd ready after ${i}s"
+		break
+	fi
+	if [ "$i" -eq 15 ]; then
+		echo "ERROR: dockerd did not start in time" >&2
+		docker logs "$DIND_CID" 2>&1 | tail -20
+		exit 1
+	fi
+	sleep 1
+done
+
+# ---- Start runner container (shares dind's network namespace) ----
+echo ""
+echo "--- Starting runner container ---"
+RUNNER_CID=$(docker run -d \
+	--network "container:$DIND_CID" \
+	-v "$REPO_DIR:$CI_WORKSPACE:ro" \
+	-e DOCKER_HOST=tcp://127.0.0.1:2375 \
+	-e DOCKER_TLS_VERIFY="" \
+	"$RUNNER_IMAGE" \
+	tail -f /dev/null)
+echo "  Container: $RUNNER_CID"
+echo "  DOCKER_HOST: tcp://127.0.0.1:2375"
+echo "  Workspace:   $CI_WORKSPACE (read-only)"
+
+# ---- Install docker compose + bash in runner ----
+echo ""
+echo "--- Installing docker compose + bash in runner ---"
+docker exec "$RUNNER_CID" sh -c '
+	apk add docker-cli-compose bash >/dev/null 2>&1
+	echo "  docker compose installed: $(docker compose version 2>/dev/null)"
+	echo "  bash installed: $(bash --version | head -1)"
+' 2>&1
+
+# ---- Verify runner → dind connectivity ----
+echo ""
+echo "--- Verifying runner → dind connectivity ---"
+if docker exec "$RUNNER_CID" sh -c 'docker info --format "  Daemon version: {{.ServerVersion}}" 2>&1'; then
+	echo "  Runner can reach dind daemon."
+else
+	echo "ERROR: Runner cannot reach dind daemon." >&2
+	exit 1
+fi
+
+# ---- Run the test script in the runner ----
+echo ""
+echo "--- Running test script in runner ---"
+echo ""
+
+EXIT_CODE=0
+docker exec "$RUNNER_CID" bash -c '
+	set -euo pipefail
+
+	SCRIPT_DIR="'"$CI_WORKSPACE"'"
+	export SCRIPT_DIR
+	export SECRETS_DIR="${SCRIPT_DIR}/config/ci"
+
+	echo "  SCRIPT_DIR=$SCRIPT_DIR"
+	echo "  SECRETS_DIR=$SECRETS_DIR"
+	echo ""
+
+	echo "  Workspace accessible: $(test -d "$SCRIPT_DIR" && echo YES || echo NO)"
+	echo ""
+
+	cd "$SCRIPT_DIR"
+	REL_PATH="'"$SCRIPT_REL"'"
+	if [ -x "$REL_PATH" ] || [ -f "$REL_PATH" ]; then
+		echo "  Running: $REL_PATH '"$@"'"
+		bash "$REL_PATH" '"$@"' 2>&1
+		rc=$?
+		echo ""
+		echo "  >>> Script exited with code $rc <<<"
+		exit $rc
+	else
+		echo "  Script not found at $REL_PATH in workspace"
+		echo "  (mounted at $SCRIPT_DIR)"
+		exit 1
+	fi
+' 2>&1 || EXIT_CODE=$?
+
+# ---- Summary ----
+echo ""
+echo "============================================================"
+if [ "$EXIT_CODE" -eq 0 ]; then
+	echo "  RESULT: PASS (exit code 0)"
+else
+	echo "  RESULT: FAIL (exit code $EXIT_CODE)"
+fi
+echo "============================================================"
+
+exit "$EXIT_CODE"
