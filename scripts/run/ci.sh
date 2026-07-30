@@ -45,7 +45,8 @@ if [ "$SCRIPT_REL" = "$SCRIPT" ]; then
 	SCRIPT_REL="$(basename "$SCRIPT")"
 fi
 
-CI_WORKSPACE="/_work/${RUNNER_ID}/${REPO_NAME}"
+CI_WORKSPACE_ROOT="/_work/${RUNNER_ID}"
+CI_WORKSPACE="${CI_WORKSPACE_ROOT}/${REPO_NAME}"
 
 echo "============================================================"
 echo "  Wywy CI runner"
@@ -54,7 +55,8 @@ echo ""
 echo "  Script:       $SCRIPT"
 echo "  Repo dir:     $REPO_DIR"
 echo "  Repo name:    $REPO_NAME"
-echo "  CI workspace: $CI_WORKSPACE"
+echo "  Workspace:    $CI_WORKSPACE_ROOT"
+echo "  Checkout:     $CI_WORKSPACE"
 echo "  Relative:     $SCRIPT_REL"
 echo "  Extra args:   $*"
 echo ""
@@ -78,6 +80,7 @@ trap cleanup EXIT
 echo ""
 echo "--- Starting dind sidecar ---"
 DIND_CID=$(docker run -d --privileged \
+	-v "$REPO_DIR:$CI_WORKSPACE:ro" \
 	"$DIND_IMAGE" \
 	dockerd \
 	--host=unix:///var/run/docker.sock \
@@ -111,7 +114,10 @@ RUNNER_CID=$(docker run -d \
 	tail -f /dev/null)
 echo "  Container: $RUNNER_CID"
 echo "  DOCKER_HOST: tcp://127.0.0.1:2375"
-echo "  Workspace:   $CI_WORKSPACE (read-only)"
+echo "  Workspace mount:"
+echo "    runner: $CI_WORKSPACE (read-only)"
+echo "    dind:   $CI_WORKSPACE (read-only)"
+echo "    (root: $CI_WORKSPACE_ROOT)"
 
 # ---- Install docker compose + bash in runner ----
 echo ""
@@ -141,6 +147,8 @@ EXIT_CODE=0
 docker exec "$RUNNER_CID" bash -c '
 	set -euo pipefail
 
+	# Set SCRIPT_DIR to the checkout path (matches where actions/checkout
+	# would put the repo inside the workspace root).
 	SCRIPT_DIR="'"$CI_WORKSPACE"'"
 	export SCRIPT_DIR
 	export SECRETS_DIR="${SCRIPT_DIR}/config/ci"
@@ -149,7 +157,7 @@ docker exec "$RUNNER_CID" bash -c '
 	echo "  SECRETS_DIR=$SECRETS_DIR"
 	echo ""
 
-	echo "  Workspace accessible: $(test -d "$SCRIPT_DIR" && echo YES || echo NO)"
+	echo "  Files accessible: $(test -d "$SCRIPT_DIR" && echo YES || echo NO)"
 	echo ""
 
 	cd "$SCRIPT_DIR"
