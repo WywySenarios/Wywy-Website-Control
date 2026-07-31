@@ -11,32 +11,30 @@ from GHCR. You must build and push it at least once before KEDA can
 spin up pods. Do this from any machine with Docker and a GHCR token:
 
 ```bash
-# 1. Authenticate with GHCR (one-time).
-#    Use a PAT with `write:packages` scope.
-echo "$GHCR_PAT" | docker login ghcr.io -u WywySenarios --password-stdin
-
-# 2. Build the image.
-#    Pinned versions are set via --build-arg (current defaults below).
-docker build \
-  --build-arg DOCKER_VERSION=29.6.2-dind \
-  --build-arg RUNNER_VERSION=2.336.0 \
-  -t ghcr.io/wywysenarios/gh-runner:2.336.0 \
-  .
-
-# 3. Push to GHCR.
-docker push ghcr.io/wywysenarios/gh-runner:2.336.0
+scripts/install/github-runner/build.sh
+scripts/install/github-runner/push-image.sh
 ```
 
-After the push, KEDA will pull the image automatically when scaling up.
+After the push, apply the runner manifests to K8s:
+
+```bash
+scripts/install/github-runner/manifest.sh
+```
 
 ## Bumping versions
 
 When you need a newer Docker or runner version:
 
 1. Update the `FROM` arg and `RUNNER_VERSION` arg in `Dockerfile`.
-2. Update `newTag` in `k8s/dev/github-runner/kustomization.yaml`.
-3. Rebuild and push with the new tag.
-4. KEDA will pick up the new tag on the next scale-up.
+2. Set `DOCKER_VERSION` and/or `RUNNER_VERSION` env vars, then run the
+   build and push scripts:
+   ```bash
+   DOCKER_VERSION=30.0.0-dind RUNNER_VERSION=2.340.0 ./build.sh
+    ./push-image.sh
+   ```
+3. Update `newTag` in `k8s/dev/github-runner/kustomization.yaml`.
+4. Re-run `scripts/install/github-runner/manifest.sh` to apply.
+5. KEDA will pick up the new tag on the next scale-up.
 
 ## Verify the image
 
