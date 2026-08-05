@@ -16,13 +16,18 @@ spec:
     spec:
       containers:
         # ──────────────────────────────────────────────────────────────────
-        # GitHub Actions self-hosted runner (myoung34)
+        # GitHub Actions self-hosted runner + dockerd (single container)
         # ──────────────────────────────────────────────────────────────────
+        # ghcr.io/wywysenarios/gh-runner bundles docker:dind + the runner
+        # agent. Its baked-in /etc/docker/daemon.json sets
+        # default-ulimits nofile=65536:65536 so every job container gets a
+        # sane limit (fixes Valgrind crash, KDE #458106). privileged is
+        # required for DinD. Resource limits prevent a single job from
+        # exhausting the node (disk, memory, CPU). The emptyDir for
+        # /var/lib/docker is deleted when the pod scales to zero.
         - name: runner
-          image: myoung34/github-runner:latest
+          image: ghcr.io/wywysenarios/gh-runner:2.336.0
           env:
-            - name: RUNNER_SCOPE
-              value: "repo"
             - name: REPO_URL
               value: "https://github.com/WywySenarios/Wywy-Website-Control"
             - name: ACCESS_TOKEN
@@ -31,36 +36,11 @@ spec:
                   name: github-runner-pat
                   key: token
             - name: RUNNER_LABELS
-              value: "self-hosted,wywy"
-            - name: DOCKER_HOST
-              value: "tcp://127.0.0.1:2375"
-            - name: DOCKER_TLS_VERIFY
-              value: ""
+              value: "self-hosted,wywy,dind"
             - name: EPHEMERAL
               value: "true"
             - name: DISABLE_AUTO_UPDATE
               value: "true"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 1
-              memory: 512Mi
-
-        # ──────────────────────────────────────────────────────────────────
-        # Docker daemon sidecar
-        # ──────────────────────────────────────────────────────────────────
-        # Binds to 127.0.0.1:2375 (loopback only) — not reachable from
-        # outside the pod.  Resource limits prevent a single job from
-        # exhausting the node (disk, memory, CPU).  The emptyDir for
-        # /var/lib/docker is deleted when the pod scales to zero.
-        - name: dind
-          image: docker:dind
-          command:
-            - dockerd
-            - --host=unix:///var/run/docker.sock
-            - --host=tcp://127.0.0.1:2375
           securityContext:
             privileged: true
           resources:

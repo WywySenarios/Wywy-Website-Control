@@ -1,8 +1,9 @@
 # GitHub Actions self-hosted runner + DinD
 
-Builds a single image combining `docker:dind` with the GitHub Actions
-runner agent. One container, no sidecars — the entrypoint starts
-dockerd, configures the runner, and polls GitHub for jobs.
+Builds a single image combining Debian 13 with the GitHub Actions
+runner agent and the official Docker static binaries. One container, no
+sidecars — the entrypoint starts dockerd, configures the runner, and
+polls GitHub for jobs.
 
 ## Cold start — manual image push
 
@@ -18,7 +19,7 @@ scripts/install/github-runner/push-image.sh
 After the push, apply the runner manifests to K8s:
 
 ```bash
-scripts/install/github-runner/manifest.sh
+scripts/install/k8s/github-runners.sh
 ```
 
 ## Bumping versions
@@ -29,11 +30,15 @@ When you need a newer Docker or runner version:
 2. Set `DOCKER_VERSION` and/or `RUNNER_VERSION` env vars, then run the
    build and push scripts:
    ```bash
-   DOCKER_VERSION=30.0.0-dind RUNNER_VERSION=2.340.0 ./build.sh
-    ./push-image.sh
+   DOCKER_VERSION=30.0.0 RUNNER_VERSION=2.340.0 ./build.sh
+   ./push-image.sh
    ```
-3. Update `newTag` in `k8s/dev/github-runner/kustomization.yaml`.
-4. Re-run `scripts/install/github-runner/manifest.sh` to apply.
+3. Update the inline `image:` tag in
+   `k8s/dev/github-runner/base/deployment.yaml` to
+   `ghcr.io/wywysenarios/gh-runner:<RUNNER_VERSION>`. There is no
+   kustomize `images:` transform — the base deployment pins the image
+   directly.
+4. Re-run `scripts/install/k8s/github-runners.sh` to apply.
 5. KEDA will pick up the new tag on the next scale-up.
 
 ## Verify the image

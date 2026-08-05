@@ -18,7 +18,7 @@ CONTROL_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 DOCKERFILE_DIR="$CONTROL_DIR/docker/github-runner"
 
 # ── Default versions (match Dockerfile defaults) ────────────────────
-DOCKER_VERSION="${DOCKER_VERSION:-29.6.2-dind}"
+DOCKER_VERSION="${DOCKER_VERSION:-29.6.2}"
 RUNNER_VERSION="${RUNNER_VERSION:-2.336.0}"
 
 IMAGE_TAG="ghcr.io/wywysenarios/gh-runner:${RUNNER_VERSION}"
