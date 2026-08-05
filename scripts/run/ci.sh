@@ -1,9 +1,14 @@
 #!/bin/bash
 # ci.sh — Wywy-Website-Control CI runner
 #
-# Spins up a two-container CI runner (runner + dind sidecar) that mirrors
-# the K8s runner pod architecture: both containers share a network namespace
-# so the runner reaches dockerd via 127.0.0.1:2375.
+# Starts the custom GitHub Actions runner + DinD image as a single privileged
+# container, closely mirroring the K8s runner pod. dockerd starts inside the
+# container (same as entrypoint.sh), and the test script runs as the non-root
+# `runner` user — exactly as it would in a real CI job.
+#
+# No packages are installed during this script. The runner image must already
+# contain everything the test script needs. If a tool is missing, fix the
+# Dockerfile, not this script.
 #
 # Usage:
 #   ./scripts/run/ci.sh <path-to-test-sh> [<script-arg>...]
@@ -14,8 +19,7 @@
 set -euo pipefail
 
 # ---- Config ----
-DIND_IMAGE="docker:28-dind"
-RUNNER_IMAGE="docker:28"
+RUNNER_IMAGE="${RUNNER_IMAGE:-ghcr.io/wywysenarios/gh-runner:2.336.0}"
 RUNNER_ID="github-runner-test"
 
 # ---- Args ----
@@ -52,6 +56,7 @@ echo "============================================================"
 echo "  Wywy CI runner"
 echo "============================================================"
 echo ""
+echo "  Image:        $RUNNER_IMAGE"
 echo "  Script:       $SCRIPT"
 echo "  Repo dir:     $REPO_DIR"
 echo "  Repo name:    $REPO_NAME"
@@ -71,74 +76,76 @@ fi
 cleanup() {
 	echo "Cleaning up..."
 	docker kill "${RUNNER_CID:-}" 2>/dev/null || true
-	docker kill "${DIND_CID:-}" 2>/dev/null || true
-	docker rm "${RUNNER_CID:-}" "${DIND_CID:-}" 2>/dev/null || true
+	docker rm "${RUNNER_CID:-}" 2>/dev/null || true
 }
 trap cleanup EXIT
 
-# ---- Start dind sidecar ----
+# ---- Start runner container ──────────────────────────────────────────
+# Single privileged container running the custom DinD runner image. The
+# entrypoint is overridden because it requires ACCESS_TOKEN and REPO_URL
+# (it registers with GitHub). Instead, we start dockerd manually — the
+# same incantation entrypoint.sh uses — and keep the container alive.
+#
+# The repo is mounted read-only at the checkout path, matching how
+# actions/checkout would place it inside the workspace root.
 echo ""
-echo "--- Starting dind sidecar ---"
-DIND_CID=$(docker run -d --privileged \
+echo "--- Starting runner container ---"
+RUNNER_CID=$(docker run -d --privileged \
+	--entrypoint /bin/bash \
 	-v "$REPO_DIR:$CI_WORKSPACE:ro" \
-	"$DIND_IMAGE" \
-	dockerd \
-	--host=unix:///var/run/docker.sock \
-	--host=tcp://127.0.0.1:2375)
-echo "  Container: $DIND_CID"
+	"$RUNNER_IMAGE" \
+	-c '
+		set -euo pipefail
 
-# Wait for dockerd.
+		# Start dockerd (mirrors entrypoint.sh).
+		rm -f /var/run/docker.pid
+		dockerd \
+			--host=unix:///var/run/docker.sock \
+			--host=tcp://0.0.0.0:2375 \
+			>/var/log/dockerd.log 2>&1 &
+		DOCKERD_PID=$!
+
+		for ((i = 0; i < 30; i++)); do
+			if docker info >/dev/null 2>&1; then
+				echo "Docker daemon ready."
+				break
+			fi
+			if ! kill -0 "$DOCKERD_PID" 2>/dev/null; then
+				echo "ERROR: dockerd process died." >&2
+				cat /var/log/dockerd.log >&2
+				exit 1
+			fi
+			sleep 1
+		done
+
+		# Make the Docker socket accessible to the non-root runner user.
+		chmod 666 /var/run/docker.sock
+
+		# Keep the container alive for exec.
+		tail -f /dev/null
+	')
+echo "  Container: $RUNNER_CID"
+
+# Wait for dockerd inside the container.
 echo "  Waiting for dockerd..."
-for i in $(seq 1 15); do
-	if docker exec "$DIND_CID" docker info &>/dev/null 2>&1; then
+for i in $(seq 1 30); do
+	if docker exec "$RUNNER_CID" docker info &>/dev/null 2>&1; then
 		echo "  dockerd ready after ${i}s"
 		break
 	fi
-	if [ "$i" -eq 15 ]; then
+	if [ "$i" -eq 30 ]; then
 		echo "ERROR: dockerd did not start in time" >&2
-		docker logs "$DIND_CID" 2>&1 | tail -20
+		docker logs "$RUNNER_CID" 2>&1 | tail -20
 		exit 1
 	fi
 	sleep 1
 done
 
-# ---- Start runner container (shares dind's network namespace) ----
-echo ""
-echo "--- Starting runner container ---"
-RUNNER_CID=$(docker run -d \
-	--network "container:$DIND_CID" \
-	-v "$REPO_DIR:$CI_WORKSPACE:ro" \
-	-e DOCKER_HOST=tcp://127.0.0.1:2375 \
-	-e DOCKER_TLS_VERIFY="" \
-	"$RUNNER_IMAGE" \
-	tail -f /dev/null)
-echo "  Container: $RUNNER_CID"
-echo "  DOCKER_HOST: tcp://127.0.0.1:2375"
-echo "  Workspace mount:"
-echo "    runner: $CI_WORKSPACE (read-only)"
-echo "    dind:   $CI_WORKSPACE (read-only)"
-echo "    (root: $CI_WORKSPACE_ROOT)"
-
-# ---- Install docker compose + bash in runner ----
-echo ""
-echo "--- Installing docker compose + bash in runner ---"
-docker exec "$RUNNER_CID" sh -c '
-	apk add docker-cli-compose bash >/dev/null 2>&1
-	echo "  docker compose installed: $(docker compose version 2>/dev/null)"
-	echo "  bash installed: $(bash --version | head -1)"
-' 2>&1
-
-# ---- Verify runner → dind connectivity ----
-echo ""
-echo "--- Verifying runner → dind connectivity ---"
-if docker exec "$RUNNER_CID" sh -c 'docker info --format "  Daemon version: {{.ServerVersion}}" 2>&1'; then
-	echo "  Runner can reach dind daemon."
-else
-	echo "ERROR: Runner cannot reach dind daemon." >&2
-	exit 1
-fi
-
-# ---- Run the test script in the runner ----
+# ---- Run the test script in the runner ───────────────────────────────
+# The test script runs as the non-root `runner` user via setpriv, matching
+# how entrypoint.sh runs the Actions agent. HOME is set to the runner
+# user's home directory so tools that read ~/.config or ~/.bashrc work
+# correctly. No packages are installed — the image is used as-is.
 echo ""
 echo "--- Running test script in runner ---"
 echo ""
@@ -147,11 +154,10 @@ EXIT_CODE=0
 docker exec "$RUNNER_CID" bash -c '
 	set -euo pipefail
 
-	# Set SCRIPT_DIR to the checkout path (matches where actions/checkout
-	# would put the repo inside the workspace root).
 	SCRIPT_DIR="'"$CI_WORKSPACE"'"
 	export SCRIPT_DIR
 	export SECRETS_DIR="${SCRIPT_DIR}/config/ci"
+	export HOME="/home/runner"
 
 	echo "  SCRIPT_DIR=$SCRIPT_DIR"
 	echo "  SECRETS_DIR=$SECRETS_DIR"
@@ -164,7 +170,8 @@ docker exec "$RUNNER_CID" bash -c '
 	REL_PATH="'"$SCRIPT_REL"'"
 	if [ -x "$REL_PATH" ] || [ -f "$REL_PATH" ]; then
 		echo "  Running: $REL_PATH '"$@"'"
-		bash "$REL_PATH" '"$@"' 2>&1
+		setpriv --reuid=runner --regid=runner --clear-groups \
+			bash "$REL_PATH" '"$@"' 2>&1
 		rc=$?
 		echo ""
 		echo "  >>> Script exited with code $rc <<<"
