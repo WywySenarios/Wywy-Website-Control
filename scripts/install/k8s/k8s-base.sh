@@ -11,6 +11,19 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
+# ---- Source network config (K8S_POD_CIDR) ----
+CONTROL_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+ENV_NETWORK="$CONTROL_DIR/config/.env.network"
+[[ -f "$ENV_NETWORK" ]] || {
+	echo "Error: $ENV_NETWORK not found" >&2
+	echo "Copy config/.env.network.example to config/.env.network and fill in your values." >&2
+	exit 1
+}
+# shellcheck disable=SC1090
+source "$ENV_NETWORK"
+
+: "${K8S_POD_CIDR:?K8S_POD_CIDR not set in config/.env.network}"
+
 # ---- Prerequisites ----
 if ! command -v sudo &>/dev/null; then
 	echo "sudo is required but not found. Install sudo first." >&2
@@ -59,7 +72,7 @@ if kubectl cluster-info &>/dev/null; then
 	echo "  K8s cluster already initialized — skipping kubeadm init"
 else
 	echo "==> Initializing control plane..."
-	sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+	sudo kubeadm init --pod-network-cidr="$K8S_POD_CIDR"
 fi
 
 # ---- Configure kubectl (only if not already configured) ----

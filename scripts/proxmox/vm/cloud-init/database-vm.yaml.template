@@ -1,0 +1,32 @@
+#cloud-config
+---
+package_update: true
+# PGDG repo — Debian trixie ships no postgresql-18. Cloud-init installs
+# packages before runcmd can add a repo, so the repo must be declared here.
+# The signing key is fetched and fingerprint-validated at template-creation
+# time (db/create-template.sh), then written below — the VM never contacts a
+# keyserver pool. Never use short key IDs here: the pool has served a fake
+# key colliding with the short ID ACCC4CF8.
+apt:
+  sources:
+    pgdg:
+      source: "deb [signed-by=/etc/apt/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main"
+packages:
+  - postgresql-18
+  - postgresql-client-18
+  - postgresql-18-postgis-3
+  - postgresql-18-contrib
+  - ufw
+
+write_files:
+  - path: /etc/apt/keyrings/pgdg.gpg
+    content: "{{PGDG_KEY_B64}}"
+    encoding: b64
+    permissions: "0644"
+  - path: /root/db-bootstrap.sh
+    content: "{{BOOTSTRAP_B64}}"
+    encoding: b64
+    permissions: "0755"
+
+runcmd:
+  - /root/db-bootstrap.sh

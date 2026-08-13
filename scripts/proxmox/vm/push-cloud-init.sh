@@ -28,6 +28,9 @@ done
 
 # ---- Generate k8s YAML snippets from template (once, before the loop) ----
 echo "==> Generating k8s worker snippets…"
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
 BOOTSTRAP_B64=$(base64 -w0 <"$K8S_BOOTSTRAP")
 GENERATED=()
 
@@ -39,10 +42,10 @@ for role in "${ROLES[@]}"; do
 
 	sed -e "s|{{BOOTSTRAP_B64}}|$BOOTSTRAP_B64|g" \
 		-e "s|{{NODE_ROLE}}|$role|g" \
-		"$K8S_TEMPLATE" >"/tmp/$out"
+		"$K8S_TEMPLATE" >"$TMP_DIR/$out"
 
-	GENERATED+=("/tmp/$out")
-	echo "  ✓ /tmp/$out"
+	GENERATED+=("$TMP_DIR/$out")
+	echo "  ✓ $TMP_DIR/$out"
 done
 
 # ---- Define callback ----
@@ -80,6 +83,4 @@ REMOTE
 # ---- Source helper (runs the loop) ----
 source "$SCRIPT_DIR/../target-loop.sh"
 
-# ---- Cleanup ----
-rm -f "${GENERATED[@]}"
 echo ""
