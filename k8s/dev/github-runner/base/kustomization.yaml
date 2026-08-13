@@ -9,11 +9,11 @@ resources:
 
 # Pre-create secrets with:
 #   kubectl create secret generic github-runner-pat -n github-runner \
-#     --from-literal=token=$(sops --decrypt ../../../secrets/github-runner-token.sops)
+#     --from-literal=token=$(sops --decrypt ../../../secrets/ci/github-runner-token.sops)
 #   kubectl create secret docker-registry regcred-ghcr -n github-runner \
 #     --docker-server=ghcr.io \
 #     --docker-username=WywySenarios \
-#     --docker-password=$(sops --decrypt ../../../secrets/github-runner-token.sops)
+#     --docker-password=$(sops --decrypt ../../../secrets/ci/github-runner-token.sops)
 #
 # Do NOT check plaintext secrets into git.  The sops-encrypted source
-# lives at secrets/github-runner-token.sops (tracked in git).
+# lives at secrets/ci/github-runner-token.sops (tracked in git).

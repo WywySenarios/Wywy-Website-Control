@@ -56,10 +56,11 @@ kubectl_user() {
 # The current K8s manifests only establish github-runner for the runner and
 # registry secrets; the database and backup consumers are not present here.
 declare -a SECRET_MAP=(
-	# "admin.txt.sops|master-db-admin|password|default" # TODO: confirm database namespace
-	"github-runner-token.sops|github-runner-pat|token|github-runner"
-	"registry-auth.sops|registry-auth|htpasswd|github-runner"
-	# "postgres-password.sops|postgres-password|password|default" # TODO: confirm database namespace
+	# "shared/admin.txt.sops|master-db-admin|password|default" # TODO: confirm database namespace
+	"ci/github-runner-token.sops|github-runner-pat|token|github-runner"
+	"dev/registry-auth.sops|registry-auth|htpasswd|github-runner"
+	# "prod/postgres-password.sops|postgres-password|password|default" # TODO: confirm database namespace
+	# "dev/postgres-password.sops|postgres-password|password|default" # TODO: dev database namespace
 )
 
 # --- Resolve actual values ---

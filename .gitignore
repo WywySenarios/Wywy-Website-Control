@@ -1,2 +1,3 @@
-secrets/*
-!secrets/*.sops
+secrets/**
+!secrets/**/
+!secrets/**/*.sops

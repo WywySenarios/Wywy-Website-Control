@@ -4,7 +4,7 @@ services:
     privileged: true
     environment:
       REPO_URL: https://github.com/WywySenarios/Wywy-Website-Master-Database
-      ACCESS_TOKEN: "${GITHUB_PAT:?GITHUB_PAT is not set. Run: export GITHUB_PAT=sops --decrypt secrets/github-runner-token.sops}"
+      ACCESS_TOKEN: "${GITHUB_PAT:?GITHUB_PAT is not set. Run: export GITHUB_PAT=sops --decrypt secrets/ci/github-runner-token.sops}"
       RUNNER_LABELS: self-hosted,wywy,dind
       EPHEMERAL: "true"
       DISABLE_AUTO_UPDATE: "true"

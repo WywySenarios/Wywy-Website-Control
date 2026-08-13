@@ -67,13 +67,13 @@ The environment variables between services should not clash (otherwise they woul
 
 # Global Secrets
 
-All secrets are located under `./secrets`. Global secrets are files directly inside that directory.
+All secrets are located under `./secrets`, organized per environment (`secrets/dev/`, `secrets/prod/`, `secrets/ci/`, `secrets/shared/`). Env-specific secrets share the same file name across environments (e.g. `secrets/dev/postgres-password.sops`, `secrets/prod/postgres-password.sops`); secrets not tied to one cluster live under `secrets/shared/`.
 
-| Secret File Name | purpose                                                   |
-| ---------------- | --------------------------------------------------------- |
-| admin.txt        | The admin password over all services.                     |
-| id_ed25519       | The private SSH key to use when querying another service. |
-| id_ed25519.pub   | The public SSH key to use when querying another service.  |
+| Secret File Path              | purpose                                                   |
+| ----------------------------- | --------------------------------------------------------- |
+| secrets/shared/admin.txt      | The admin password over all services.                     |
+| secrets/shared/id_ed25519     | The private SSH key to use when querying another service. |
+| secrets/shared/id_ed25519.pub | The public SSH key to use when querying another service.  |
 
 # File Permissions
 
