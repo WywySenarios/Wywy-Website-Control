@@ -39,6 +39,7 @@ echo ""
 echo "==> argo-cd..."
 helm upgrade --install argocd argo-helm/argo-cd \
 	--namespace argocd \
+	--values "$SCRIPT_DIR/values/argocd.yaml" \
 	--atomic \
 	--wait \
 	--timeout 10m

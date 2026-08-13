@@ -1,0 +1,20 @@
+# Argo CD Helm values — SOPS/age decryption support for repo-server.
+#
+# Consumed by scripts/install/k8s/argocd.sh via --values.
+#
+# The argocd-age-key Secret itself (the age private key) is created
+# cluster-locally and is NEVER committed to git — only the wiring below is.
+
+configs:
+  cm:
+    kustomize.sops.enabled: "true"
+
+repoServer:
+  volumes:
+    - name: argocd-age-key
+      secret:
+        secretName: argocd-age-key
+  volumeMounts:
+    - name: argocd-age-key
+      mountPath: /home/argocd/.config/sops/age
+      readOnly: true

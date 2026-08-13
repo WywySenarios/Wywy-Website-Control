@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: wywy-dev
+  namespace: argocd
+spec:
+  description: Wywy dev-cluster GitOps project (control + master-db repos, dev cluster only)
+  # Dev policy per k8s-tooling-plan: manual/managed sync, no selfHeal.
+  # Prod will get a separate wywy-prod project with selfHeal=true.
+  sourceRepos:
+    - https://github.com/WywySenarios/Wywy-Website-Control.git
+    - https://github.com/WywySenarios/Wywy-Website-Master-Database.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      name: in-cluster
+      namespace: "*"
+  # clusterResourceWhitelist intentionally unset: dev workloads (runner,
+  # registry, KEDA, NetworkPolicy) are namespaced; deny cluster-scoped by default.
+  roles: []
