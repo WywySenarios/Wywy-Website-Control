@@ -3,11 +3,10 @@ kind: Kustomization
 namespace: github-runner
 
 resources:
-  - ../../base/docker-registry
+  - pvc.yaml
+  - service.yaml
+  - deployment.yaml
 
-# Dev-specific patches (storageClass, nodeSelector, resources, image tags)
-# go here when dev diverges from the shared base. Currently none — dev == base.
-#
 # Pre-create secrets with:
 #   sudo bash scripts/init-k8s-secrets.sh
 #
