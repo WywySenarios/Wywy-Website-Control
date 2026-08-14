@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-app-of-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argoproj.io
+spec:
+  project: wywy-dev
+  source:
+    repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+    targetRevision: main
+    path: k8s/dev/infrastructure
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    # Root of the app-of-apps tree: manages the AppProject + all child
+    # Applications in this folder. Same policy as the children (automated +
+    # prune, no selfHeal) per the dev-policy comment in appproject.yaml.
+    # NOTE: selfHeal here would only revert drift on Application/AppProject
+    # objects — it never touches workload replicas — so it is safe to enable
+    # if you ever want the root to self-heal.
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

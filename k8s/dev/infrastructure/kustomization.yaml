@@ -2,9 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # Wywy dev-cluster ArgoCD infrastructure: AppProject + one file per
-# Application. Apply with:  kubectl apply -k k8s/dev/infrastructure
+# Application, plus the app-of-apps root that manages this folder.
+# Apply once with:  kubectl apply -k k8s/dev/infrastructure
+# (after that dev-app-of-apps owns this folder — push changes, don't re-apply)
 resources:
   - appproject.yaml
+  - app-of-apps.yaml
   - app-docker-registry.yaml
   - app-github-runner.yaml
   - app-github-runner-docs.yaml
