@@ -70,8 +70,8 @@ case "${1:-}" in
 esac
 
 # ---- Sops file per environment (dev and prod passwords differ) ----
-PASSWORD_SOPS_REL="secrets/prod/postgres-password.sops"
-[ "$MODE" = "dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops"
+PASSWORD_SOPS_REL="secrets/prod/postgres-password.sops.yaml"
+[ "$MODE" = "dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops.yaml"
 
 # Variable group selected by mode (prod keeps the DATABASE_* names).
 VP="DATABASE"

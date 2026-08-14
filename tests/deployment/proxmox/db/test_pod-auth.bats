@@ -3,21 +3,21 @@
 # ephemeral postgres pod.
 #
 # Validates that a k8s pod can reach the dev DB VM and authenticate with the
-# password from secrets/dev/postgres-password.sops.
+# password from secrets/dev/postgres-password.sops.yaml.
 #
 # Dev only — tests never run against prod.
 #
 # Prerequisites:
 #   - kubectl configured for the invoking user
 #   - config/.env.network with DEV_DATABASE_IP
-#   - secrets/dev/postgres-password.sops (decrypt needs root — age key)
+#   - secrets/dev/postgres-password.sops.yaml (decrypt needs root — age key)
 #   - postgres password set on the server to match the sops value
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 SECRETS_DIR="$CONTROL_DIR/secrets"
-PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops"
+PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops.yaml"
 POD="pg-auth-test-$$"
 IMAGE="postgres:18"
 
@@ -26,9 +26,9 @@ setup() {
     source "$ENV_NETWORK" 2>/dev/null || skip "config/.env.network not found — copy .env.network.example"
     DB_IP="${DEV_DATABASE_IP:-}"
     [[ -n "$DB_IP" ]] || skip "DEV_DATABASE_IP not set in config/.env.network"
-    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops not found"
-    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
-    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops decrypted to an empty value"
+    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops.yaml not found"
+    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops.yaml"
+    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops.yaml decrypted to an empty value"
     command -v kubectl >/dev/null 2>&1 || skip "kubectl not found"
     kubectl cluster-info >/dev/null 2>&1 || skip "kubectl cannot reach the cluster"
 }

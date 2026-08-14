@@ -8,8 +8,8 @@ Remember to update `.env.network`
 
 Store the password with sops at:
 
-- `secrets/prod/postgres-password.sops` for prod
-- `secrets/dev/postgres-password.sops` for dev
+- `secrets/prod/postgres-password.sops.yaml` for prod
+- `secrets/dev/postgres-password.sops.yaml` for dev
 
 Update the password with the relevant script, which will escape characters.
 

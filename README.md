@@ -67,7 +67,7 @@ The environment variables between services should not clash (otherwise they woul
 
 # Global Secrets
 
-All secrets are located under `./secrets`, organized per environment (`secrets/dev/`, `secrets/prod/`, `secrets/ci/`, `secrets/shared/`). Env-specific secrets share the same file name across environments (e.g. `secrets/dev/postgres-password.sops`, `secrets/prod/postgres-password.sops`); secrets not tied to one cluster live under `secrets/shared/`.
+All secrets are located under `./secrets`, organized per environment (`secrets/dev/`, `secrets/prod/`, `secrets/ci/`, `secrets/shared/`). Env-specific secrets share the same file name across environments (e.g. `secrets/dev/postgres-password.sops.yaml`, `secrets/prod/postgres-password.sops.yaml`); secrets not tied to one cluster live under `secrets/shared/`.
 
 | Secret File Path              | purpose                                                   |
 | ----------------------------- | --------------------------------------------------------- |

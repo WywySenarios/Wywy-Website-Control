@@ -5,7 +5,7 @@
 #
 # Prerequisites:
 #   - kubectl installed and configured for the original (non-root) user
-#   - sops installed and able to decrypt secrets/*.sops
+#   - sops installed and able to decrypt secrets/*.sops.yaml
 #   - Run once per cluster before deploying ArgoCD Applications
 #     that reference these Secrets
 #
@@ -56,11 +56,11 @@ kubectl_user() {
 # The current K8s manifests only establish github-runner for the runner and
 # registry secrets; the database and backup consumers are not present here.
 declare -a SECRET_MAP=(
-	# "shared/admin.txt.sops|master-db-admin|password|default" # TODO: confirm database namespace
-	"ci/github-runner-token.sops|github-runner-pat|token|github-runner"
-	"dev/registry-auth.sops|registry-auth|htpasswd|github-runner"
-	# "prod/postgres-password.sops|postgres-password|password|default" # TODO: confirm database namespace
-	# "dev/postgres-password.sops|postgres-password|password|default" # TODO: dev database namespace
+	# "shared/admin.txt.sops.yaml|master-db-admin|password|default" # TODO: confirm database namespace
+	"ci/github-runner-token.sops.yaml|github-runner-pat|token|github-runner"
+	"dev/registry-auth.sops.yaml|registry-auth|htpasswd|github-runner"
+	# "prod/postgres-password.sops.yaml|postgres-password|password|default" # TODO: confirm database namespace
+	# "dev/postgres-password.sops.yaml|postgres-password|password|default" # TODO: dev database namespace
 )
 
 # --- Resolve actual values ---
@@ -79,7 +79,7 @@ for mapping in "${SECRET_MAP[@]}"; do
 		continue
 	fi
 
-	if [[ "$src" == *.sops ]]; then
+	if [[ "$src" == *.sops.yaml ]]; then
 		value="$(sops --decrypt "$full_path" 2>/dev/null)" || {
 			WARN_MISSING+=("$src (decryption failed)")
 			continue
