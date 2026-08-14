@@ -9,12 +9,5 @@ resources:
 # Dev-specific patches (storageClass, nodeSelector, resources, image tags)
 # go here when dev diverges from the shared base. Currently none — dev == base.
 #
-# Pre-create secrets with:
-#   sudo bash scripts/init-k8s-secrets.sh
-#
-# Or generate the htpasswd line manually:
-#   ~/dotfiles/scripts/pswd/pswd.sh --bcrypt common 24 \
-#     | kubectl create secret generic registry-auth -n github-runner \
-#       --from-file=htpasswd=/dev/stdin
-#
-# SOPS source: secrets/dev/registry-auth.sops.yaml (encrypted with --input-type raw)
+# Secrets are ArgoCD-managed: SOPS-encrypted manifests in k8s/dev/secrets/,
+# decrypted by the ksops kustomize generator during repo-server builds.

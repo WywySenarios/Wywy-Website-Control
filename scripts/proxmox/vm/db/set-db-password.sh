@@ -96,4 +96,4 @@ printf '%s' "$PASSWORD" |
 }
 mv "$TMP_SOPS" "$CONTROL_DIR/$PASSWORD_SOPS_REL"
 
-echo "==> Done. Next: scripts/init-k8s-secrets.sh"
+echo "==> Done."
