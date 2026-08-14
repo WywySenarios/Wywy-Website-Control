@@ -4,6 +4,7 @@ namespace: github-runner
 
 resources:
   - ../../base/docker-registry
+  - ../secrets
 
 # Dev-specific patches (storageClass, nodeSelector, resources, image tags)
 # go here when dev diverges from the shared base. Currently none — dev == base.
@@ -16,4 +17,4 @@ resources:
 #     | kubectl create secret generic registry-auth -n github-runner \
 #       --from-file=htpasswd=/dev/stdin
 #
-# SOPS source: secrets/dev/registry-auth.sops (encrypted with --input-type raw)
+# SOPS source: secrets/dev/registry-auth.sops.yaml (encrypted with --input-type raw)
