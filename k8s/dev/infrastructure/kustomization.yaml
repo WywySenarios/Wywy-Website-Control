@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Wywy dev-cluster ArgoCD infrastructure: AppProject + one file per
+# Application. Apply with:  kubectl apply -k k8s/dev/infrastructure
+resources:
+  - appproject.yaml
+  - app-docker-registry.yaml
+  - app-github-runner.yaml
+  - app-github-runner-docs.yaml
+  - app-github-runner-master-db.yaml
