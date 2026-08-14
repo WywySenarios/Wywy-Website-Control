@@ -4,17 +4,38 @@
 #
 # The argocd-age-key Secret itself (the age private key) is created
 # cluster-locally and is NEVER committed to git — only the wiring below is.
+#
+# KSOPS (kustomize-sops, https://github.com/viaduct-ai/kustomize-sops) is
+# installed into the repo-server at pod start by an init container that
+# copies the ksops + kustomize binaries from the viaductoss/ksops image.
 
 configs:
   cm:
-    kustomize.sops.enabled: "true"
+    # Enable kustomize KRM exec plugins — required for the ksops generator.
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
 repoServer:
   volumes:
     - name: argocd-age-key
       secret:
         secretName: argocd-age-key
+    - name: custom-tools
+      emptyDir: {}
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.5.1
+      command:
+        ["/usr/local/bin/ksops", "install", "--with-kustomize", "/custom-tools"]
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
   volumeMounts:
     - name: argocd-age-key
       mountPath: /home/argocd/.config/sops/age
       readOnly: true
+    - name: custom-tools
+      mountPath: /usr/local/bin/kustomize
+      subPath: kustomize
+    - name: custom-tools
+      mountPath: /usr/local/bin/ksops
+      subPath: ksops
