@@ -14,6 +14,28 @@ spec:
     - server: https://kubernetes.default.svc
       name: in-cluster
       namespace: "*"
-  # clusterResourceWhitelist intentionally unset: dev workloads (runner,
-  # registry, KEDA, NetworkPolicy) are namespaced; deny cluster-scoped by default.
+  # clusterResourceWhitelist — five kinds, required for the app-of-apps tree:
+  #   Namespace (REQUIRED) — every Application uses CreateNamespace=true and
+  #     ArgoCD's sync context appends a PreSync Namespace task that runs through
+  #     the SAME project permission validator; without Namespace whitelisted,
+  #     any first sync into a new namespace fails PermissionDenied.
+  #   rbac ClusterRole/ClusterRoleBinding (REQUIRED) — Image Updater's
+  #     cluster-scoped RBAC; without them dev-image-updater's sync fails.
+  #   argoproj.io Application/AppProject (defense-in-depth) — Application and
+  #     AppProject are NAMESPACED-scope CRDs under ArgoCD 2.x, so an empty
+  #     whitelist does NOT deny them; whitelisted for future-proofing.
+  # Security trade-off (accepted for dev): any Application in wywy-dev can
+  # create Namespaces/ClusterRoles/ClusterRoleBindings. Revisit for prod's
+  # separate project.
+  clusterResourceWhitelist:
+    - group: argoproj.io
+      kind: Application
+    - group: argoproj.io
+      kind: AppProject
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
   roles: []
