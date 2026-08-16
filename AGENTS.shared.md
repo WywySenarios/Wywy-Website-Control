@@ -30,10 +30,7 @@ All content lives under two top-level directories in the Wywy-Docs repo:
 - `conventions/` — code conventions (naming, documentation, agent prompts, filesystem permissions)
   - `conventions/languages/`
   - `conventions/tech-stack/` — Astro, Django, React, Tailwind, Docker, configuration, etc. conventions
-- `implementation-plans/` — feature and migration plans
-- `reports/` — test reports, analyses
 - `services/` — service definitions (repos, containers, CI)
-- `todo/` — task tracking
 
 **If you're about to write code, there's likely a conventions doc for it.** If there isn't, **stop** and discuss with the user a good convention to lay the foundation. Search before you write.
 
