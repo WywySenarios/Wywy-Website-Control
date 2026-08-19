@@ -25,3 +25,11 @@ spec:
       prune: true
     syncOptions:
       - CreateNamespace=true
+  # Root syncs must never revert Image Updater's write-back overrides on child
+  # Applications (spec.source.kustomize.images). Without this, the root's next
+  # sync "drift-wipes" the tag Image Updater deployed back to the bootstrap pin.
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /spec/source/kustomize/images

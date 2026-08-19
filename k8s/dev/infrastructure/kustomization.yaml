@@ -12,3 +12,4 @@ resources:
   - app-github-runner.yaml
   - app-github-runner-docs.yaml
   - app-github-runner-master-db.yaml
+  - app-image-updater.yaml

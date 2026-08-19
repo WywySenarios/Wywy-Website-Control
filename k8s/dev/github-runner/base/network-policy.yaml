@@ -47,11 +47,17 @@ spec:
         - port: 80
           protocol: TCP
 
-    # # Uncomment if the runner needs to pull from an internal registry
-    # # on port 5000 (e.g. the leader's Docker registry):
-    # - to:
-    #     - ipBlock:
-    #         cidr: <docker-vm-ip>/32
-    #   ports:
-    #     - port: 5000
-    #       protocol: TCP
+    # In-cluster Docker registry on port 5000 — the runner pushes
+    # docker-registry.github-runner:5000 from the deploy workflow.
+    # podSelector form (NOT ipBlock ClusterIP): with kube-proxy (iptables),
+    # ClusterIP traffic is DNAT'd to the backend pod IP in PREROUTING BEFORE
+    # Calico's workload policy in FORWARD, so the destination the egress rule
+    # sees is the registry POD IP. The ClusterIP ipBlock form silently drops
+    # on iptables-mode Calico (the ipBlock form is the eBPF alternative only).
+    - to:
+        - podSelector:
+            matchLabels:
+              app: docker-registry
+      ports:
+        - port: 5000
+          protocol: TCP

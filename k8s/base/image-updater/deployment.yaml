@@ -1,0 +1,83 @@
+# argocd-image-updater v0.17.0 Deployment.
+# Mirrors upstream manifests/install.yaml with the documented adjustments:
+#   - image pinned v0.17.0
+#   - env: ARGOCD_SERVER + ARGOCD_INSECURE as LITERAL values (upstream sources
+#     them from ConfigMap keys argocd.server_addr/argocd.insecure, which our
+#     ConfigMap does not define); NO ARGOCD_TOKEN env (k8s Applications API
+#     path uses RBAC, not a token)
+#   - ConfigMap mount: optional:false with the single registries.conf item so a
+#     MISSING ConfigMap fails the pod instead of running with a dead config
+#     (upstream ships optional:true with TWO items incl. the unused
+#     git.commit-message-template, which we drop)
+#   - ssh volumes dropped (no git write-back on the k8s path); /tmp emptyDir
+#     kept for readOnlyRootFilesystem.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-image-updater
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: argocd-image-updater
+    app.kubernetes.io/part-of: argocd-image-updater
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-image-updater
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argocd-image-updater
+    spec:
+      serviceAccountName: argocd-image-updater
+      containers:
+        - name: argocd-image-updater
+          image: quay.io/argoprojlabs/argocd-image-updater:v0.17.0
+          imagePullPolicy: Always
+          args:
+            - run
+          env:
+            - name: ARGOCD_SERVER
+              value: https://argocd-server.argocd.svc.cluster.local
+            - name: ARGOCD_INSECURE
+              value: "true"
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: argocd-image-updater-config
+            optional: false
+            items:
+              - key: registries.conf
+                path: registries.conf
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,20 @@
+# Dev overlay env overrides — LITERAL values applied via patchesStrategicMerge.
+# (Upstream sources ARGOCD_SERVER/ARGOCD_INSECURE from ConfigMap keys
+# argocd.server_addr/argocd.insecure, which our ConfigMap does not define;
+# set them directly instead. Values are the same as the base — kept explicit
+# as the overlay's authoritative statement of dev env.)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-image-updater
+spec:
+  template:
+    spec:
+      containers:
+        - name: argocd-image-updater
+          image: quay.io/argoprojlabs/argocd-image-updater:v0.17.0
+          env:
+            - name: ARGOCD_SERVER
+              value: https://argocd-server.argocd.svc.cluster.local
+            - name: ARGOCD_INSECURE
+              value: "true"

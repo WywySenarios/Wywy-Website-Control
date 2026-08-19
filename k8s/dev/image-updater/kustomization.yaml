@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+
+resources:
+  - ../../base/image-updater
+  - ./secrets
+
+patchesStrategicMerge:
+  - patch-deployment.yaml
+  - patch-configmap.yaml
+
+# The overlay's namespace: argocd applies to the overlay's OWN resources,
+# including ./secrets — the sops secret lands in argocd so the
+# secret:argocd/image-updater-registry#auth reference resolves, and the
+# namespaced Role (k8s/base/image-updater/rbac.yaml) reads it there.
