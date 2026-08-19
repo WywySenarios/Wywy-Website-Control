@@ -6,6 +6,11 @@ metadata:
     app: docker-registry
 spec:
   replicas: 1
+  # RWO volume (docker-registry-data is Longhorn ReadWriteOnce): the default
+  # RollingUpdate surges a second pod that can't attach the volume (multi-attach
+  # deadlock). Recreate terminates the old pod first, releasing the volume.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: docker-registry
