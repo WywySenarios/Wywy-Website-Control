@@ -20,6 +20,7 @@ OVERLAYS=(
 	control
 	master-db
 	docs
+	cache
 )
 
 for overlay in "${OVERLAYS[@]}"; do

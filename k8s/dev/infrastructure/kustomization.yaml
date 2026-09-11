@@ -10,6 +10,7 @@ resources:
   - app-of-apps.yaml
   - app-docker-registry.yaml
   - app-github-runner.yaml
+  - app-github-runner-cache.yaml
   - app-github-runner-docs.yaml
   - app-github-runner-master-db.yaml
   - app-image-updater.yaml
