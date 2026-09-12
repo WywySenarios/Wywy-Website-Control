@@ -14,8 +14,6 @@
 #   - If the interface is a wireless one (wlp*), WiFi SSID and PSK are
 #     prompted interactively and baked into the wpa_supplicant config
 #   - If the interface is wired, WiFi configuration is skipped entirely
-#   - Gateway/DNS defaults are read from config/.env.network
-#     (GATEWAY/NAMESERVER) when present; --gateway/--dns override them
 #
 # Usage: See usage() function or run this script with the `--help` flag.
 #
@@ -43,8 +41,6 @@ TARGET_DISK=""
 NO_PARTITION=false
 INTERFACE=""
 TARGET_IP=""
-# Preserve GATEWAY/DNS if exported in the environment; config/.env.network,
-# --gateway/--dns, or the built-in defaults below may override or fill them.
 GATEWAY="${GATEWAY:-}"
 DNS="${DNS:-}"
 
@@ -86,8 +82,8 @@ Optional:
                        If it starts with wlp*, WiFi SSID and password are
                        prompted interactively and baked into the ISO.
                        (default: eth0)
-  --gateway GATEWAY    Default gateway (default: GATEWAY from config/.env.network, else 192.168.2.1)
-  --dns DNS            DNS server (default: NAMESERVER from config/.env.network, else 192.168.2.1)
+  --gateway GATEWAY    Default gateway (default: GATEWAY from config/.env.network)
+  --dns DNS            DNS server (default: NAMESERVER from config/.env.network)
   --target-disk DEVICE  Target disk for automated partitioning
                         (default: /dev/nvme0n1)
                         Examples: /dev/nvme1n1, /dev/sda, /dev/vda
@@ -102,16 +98,13 @@ EOF
 	exit 1
 }
 
-# ---- Source network defaults (optional) ----
-# If config/.env.network exists, its GATEWAY/NAMESERVER values are used as
-# defaults below. Sourcing happens before argument parsing so that explicit
-# --gateway/--dns flags always override the file values.
+# ---- Source network defaults ----
 if [ -f "$ENV_NETWORK" ]; then
 	# shellcheck disable=SC1090
 	source "$ENV_NETWORK"
 	echo "  Using network defaults from $ENV_NETWORK"
 else
-	echo "  — $ENV_NETWORK not found — falling back to built-in defaults"
+	die "$ENV_NETWORK not found — copy config/.env.network.example and fill in your values"
 fi
 
 # ---- Parse arguments ----
@@ -173,11 +166,9 @@ done
 [ -z "$OUTPUT_ISO" ] && OUTPUT_ISO="./proxmox-preseed-${TARGET_HOSTNAME}.iso"
 
 # ---- Defaults ----
-# Use the GATEWAY/NAMESERVER env vars (from config/.env.network when present,
-# or exported in the environment), then --gateway/--dns overrides, then
-# hardcoded fallbacks.
-GATEWAY="${GATEWAY:-192.168.2.1}"
-DNS="${DNS:-${NAMESERVER:-192.168.2.1}}"
+DNS="${DNS:-${NAMESERVER:-}}"
+: "${GATEWAY:?GATEWAY not set — pass --gateway or set GATEWAY in config/.env.network}"
+: "${DNS:?DNS not set — pass --dns or set NAMESERVER in config/.env.network}"
 
 echo "Creating preseed ISO..."
 

@@ -11,12 +11,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 SYSUSER="wywy"
-GATEWAY="192.168.2.1"
-NAMESERVER="192.168.2.1"
 
 # ---- Define callback ----
 process_target() {
 	local host="$1" worker="$2" idx="$3" prefix="$4"
+	# GATEWAY/NAMESERVER are set by target-loop.sh from config/.env.network.
+	: "${GATEWAY:?GATEWAY not set in config/.env.network}"
+	: "${NAMESERVER:?NAMESERVER not set in config/.env.network}"
 	local template_vmid=$((2501 + idx))
 	local vmid="${worker##*.}" # last octet → VMID
 	local name="${prefix}-$((idx + 1))"
