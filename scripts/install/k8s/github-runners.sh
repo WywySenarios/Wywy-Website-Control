@@ -8,6 +8,10 @@
 #
 # Idempotent — safe to re-run.
 #
+# Note: this script is used to bootstrap CI in a fresh cluster without
+# ArgoCD; in an existing cluster the per-repo overlays are GitOps-managed
+# via k8s/dev/infrastructure/app-github-runner-<name>.yaml.
+#
 # Does NOT create the associated GitHub PAT secret. Refer to documentation for instructions on how to create the GitHub PAT secret.
 #
 set -euo pipefail
