@@ -3,7 +3,14 @@ kind: Deployment
 metadata:
   name: github-runner
 spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: github-runner-cache
   template:
+    metadata:
+      labels:
+        app: github-runner
+        app.kubernetes.io/name: github-runner-cache
     spec:
       containers:
         - name: runner
