@@ -4,7 +4,7 @@ metadata:
   name: wywy-dev
   namespace: argocd
 spec:
-  description: Wywy dev-cluster GitOps project (control + master-db repos, dev cluster only)
+  description: Wywy dev-cluster GitOps project (control repo + service repos, dev cluster only)
   # Dev policy per k8s-tooling-plan: manual/managed sync, no selfHeal.
   # Prod will get a separate wywy-prod project with selfHeal=true.
   sourceRepos:
