@@ -15,5 +15,5 @@ resources:
   - app-github-runner-master-db.yaml
   - app-image-updater.yaml
   - app-master-database.yaml
-- app-secrets.yaml
   - app-master-database-secrets.yaml
+  - app-secrets.yaml

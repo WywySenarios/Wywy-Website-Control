@@ -4,10 +4,6 @@ namespace: github-runner
 
 resources:
   - ../../base/docker-registry
-  - ../secrets
 
 # Dev-specific patches (storageClass, nodeSelector, resources, image tags)
 # go here when dev diverges from the shared base. Currently none — dev == base.
-#
-# Secrets are ArgoCD-managed: SOPS-encrypted manifests in k8s/dev/secrets/,
-# decrypted by the ksops kustomize generator during repo-server builds.
