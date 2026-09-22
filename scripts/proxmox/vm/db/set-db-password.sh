@@ -49,10 +49,10 @@ case "$MODE" in
 esac
 
 VP="DATABASE"
-[ "$MODE" = "dev" ] && VP="DEV_DATABASE"
+[ "$MODE" = "--dev" ] && VP="DEV_DATABASE"
 
 PASSWORD_SOPS_REL="secrets/prod/postgres-password.sops.yaml"
-[ "$MODE" = "dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops.yaml"
+[ "$MODE" = "--dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops.yaml"
 
 # ---- Guards ----
 for var in "${VP}_IP"; do
