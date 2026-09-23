@@ -15,22 +15,21 @@
 #   - ssh key auth from the invoking user to wywy@<DB_IP> (VMs are provisioned
 #     with --ciuser wywy and the user's authorized_keys)
 #   - root owns the sops age key
-#   - config/.env.network with DEV_DATABASE_IP
+#   - hosts file entry db.internal (secrets/dev/hosts.sops.yaml)
 #   - postgres password set on the server to match the sops value
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 SECRETS_DIR="$CONTROL_DIR/secrets"
 PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops.yaml"
 SYSUSER="wywy"
 SSH_OPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
 setup() {
-    # shellcheck disable=SC1090
-    source "$ENV_NETWORK" 2>/dev/null || skip "config/.env.network not found — copy .env.network.example"
-    DB_IP="${DEV_DATABASE_IP:-}"
-    [[ -n "$DB_IP" ]] || skip "DEV_DATABASE_IP not set in config/.env.network"
+    HOSTS_MODE="dev"
+    # shellcheck source=../../../../scripts/lib/hosts.sh
+    source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
+    DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
     [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops.yaml not found"
     PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops.yaml"
     [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops.yaml decrypted to an empty value"

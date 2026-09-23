@@ -13,9 +13,10 @@
 # Usage:
 #   scripts/proxmox/vm/db/set-db-password.sh --dev|--prod
 #
-# --dev|--prod is REQUIRED: it selects the .env.network group and sops file.
-# The DB VM IP always comes from .env.network ({DEV_,}DATABASE_IP) — no CLI
-# overrides, so there is a single source of truth and nothing to mismatch.
+# --dev|--prod is REQUIRED: it selects the sops file and hosts file mode.
+# The DB VM IP comes from the encrypted hosts file (hosts_ip_real
+# db.internal) — no CLI overrides, so there is a single source of truth and
+# nothing to mismatch.
 #
 # Requires: SSH key auth to wywy@<vm-ip>, passwordless sudo for postgres,
 #           sops + age key configured (see docs/sops-setup.mdx).
@@ -24,16 +25,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 SYSUSER="wywy"
 SSH_OPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
-
-[[ -f "$ENV_NETWORK" ]] || {
-	echo "Error: $ENV_NETWORK not found (copy config/.env.network.example)" >&2
-	exit 1
-}
-# shellcheck disable=SC1090
-source "$ENV_NETWORK"
 
 # ---- Parse mode (--dev|--prod REQUIRED — fail fast on anything else) ----
 MODE="${1:-}"
@@ -48,18 +41,18 @@ case "$MODE" in
 	;;
 esac
 
-VP="DATABASE"
-[ "$MODE" = "--dev" ] && VP="DEV_DATABASE"
+# ---- DB VM IP from the encrypted hosts file (single source) ----
+HOSTS_MODE="${MODE#--}"
+# shellcheck source=../../../lib/hosts.sh
+source "$CONTROL_DIR/scripts/lib/hosts.sh"
+DB_IP="$(hosts_ip_real db.internal)"
 
 PASSWORD_SOPS_REL="secrets/prod/postgres-password.sops.yaml"
 [ "$MODE" = "--dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops.yaml"
 
-# ---- Guards ----
-for var in "${VP}_IP"; do
-	: "${!var:?$var not set in config/.env.network}"
-done
-IP_VAR="${VP}_IP"
-IP="${!IP_VAR}"
+# Human-readable target for output; the IP itself is an implementation detail.
+DB_LABEL="production database"
+[ "$MODE" = "--dev" ] && DB_LABEL="development database"
 
 command -v sops >/dev/null 2>&1 || {
 	echo "Error: sops not found in PATH (see docs/sops-setup.mdx)" >&2
@@ -67,7 +60,7 @@ command -v sops >/dev/null 2>&1 || {
 }
 
 # ---- Prompt for the password (hidden; never on a command line) ----
-read -rsp "postgres password for ${MODE}@${IP}: " PASSWORD
+read -rsp "postgres password for $DB_LABEL: " PASSWORD
 echo
 if [ -z "$PASSWORD" ]; then
 	echo "Error: empty password" >&2
@@ -77,9 +70,9 @@ fi
 # ---- 1. Set on the DB VM: SQL over ssh stdin, never argv/history ----
 # Doubling single quotes is the only escaping needed in a SQL string literal.
 SQL_PASSWORD="${PASSWORD//\'/\'\'}"
-echo "==> Setting postgres password on $SYSUSER@$IP..."
+echo "==> Setting postgres password on $DB_LABEL..."
 printf "ALTER USER postgres PASSWORD '%s';\n" "$SQL_PASSWORD" |
-	ssh $SSH_OPTS "$SYSUSER@$IP" "sudo -u postgres psql -v ON_ERROR_STOP=1"
+	ssh $SSH_OPTS "$SYSUSER@$DB_IP" "sudo -u postgres psql -v ON_ERROR_STOP=1"
 
 # ---- 2. Encrypt into sops: raw value via stdin, never argv/history ----
 # Write to a temp file first, then mv into place: the `> target` redirect

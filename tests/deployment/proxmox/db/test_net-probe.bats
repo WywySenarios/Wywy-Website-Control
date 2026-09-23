@@ -16,19 +16,18 @@
 # Prerequisites:
 #   - kubectl configured for the invoking user, cluster on the same LAN as
 #     the DB VM
-#   - config/.env.network with DEV_DATABASE_IP
+#   - hosts file entry db.internal (secrets/dev/hosts.sops.yaml)
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 POD="pg-net-probe-$$"
 DB_PORT="5432"
 
 setup() {
-    # shellcheck disable=SC1090
-    source "$ENV_NETWORK" 2>/dev/null || skip "config/.env.network not found — copy .env.network.example"
-    DB_IP="${DEV_DATABASE_IP:-}"
-    [[ -n "$DB_IP" ]] || skip "DEV_DATABASE_IP not set in config/.env.network"
+    HOSTS_MODE="dev"
+    # shellcheck source=../../../../scripts/lib/hosts.sh
+    source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
+    DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
     command -v kubectl >/dev/null 2>&1 || skip "kubectl not found"
     kubectl cluster-info >/dev/null 2>&1 || skip "kubectl cannot reach the cluster"
 }

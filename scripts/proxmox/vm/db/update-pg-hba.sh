@@ -21,8 +21,8 @@
 #   scripts/proxmox/vm/db/update-pg-hba.sh --dev|--prod
 #
 # Prerequisites:
-#   - config/.env.network with K8S_POD_CIDR, the worker IP list, and the DB
-#     VM group (DATABASE_IP / DEV_DATABASE_IP, etc.)
+#   - config/.env.network with K8S_POD_CIDR and the worker IP list
+#   - the DB VM IP from the encrypted hosts file (hosts_ip_real db.internal)
 #   - ssh key for wywy@<db-ip>; wywy has passwordless sudo
 #   - ssh, scp, awk
 #
@@ -51,6 +51,10 @@ case "$MODE" in
 	;;
 esac
 
+# Human-readable target for output; the IP itself is an implementation detail.
+DB_LABEL="production database"
+[ "$MODE" = "dev" ] && DB_LABEL="development database"
+
 # ---- Source network config ----
 [[ -f "$ENV_NETWORK" ]] || {
 	echo "Error: $ENV_NETWORK not found" >&2
@@ -60,12 +64,12 @@ esac
 # shellcheck disable=SC1090
 source "$ENV_NETWORK"
 
-# ---- Load the selected .env.network group ----
-VP="DATABASE"
-[ "$MODE" = "dev" ] && VP="DEV_DATABASE"
-IP_VAR="${VP}_IP"
-DB_IP="${!IP_VAR:-}"
-: "${DB_IP:?$IP_VAR not set in config/.env.network}"
+# ---- DB VM IP from the encrypted hosts file (single source) ----
+HOSTS_MODE="$MODE"
+# shellcheck source=../../../lib/hosts.sh
+source "$CONTROL_DIR/scripts/lib/hosts.sh"
+DB_IP="$(hosts_ip_real db.internal)"
+
 : "${K8S_POD_CIDR:?K8S_POD_CIDR not set in config/.env.network}"
 
 # Worker IP list for this mode (DEV_K8S_WORKER_IPS / K8S_WORKER_IPS).
@@ -122,17 +126,17 @@ if grep -v '^[[:space:]]*#' "$RENDERED" | grep -q '{{'; then
 	exit 1
 fi
 
-echo "==> Rendered pg_hba.conf for $MODE (DB VM $DB_IP):"
+echo "==> Rendered pg_hba.conf for the $DB_LABEL:"
 echo ""
 cat "$RENDERED"
 echo ""
 
 # ---- Push the rendered file to the DB VM ----
-echo "==> Pushing pg_hba.conf to $SYSUSER@$DB_IP..."
+echo "==> Pushing pg_hba.conf to the $DB_LABEL..."
 scp $SSH_OPTS "$RENDERED" "$SYSUSER@$DB_IP:/tmp/pg_hba.conf.new"
 
 # ---- Install, open ufw for the workers, reload + validate ----
-echo "==> Installing on $DB_IP (ufw + pg_hba + reload)..."
+echo "==> Installing on the $DB_LABEL (ufw + pg_hba + reload)..."
 # shellcheck disable=SC2087
 ssh $SSH_OPTS "$SYSUSER@$DB_IP" bash -s <<REMOTE
 	set -euo pipefail
@@ -162,5 +166,5 @@ done)
 REMOTE
 
 echo ""
-echo "==> OK: $MODE DB VM ($DB_IP) pg_hba.conf and ufw are current."
+echo "==> OK: $DB_LABEL pg_hba.conf and ufw are current."
 echo "    Verify end-to-end (dev only): ./test.sh deployment"

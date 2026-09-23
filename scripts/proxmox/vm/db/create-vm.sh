@@ -10,13 +10,11 @@
 # --dev|--prod selects the .env.network group (default: --prod):
 #   prod → DATABASE_*       (requires GATEWAY, NAMESERVER, K8S_POD_CIDR,
 #                             DATABASE_TEMPLATE_VMID, DATABASE_PROXMOX_HOST,
-#                             DATABASE_IP, DATABASE_VMID)
+#                             DATABASE_VMID)
 #   dev  → DEV_DATABASE_*
 # The K8s pod CIDR (ufw allow on 5432/tcp) is baked into the cloud-init
 # snippet by vm/db/create-template.sh from K8S_POD_CIDR — the same variable
 # kubeadm init uses (scripts/install/k8s/k8s-base.sh).
-# The proxmox host and static IP always come from .env.network — no CLI
-# overrides, so there is a single source of truth and nothing to mismatch.
 #
 # The cloud-init snippet (database-vm.yaml) is rendered and pushed to the host
 # by vm/db/create-template.sh — run it first. This script verifies the snippet
@@ -69,6 +67,12 @@ case "${1:-}" in
 *) ;;
 esac
 
+# ---- DB VM IP from the encrypted hosts file ----
+HOSTS_MODE="$MODE"
+# shellcheck source=../../../lib/hosts.sh
+source "$CONTROL_DIR/scripts/lib/hosts.sh"
+DB_IP="$(hosts_ip_real db.internal)"
+
 # ---- Sops file per environment (dev and prod passwords differ) ----
 PASSWORD_SOPS_REL="secrets/prod/postgres-password.sops.yaml"
 [ "$MODE" = "dev" ] && PASSWORD_SOPS_REL="secrets/dev/postgres-password.sops.yaml"
@@ -82,7 +86,7 @@ VP="DATABASE"
 #  fails, the whole script stops.  This is the same as an || exit but
 #  preserves set -e semantics for the rest of the script.)
 for var in GATEWAY NAMESERVER K8S_POD_CIDR \
-	"${VP}_PROXMOX_HOST" "${VP}_IP" \
+	"${VP}_PROXMOX_HOST" \
 	"${VP}_TEMPLATE_VMID" "${VP}_VMID"; do
 	: "${!var:?$var not set in config/.env.network}"
 done
@@ -90,14 +94,12 @@ done
 # ---- Load the selected .env.network group (single source of truth) ----
 HOST="${VP}_PROXMOX_HOST"
 HOST="${!HOST}"
-IP="${VP}_IP"
-IP="${!IP}"
 TEMPLATE_VMID="${VP}_TEMPLATE_VMID"
 TEMPLATE_VMID="${!TEMPLATE_VMID}"
 VMID="${VP}_VMID"
 VMID="${!VMID}"
 
-CIDR="${IP}/24"
+CIDR="${DB_IP}/24"
 NAME="database-vm-${MODE}"
 
 # ---- Verify the cloud-init snippet is on the host (create-template.sh pushed it) ----
@@ -108,7 +110,7 @@ if ! ssh $SSH_OPTS "$SYSUSER@$HOST" "test -f /var/lib/vz/snippets/$SNIPPET"; the
 fi
 
 # ---- Provision VM ----
-echo "==> Provisioning $NAME (VM $VMID → $IP on $HOST)..."
+echo "==> Provisioning $NAME (VM $VMID → $DB_IP on $HOST)..."
 ssh $SSH_OPTS "$SYSUSER@$HOST" bash -s <<REMOTE
 	set -euo pipefail
 
@@ -128,7 +130,7 @@ ssh $SSH_OPTS "$SYSUSER@$HOST" bash -s <<REMOTE
 	sudo qm start $VMID
 
 	echo ""
-	echo "  ✓ DB VM $NAME (VM $VMID) started at $IP on $HOST"
+	echo "  ✓ DB VM $NAME (VM $VMID) started at $DB_IP on $HOST"
 REMOTE
 
 echo ""
