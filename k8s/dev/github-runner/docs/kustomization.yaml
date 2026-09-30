@@ -18,8 +18,5 @@ patches:
         path: /spec/triggers/0/metadata/repos
         value: Wywy-Docs
       - op: replace
-        path: /spec/triggers/0/metadata/labels
-        value: wywy,dind
-      - op: replace
         path: /spec/triggers/0/authenticationRef/name
         value: github-runner-auth-docs
