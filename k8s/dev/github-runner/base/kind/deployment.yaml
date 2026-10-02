@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  labels:
+    app: github-runner
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      containers:
+        # ──────────────────────────────────────────────────────────────────
+        # GitHub Actions self-hosted runner + dockerd + KinD (kind pool)
+        # ──────────────────────────────────────────────────────────────────
+        # ghcr.io/wywysenarios/gh-runner-kind bundles docker:dind + the
+        # runner agent + kind + kubectl (it is a superset of gh-runner).
+        # The kind pool declares the kind capability label: jobs with
+        # runs-on [self-hosted, wywy, kind] land here and its KEDA trigger
+        # is exactly "wywy,kind". Its baked-in /etc/docker/daemon.json
+        # sets default-ulimits nofile=65536:65536 so every job container
+        # gets a sane limit (fixes Valgrind crash, KDE #458106). privileged
+        # is required for DinD. Resource limits prevent a single job from
+        # exhausting the node (disk, memory, CPU). The emptyDir for
+        # /var/lib/docker is deleted when the pod scales to zero.
+        - name: runner
+          image: ghcr.io/wywysenarios/gh-runner-kind:2.336.0
+          env:
+            - name: REPO_URL
+              value: "https://github.com/WywySenarios/Wywy-Website-Control"
+            - name: ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-pat
+                  key: token
+            - name: RUNNER_LABELS
+              value: "self-hosted,wywy,kind"
+            - name: EPHEMERAL
+              value: "true"
+            - name: DISABLE_AUTO_UPDATE
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+              ephemeral-storage: 10Gi
+          volumeMounts:
+            - name: docker-data
+              mountPath: /var/lib/docker
+
+      imagePullSecrets:
+        - name: regcred-ghcr
+      volumes:
+        - name: docker-data
+          emptyDir:
+            sizeLimit: 10Gi

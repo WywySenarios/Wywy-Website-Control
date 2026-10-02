@@ -1,8 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-nameSuffix: -cache
+nameSuffix: -master-db-kind
 resources:
-  - ../base
+  - ../base/kind
 patches:
   - path: patches.yaml
   - target:
@@ -13,10 +13,10 @@ patches:
     patch: |-
       - op: replace
         path: /spec/scaleTargetRef/name
-        value: github-runner-cache
+        value: github-runner-master-db-kind
       - op: replace
         path: /spec/triggers/0/metadata/repos
-        value: Wywy-Website-Cache
+        value: Wywy-Website-Master-Database
       - op: replace
         path: /spec/triggers/0/authenticationRef/name
-        value: github-runner-auth-cache
+        value: github-runner-auth-master-db-kind

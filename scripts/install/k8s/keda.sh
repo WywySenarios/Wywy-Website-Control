@@ -33,7 +33,7 @@ helm upgrade --install keda kedacore/keda \
 
 # ---- Deploy ScaledObject for runner auto-scaling ----
 echo ""
-echo "==> github-runner ScaledObject (control repo)..."
+echo "==> github-runner ScaledObject (control-generic pool)..."
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-kubectl apply -k "$CONTROL_DIR/k8s/dev/github-runner/control"
+kubectl apply -k "$CONTROL_DIR/k8s/dev/github-runner/control-generic"

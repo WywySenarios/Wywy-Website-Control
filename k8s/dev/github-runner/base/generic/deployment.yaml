@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  labels:
+    app: github-runner
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      containers:
+        # ──────────────────────────────────────────────────────────────────
+        # GitHub Actions self-hosted runner + dockerd (generic pool)
+        # ──────────────────────────────────────────────────────────────────
+        # ghcr.io/wywysenarios/gh-runner bundles docker:dind + the runner
+        # agent. The generic pool declares no capability label: jobs with
+        # runs-on [self-hosted, wywy] land here and its KEDA trigger is
+        # exactly "wywy". privileged is required for DinD — the bundled
+        # dockerd is available to generic jobs too, they simply do not
+        # declare a capability label. Resource limits prevent a single job
+        # from exhausting the node (disk, memory, CPU). The emptyDir for
+        # /var/lib/docker is deleted when the pod scales to zero.
+        - name: runner
+          image: ghcr.io/wywysenarios/gh-runner:2.336.0
+          env:
+            - name: REPO_URL
+              value: "https://github.com/WywySenarios/Wywy-Website-Control"
+            - name: ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-pat
+                  key: token
+            - name: RUNNER_LABELS
+              value: "self-hosted,wywy"
+            - name: EPHEMERAL
+              value: "true"
+            - name: DISABLE_AUTO_UPDATE
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+              ephemeral-storage: 10Gi
+          volumeMounts:
+            - name: docker-data
+              mountPath: /var/lib/docker
+
+      imagePullSecrets:
+        - name: regcred-ghcr
+      volumes:
+        - name: docker-data
+          emptyDir:
+            sizeLimit: 10Gi

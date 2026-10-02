@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: github-runner
+
+resources:
+  - deployment.yaml
+  - scaled-object.yaml
+  - network-policy.yaml
+
+# Pre-create secrets with:
+#   kubectl create secret generic github-runner-pat -n github-runner \
+#     --from-literal=token=$(sops --decrypt ../../../secrets/ci/github-runner-token.sops.yaml)
+#   kubectl create secret docker-registry regcred-ghcr -n github-runner \
+#     --docker-server=ghcr.io \
+#     --docker-username=WywySenarios \
+#     --docker-password=$(sops --decrypt ../../../secrets/ci/github-runner-token.sops.yaml)
+#
+# Do NOT check plaintext secrets into git.  The sops-encrypted source
+# lives at secrets/ci/github-runner-token.sops.yaml (tracked in git).

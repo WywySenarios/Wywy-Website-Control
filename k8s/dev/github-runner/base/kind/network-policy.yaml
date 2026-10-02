@@ -1,0 +1,63 @@
+# network-policy.yaml — Restrict runner pod egress
+#
+# Locks runner pods to outbound HTTPS only, and blocks access to
+# private/internal IP ranges (where cluster services Live).
+#
+# This prevents an exploited runner from reaching the K8s API server,
+# internal services, or the Docker registry inside the cluster.
+#
+# Requirements:
+#   - A CNI that enforces NetworkPolicy (Calico, Cilium, Weave, etc.)
+#   - Flannel alone does NOT enforce policies
+#
+# Adjust the `except` list if your cluster uses a non-standard CIDR
+# or if the runner legitimately needs to reach an internal service
+# (e.g. an internal Docker registry on 10.x or 192.168.x).
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: github-runner-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: github-runner
+  policyTypes:
+    - Egress
+  egress:
+    # DNS — required to resolve GitHub/registry hostnames
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+    # HTTP/S outbound, but NOT to private/internal IP ranges
+    # Port 80 is needed for apt-get (Debian repos serve over HTTP).
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8 # K8s pod/service CIDRs (common)
+              - 172.16.0.0/12 # K8s pod/service CIDRs (common)
+              - 192.168.0.0/16 # K8s pod/service CIDRs (common)
+      ports:
+        - port: 443
+          protocol: TCP
+        - port: 80
+          protocol: TCP
+
+    # In-cluster Docker registry on port 5000 — the runner pushes
+    # docker-registry.github-runner:5000 from the deploy workflow.
+    # podSelector form (NOT ipBlock ClusterIP): with kube-proxy (iptables),
+    # ClusterIP traffic is DNAT'd to the backend pod IP in PREROUTING BEFORE
+    # Calico's workload policy in FORWARD, so the destination the egress rule
+    # sees is the registry POD IP. The ClusterIP ipBlock form silently drops
+    # on iptables-mode Calico (the ipBlock form is the eBPF alternative only).
+    - to:
+        - podSelector:
+            matchLabels:
+              app: docker-registry
+      ports:
+        - port: 5000
+          protocol: TCP

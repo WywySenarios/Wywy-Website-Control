@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dev-github-runner
+  name: dev-github-runner-docs-dind
   namespace: argocd
   finalizers:
     - resources-finalizer.argoproj.io
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
     targetRevision: main
-    path: k8s/dev/github-runner/control
+    path: k8s/dev/github-runner/docs-dind
   destination:
     server: https://kubernetes.default.svc
     namespace: github-runner

@@ -15,16 +15,6 @@ spec:
         app: github-runner
     spec:
       containers:
-        # ──────────────────────────────────────────────────────────────────
-        # GitHub Actions self-hosted runner + dockerd (single container)
-        # ──────────────────────────────────────────────────────────────────
-        # ghcr.io/wywysenarios/gh-runner bundles docker:dind + the runner
-        # agent. Its baked-in /etc/docker/daemon.json sets
-        # default-ulimits nofile=65536:65536 so every job container gets a
-        # sane limit (fixes Valgrind crash, KDE #458106). privileged is
-        # required for DinD. Resource limits prevent a single job from
-        # exhausting the node (disk, memory, CPU). The emptyDir for
-        # /var/lib/docker is deleted when the pod scales to zero.
         - name: runner
           image: ghcr.io/wywysenarios/gh-runner:2.336.0
           env:
@@ -42,6 +32,7 @@ spec:
             - name: DISABLE_AUTO_UPDATE
               value: "true"
           securityContext:
+            # required for DinD
             privileged: true
           resources:
             requests:

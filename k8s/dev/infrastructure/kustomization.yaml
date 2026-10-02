@@ -9,10 +9,11 @@ resources:
   - appproject.yaml
   - app-of-apps.yaml
   - app-docker-registry.yaml
-  - app-github-runner.yaml
-  - app-github-runner-cache.yaml
-  - app-github-runner-docs.yaml
-  - app-github-runner-master-db.yaml
+  - app-github-runner-control-generic.yaml
+  - app-github-runner-master-db-dind.yaml
+  - app-github-runner-master-db-kind.yaml
+  - app-github-runner-docs-dind.yaml
+  - app-github-runner-cache-dind.yaml
   - app-image-updater.yaml
   - app-master-database.yaml
   - app-master-database-secrets.yaml
