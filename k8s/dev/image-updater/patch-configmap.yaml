@@ -15,3 +15,6 @@ data:
         prefix: docker-registry.github-runner
         insecure: true
         credentials: secret:argocd/image-updater-registry#auth
+      - name: ghcr
+        api_url: https://ghcr.io
+        prefix: ghcr.io
