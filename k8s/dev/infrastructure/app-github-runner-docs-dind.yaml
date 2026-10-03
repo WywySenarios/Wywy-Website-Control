@@ -19,3 +19,9 @@ spec:
       prune: true
     syncOptions:
       - CreateNamespace=true
+  # KEDA owns the runner replica count. ArgoCD does not.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
