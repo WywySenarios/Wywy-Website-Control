@@ -1,0 +1,12 @@
+# Pre-commit hooks for Wywy-Website-Control.
+#
+# Install once per clone:  pre-commit install
+# Run against everything:  pre-commit run --all-files
+#
+# Gitleaks reads the repo-root .gitleaks.toml, the same config the
+# secrets-scan CI workflow uses.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
