@@ -13,7 +13,7 @@ spec:
   project: wywy-dev
   source:
     repoURL: https://github.com/WywySenarios/Wywy-Website-Master-Database.git
-    targetRevision: main
+    targetRevision: dev
     path: k8s/dev
   destination:
     server: https://kubernetes.default.svc
