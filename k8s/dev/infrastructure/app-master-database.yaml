@@ -11,10 +11,13 @@ metadata:
     argocd.image-updater.argoproj.io/write-back-method: argocd
 spec:
   project: wywy-dev
-  source:
-    repoURL: https://github.com/WywySenarios/Wywy-Website-Master-Database.git
-    targetRevision: dev
-    path: k8s/dev
+  sources:
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Master-Database.git
+      targetRevision: dev
+      path: k8s/dev
+    - repoURL: https://github.com/WywySenarios/wywy-config.git
+      targetRevision: v1.0.0
+      path: .
   destination:
     server: https://kubernetes.default.svc
     namespace: master-database
