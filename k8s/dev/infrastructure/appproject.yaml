@@ -10,6 +10,7 @@ spec:
   sourceRepos:
     - https://github.com/WywySenarios/Wywy-Website-Control.git
     - https://github.com/WywySenarios/Wywy-Website-Master-Database.git
+    - https://github.com/WywySenarios/wywy-config.git
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster
