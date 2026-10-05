@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argoproj.io
   annotations:
-    argocd.image-updater.argoproj.io/image-list: sql-receptionist=ghcr.io/wywysenarios/master-db/sql-receptionist,create_tables=ghcr.io/wywysenarios/master-db/create_tables
+    argocd.image-updater.argoproj.io/image-list: sql-receptionist=ghcr.io/wywysenarios/master-db/sql-receptionist,db-migrate=ghcr.io/wywysenarios/master-db/db-migrate
     argocd.image-updater.argoproj.io/update-strategy: newest-build
     argocd.image-updater.argoproj.io/write-back-method: argocd
 spec:
