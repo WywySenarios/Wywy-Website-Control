@@ -17,6 +17,10 @@ Remember to avoid leaking secrets through `bash_history` on host or with `ssh`.
 
 The helper escapes quoting — passwords may contain any characters.
 
+## Superuser initialization
+
+Run `init-rbac.sh` to initialize users, databases, etc. Read the header of `init-rbac.sh` to find out the pre-requisites.
+
 ## Update pg_hba.conf + ufw (post-provision)
 
 pg_hba is not automatically updated when `.env.network` changes.
