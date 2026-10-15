@@ -10,9 +10,9 @@
 # is applied to each clone by vm/db/create-vm.sh.
 #
 # Usage:
-#   scripts/proxmox/vm/db/create-template.sh [--dev|--prod] <image-url>
+#   scripts/proxmox/vm/db/create-template.sh --dev|--prod <image-url>
 #
-# --dev|--prod selects the .env.network group (default: --prod):
+# --dev|--prod is REQUIRED and selects the .env.network group:
 #   prod → DATABASE_TEMPLATE_VMID on DATABASE_PROXMOX_HOST
 #   dev  → DEV_DATABASE_TEMPLATE_VMID on DEV_DATABASE_PROXMOX_HOST
 #
@@ -36,19 +36,18 @@ BRIDGE="vmbr0"
 IMAGE_FILE="debian-13-generic-amd64.qcow2"
 SNIPPET="database-vm.yaml"
 
-# ---- Parse mode: --dev|--prod (default prod) ----
-MODE="prod"
-case "${1:-}" in
---dev)
-	MODE="dev"
-	shift
+# ---- Parse mode: --dev|--prod (required) ----
+MODE="${1:-}"
+case "$MODE" in
+--dev) MODE="dev" ;;
+--prod) MODE="prod" ;;
+*)
+	echo "Error: first argument must be --dev or --prod (got '${MODE:-<none>}')" >&2
+	echo "Usage: scripts/proxmox/vm/db/create-template.sh --dev|--prod <image-url>" >&2
+	exit 1
 	;;
---prod)
-	MODE="prod"
-	shift
-	;;
-*) ;;
 esac
+shift
 
 # Variable group selected by mode (prod keeps the DATABASE_* names).
 VP="DATABASE"
@@ -58,7 +57,7 @@ VP="DATABASE"
 IMAGE_URL="${1:-}"
 case "$IMAGE_URL" in
 --* | '')
-	echo "Usage: $0 [--dev|--prod] <image-url>" >&2
+	echo "Usage: $0 --dev|--prod <image-url>" >&2
 	echo "" >&2
 	echo "  <image-url> should be a Debian cloud image URL, e.g.:" >&2
 	echo "    https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2" >&2

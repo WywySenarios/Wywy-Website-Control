@@ -4,7 +4,7 @@
 # No cluster restart is needed thanks to CoreDNS' auto-rollout.
 #
 # Usage:
-#   coredns-hosts.sh [--dev|--prod] [--dry-run]
+#   coredns-hosts.sh --dev|--prod [--dry-run]
 #
 # Requires: kubectl (cluster access), sudo sops (operator age key).
 #
@@ -12,7 +12,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-MODE="dev"
+MODE=""
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
@@ -21,12 +21,18 @@ while [[ $# -gt 0 ]]; do
 	--prod) MODE="prod" ;;
 	--dry-run) DRY_RUN=true ;;
 	*)
-		echo "Usage: $0 [--dev|--prod] [--dry-run]" >&2
+		echo "Usage: $0 --dev|--prod [--dry-run]" >&2
 		exit 1
 		;;
 	esac
 	shift
 done
+
+[[ -n "$MODE" ]] || {
+	echo "Error: --dev or --prod is required" >&2
+	echo "Usage: $0 --dev|--prod [--dry-run]" >&2
+	exit 1
+}
 
 HOSTS_MODE="$MODE"
 source "$SCRIPT_DIR/../../lib/hosts.sh"

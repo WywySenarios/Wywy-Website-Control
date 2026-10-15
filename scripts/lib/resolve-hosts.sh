@@ -9,7 +9,7 @@
 # /etc/hosts and the host namespace are never touched.
 #
 # Usage:
-#   scripts/lib/resolve-hosts.sh [--dev|--prod]
+#   scripts/lib/resolve-hosts.sh --dev|--prod
 #
 # Requires: unshare with user+mount namespaces (Debian 13 default), sudo
 #           sops (operator age key).
@@ -18,19 +18,17 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-# ---- Parse mode: --dev|--prod (default dev) ----
-[[ $# -le 1 ]] || {
-	echo "Usage: $0 [--dev|--prod]" >&2
+# ---- Parse mode: --dev|--prod (required) ----
+[[ $# -eq 1 ]] || {
+	echo "Usage: $0 --dev|--prod" >&2
 	exit 1
 }
-HOSTS_MODE="dev"
-case "${1:-}" in
+case "$1" in
 --dev | --prod)
 	HOSTS_MODE="${1#--}"
 	;;
-"") ;;
 *)
-	echo "Usage: $0 [--dev|--prod]" >&2
+	echo "Usage: $0 --dev|--prod" >&2
 	exit 1
 	;;
 esac

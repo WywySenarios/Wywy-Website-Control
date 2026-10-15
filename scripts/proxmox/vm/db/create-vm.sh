@@ -5,9 +5,9 @@
 # K8s workers so pods can reach it via the pod CIDR.
 #
 # Usage:
-#   scripts/proxmox/vm/db/create-vm.sh [--dev|--prod]
+#   scripts/proxmox/vm/db/create-vm.sh --dev|--prod
 #
-# --dev|--prod selects the .env.network group (default: --prod):
+# --dev|--prod is REQUIRED and selects the .env.network group:
 #   prod → DATABASE_*       (requires GATEWAY, NAMESERVER, K8S_POD_CIDR,
 #                             DATABASE_TEMPLATE_VMID, DATABASE_PROXMOX_HOST,
 #                             DATABASE_VMID)
@@ -53,18 +53,16 @@ SNIPPET="database-vm.yaml"
 # shellcheck disable=SC1090
 source "$ENV_NETWORK"
 
-# ---- Parse mode: --dev|--prod (default prod) ----
-MODE="prod"
-case "${1:-}" in
---dev)
-	MODE="dev"
-	shift
+# ---- Parse mode: --dev|--prod (required) ----
+MODE="${1:-}"
+case "$MODE" in
+--dev) MODE="dev" ;;
+--prod) MODE="prod" ;;
+*)
+	echo "Error: first argument must be --dev or --prod (got '${MODE:-<none>}')" >&2
+	echo "Usage: scripts/proxmox/vm/db/create-vm.sh --dev|--prod" >&2
+	exit 1
 	;;
---prod)
-	MODE="prod"
-	shift
-	;;
-*) ;;
 esac
 
 # ---- DB VM IP from the encrypted hosts file ----

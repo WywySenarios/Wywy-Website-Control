@@ -6,14 +6,23 @@
 #   hosts_ip <hostname>    # prints the IP or exits 1
 #   hosts_ip_real <name>   # like hosts_ip, but rejects RFC 5737 placeholders
 #
-# Environment: HOSTS_MODE=dev|prod selects the file (default: dev).
+# Environment: HOSTS_MODE=dev|prod selects the file. It is required.
 # Requires: sops (decrypts with the operator age key, hence sudo).
 #
 # This file is meant to be sourced. CONVENTION EXCETION: this script does not `set -euo pipefail`. We don't want to leak it into callees.
 
 hosts_lib_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 hosts_control_dir="$(realpath "$hosts_lib_dir/../..")"
-: "${HOSTS_MODE:=dev}"
+# HOSTS_MODE is interpolated into HOSTS_FILE below, so whitelist it: an
+# unset value must fail closed, and a stray value must not traverse out of
+# secrets/.
+case "${HOSTS_MODE:-}" in
+dev | prod) ;;
+*)
+	echo "hosts.sh: HOSTS_MODE must be 'dev' or 'prod' (got '${HOSTS_MODE:-<none>}')" >&2
+	exit 1
+	;;
+esac
 HOSTS_FILE="$hosts_control_dir/secrets/$HOSTS_MODE/hosts.sops.yaml"
 
 hosts_ip() {
