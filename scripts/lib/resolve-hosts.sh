@@ -1,15 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
-# resolve-hosts.sh — start a shell in a private mount namespace with the
-# merged hosts file overlaid on /etc/hosts.
+# resolve-hosts.sh — run a command (default: a shell) in a private mount
+# namespace with the merged hosts file overlaid on /etc/hosts.
 #
-# The shell and everything you start from it resolve *.internal names from
-# the repo's hosts file; nothing outside the namespace sees the overlay.
-# When the shell exits, the namespace and its mounts vanish. The on-disk
-# /etc/hosts and the host namespace are never touched.
+# The command and everything it starts resolve *.internal names from the
+# repo's hosts file; nothing outside the namespace sees the overlay. When the
+# command exits, the namespace and its mounts vanish. The on-disk /etc/hosts
+# and the host namespace are never touched.
 #
 # Usage:
-#   scripts/lib/resolve-hosts.sh --dev|--prod
+#   scripts/lib/resolve-hosts.sh --dev|--prod              # interactive shell
+#   scripts/lib/resolve-hosts.sh --dev|--prod -- <cmd...>  # run a command
 #
 # Requires: unshare with user+mount namespaces (Debian 13 default), sudo
 #           sops (operator age key).
@@ -18,20 +19,21 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-# ---- Parse mode: --dev|--prod (required) ----
-[[ $# -eq 1 ]] || {
-	echo "Usage: $0 --dev|--prod" >&2
+usage() {
+	echo "Usage: $0 --dev|--prod [-- command [args...]]" >&2
 	exit 1
 }
-case "$1" in
+
+# ---- Parse mode: --dev|--prod (required); anything after an optional `--`
+# ---- is a command to run inside the namespace. ----
+case "${1:-}" in
 --dev | --prod)
 	HOSTS_MODE="${1#--}"
+	shift
 	;;
-*)
-	echo "Usage: $0 --dev|--prod" >&2
-	exit 1
-	;;
+*) usage ;;
 esac
+[ "${1:-}" = "--" ] && shift
 
 # shellcheck source=hosts.sh
 source "$SCRIPT_DIR/hosts.sh"
@@ -49,5 +51,7 @@ unshare --user --map-root-user --mount --propagation private \
 	bash -c '
 		mount --bind "$1" /etc/hosts
 		rm -f "$1"   # the mount keeps the inode alive
-		exec bash
-	' bash "$MERGED"
+		shift
+		[ "$#" -eq 0 ] && exec bash
+		exec "$@"
+	' bash "$MERGED" "$@"
