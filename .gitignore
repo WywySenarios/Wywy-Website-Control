@@ -1,3 +1,4 @@
 secrets/**
 !secrets/**/
 !secrets/**/*.sops.yaml
+!secrets/**/*.sops
