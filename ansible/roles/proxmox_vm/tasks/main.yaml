@@ -1,0 +1,109 @@
+---
+- name: Validate the VM parameters
+  ansible.builtin.assert:
+    that:
+      - (proxmox_vm_vmid | string | regex_replace('[0-9]', '')) | length == 0
+      - (proxmox_vm_template_vmid | string | regex_replace('[0-9]', '')) | length == 0
+      - (proxmox_vm_name | regex_replace('[A-Za-z0-9._-]', '')) | length == 0
+      - (proxmox_vm_address | regex_replace('^[0-9.]+$', '')) | length == 0
+      - (proxmox_vm_gateway | regex_replace('^[0-9.]+$', '')) | length == 0
+      - (proxmox_vm_nameserver | regex_replace('^[0-9.]+$', '')) | length == 0
+      - >-
+        (proxmox_vm_disk_size | regex_replace('[0-9]', '')
+        | regex_replace('^[KMGT]$', '')) | length == 0
+    fail_msg: >-
+      a proxmox_vm_* var is missing or unsafe to pass to qm(1). The VM's
+      identity lives in ansible/inventory/<env>/group_vars/db_pve.yaml; the
+      addresses come from the encrypted hosts file.
+    quiet: true
+
+# check_mode is disabled for the reads because the guards below need real output
+- name: Read the current config for VMID {{ proxmox_vm_vmid }}
+  ansible.builtin.command:
+    cmd: "qm config {{ proxmox_vm_vmid }}"
+  register: proxmox_vm_cfg
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Fail closed when the VMID is held by a VM that is not ours
+  ansible.builtin.assert:
+    that:
+      - "('name: ' ~ proxmox_vm_name) in proxmox_vm_cfg.stdout"
+    fail_msg: >-
+      VMID {{ proxmox_vm_vmid }} already exists on {{ inventory_hostname }}
+      but is not named {{ proxmox_vm_name }}. Point proxmox_vm_vmid at a free
+      VMID, or destroy the other VM first.
+    quiet: true
+  when: proxmox_vm_cfg.rc == 0
+
+- name: Clone the template
+  ansible.builtin.command:
+    cmd: >-
+      qm clone {{ proxmox_vm_template_vmid }} {{ proxmox_vm_vmid }}
+      --name {{ proxmox_vm_name }}
+  changed_when: true
+  when: proxmox_vm_cfg.rc != 0
+
+# we have to guard the value because the key is already in the template
+- name: Point the guest at its address, gateway and nameserver
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_vm_vmid }}
+      --ipconfig0 ip={{ proxmox_vm_address }}/24,gw={{ proxmox_vm_gateway }}
+      --nameserver {{ proxmox_vm_nameserver }}
+  changed_when: true
+  when: >-
+    (('ipconfig0: ip=' ~ proxmox_vm_address ~ '/24,gw=' ~ proxmox_vm_gateway)
+    not in proxmox_vm_cfg.stdout)
+    or (('nameserver: ' ~ proxmox_vm_nameserver) not in proxmox_vm_cfg.stdout)
+
+- name: Grow the disk to the final VM size
+  ansible.builtin.command:
+    cmd: "qm resize {{ proxmox_vm_vmid }} scsi0 {{ proxmox_vm_disk_size }}"
+  changed_when: true
+  when: not (proxmox_vm_cfg.stdout | regex_search('(?m)^scsi0:.*size=' ~ proxmox_vm_disk_size ~ '$'))
+
+- name: Read the power state
+  ansible.builtin.command:
+    cmd: "qm status {{ proxmox_vm_vmid }}"
+  register: proxmox_vm_state
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Start the VM
+  ansible.builtin.command:
+    cmd: "qm start {{ proxmox_vm_vmid }}"
+  changed_when: true
+  when: "'status: running' not in proxmox_vm_state.stdout"
+
+- name: Verify the finished VM
+  when: not ansible_check_mode
+  block:
+    - name: Read the finished VM config
+      ansible.builtin.command:
+        cmd: "qm config {{ proxmox_vm_vmid }}"
+      register: proxmox_vm_verify
+      changed_when: false
+
+    - name: Read the finished power state
+      ansible.builtin.command:
+        cmd: "qm status {{ proxmox_vm_vmid }}"
+      register: proxmox_vm_verify_state
+      changed_when: false
+
+    - name: Assert the VM matches the wanted shape
+      ansible.builtin.assert:
+        that:
+          - "'template: 1' not in proxmox_vm_verify.stdout"
+          - "('name: ' ~ proxmox_vm_name) in proxmox_vm_verify.stdout"
+          - "('ipconfig0: ip=' ~ proxmox_vm_address ~ '/24,gw=' ~ proxmox_vm_gateway) in proxmox_vm_verify.stdout"
+          - "('nameserver: ' ~ proxmox_vm_nameserver) in proxmox_vm_verify.stdout"
+          - "('size=' ~ proxmox_vm_disk_size) in proxmox_vm_verify.stdout"
+          - "'status: running' in proxmox_vm_verify_state.stdout"
+        fail_msg: >-
+          the VM did not reach the wanted shape:
+          {{ proxmox_vm_verify.stdout }}
+          {{ proxmox_vm_verify_state.stdout }}
+        quiet: true

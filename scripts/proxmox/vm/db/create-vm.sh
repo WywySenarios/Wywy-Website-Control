@@ -31,7 +31,7 @@
 #   1. scripts/proxmox/vm/db/set-db-password.sh --dev|--prod
 #   2. ANSIBLE_CONFIG=ansible/ansible.cfg \
 #        uv run --project ansible ansible-playbook \
-#        -i ansible/inventory/<env> ansible/playbooks/db.yaml
+#        -i ansible/inventory/<env> ansible/playbooks/db/db.yaml
 #   Set the password first: the Ansible role must not race package installation.
 #
 set -euo pipefail
@@ -139,4 +139,4 @@ echo "==> Done. Next steps (in order):"
 echo "    1. scripts/proxmox/vm/db/set-db-password.sh --$MODE"
 echo "    2. ANSIBLE_CONFIG=ansible/ansible.cfg \\"
 echo "         uv run --project ansible ansible-playbook \\"
-echo "         -i ansible/inventory/$MODE ansible/playbooks/db.yaml"
+echo "         -i ansible/inventory/$MODE ansible/playbooks/db/db.yaml"

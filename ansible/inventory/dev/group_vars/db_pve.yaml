@@ -11,3 +11,13 @@ ansible_host: >-
 # --- proxmox_template role ---
 proxmox_template_vmid: 2502
 proxmox_template_name: "debian-13-db-template-2502"
+
+# --- proxmox_vm role: the DB VM this hypervisor hosts ---
+proxmox_vm_vmid: 131
+proxmox_vm_name: "database-vm-dev"
+proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
+proxmox_vm_address: "{{ hostvars['db.internal'].ansible_host }}"
+proxmox_vm_gateway: "{{ wywy_gateway }}"
+proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+# The template's 64G plus the 50G create-vm.sh used to add.
+proxmox_vm_disk_size: "114G"
