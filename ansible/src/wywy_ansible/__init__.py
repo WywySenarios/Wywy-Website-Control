@@ -1,0 +1,1 @@
+"""Wywy Ansible entrypoint."""

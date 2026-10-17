@@ -20,12 +20,15 @@ export ANSIBLE_CONFIG="$CONTROL_DIR/ansible/ansible.cfg"
 export ANSIBLE_COLLECTIONS_PATH="$CONTROL_DIR/ansible/.collections"
 export ANSIBLE_INVENTORY=/dev/null
 
+echo "==> ruff (strict)" >&2
+uv run --project ansible ruff check ansible/
+
 echo "==> ansible-lint (production profile)" >&2
 uv run --project ansible ansible-lint -c ansible/.ansible-lint ansible/
 
 echo "==> ansible-playbook --syntax-check" >&2
-shopt -s nullglob
-playbooks=(ansible/playbooks/*.yaml)
+shopt -s nullglob globstar
+playbooks=(ansible/playbooks/**/*.yaml)
 if [ "${#playbooks[@]}" -eq 0 ]; then
 	echo "==> no playbooks under ansible/playbooks/ yet — lint only" >&2
 	exit 0
