@@ -1,0 +1,7 @@
+---
+- name: Build the DB cloud-init template
+  hosts: db_pve
+  become: true
+  gather_facts: false
+  roles:
+    - proxmox_template

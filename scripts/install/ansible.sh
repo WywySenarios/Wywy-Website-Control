@@ -22,7 +22,7 @@ DRY_RUN=false
 if "$DRY_RUN"; then
 	header "Plan (dry run)"
 	info "uv sync --directory $ANSIBLE_DIR --locked"
-	info "uv run --project $ANSIBLE_DIR ansible-galaxy collection install -p $COLLECTIONS_DIR -r $ANSIBLE_DIR/requirements.yml"
+	info "uv run --project $ANSIBLE_DIR ansible-galaxy collection install -p $COLLECTIONS_DIR -r $ANSIBLE_DIR/requirements.yaml"
 	exit 0
 fi
 
@@ -37,6 +37,6 @@ uv sync --directory "$ANSIBLE_DIR" --locked
 header "Installing pinned Ansible collections"
 export ANSIBLE_COLLECTIONS_PATH="$COLLECTIONS_DIR"
 uv run --project "$ANSIBLE_DIR" ansible-galaxy collection install \
-	-p "$COLLECTIONS_DIR" -r "$ANSIBLE_DIR/requirements.yml"
+	-p "$COLLECTIONS_DIR" -r "$ANSIBLE_DIR/requirements.yaml"
 
 info "Ansible toolchain ready ($ANSIBLE_DIR/.venv)"

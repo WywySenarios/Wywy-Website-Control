@@ -1,0 +1,12 @@
+---
+# Base image for the Proxmox VM templates.
+#
+# url must point at a dated (stable) directory:
+#   https://cloud.debian.org/images/cloud/trixie/<dated>/debian-13-generic-amd64.qcow2
+#
+# Debian publishes the digest beside the image, as SHA512SUMS:
+#   https://cloud.debian.org/images/cloud/trixie/<dated>/SHA512SUMS
+# Take the checksum whose filename matches the one at the end of url.
+
+url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64.qcow2
+sha512: "62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe"

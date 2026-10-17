@@ -1,0 +1,7 @@
+---
+all:
+  children:
+    db_pve:
+      hosts:
+        db-node.internal:
+          ansible_user: wywy

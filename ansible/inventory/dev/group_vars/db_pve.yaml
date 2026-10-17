@@ -1,0 +1,13 @@
+---
+# The inventory alias is this host's name in secrets/<env>/proxmox-hosts.sops,
+# where field 1 is the address and fields 2+ are names (field 2 canonical, any
+# later field an alias such as db-node.internal). The script resolves by name,
+# so aliases and reordering cannot repoint it, and it exits non-zero with a
+# reason when the name is absent or claimed by more than one line.
+ansible_host: >-
+  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/proxmox-hosts.sops ' ~ inventory_hostname) }}
+
+# --- proxmox_template role ---
+proxmox_template_vmid: 2502
+proxmox_template_name: "debian-13-db-template-2502"

@@ -1,0 +1,150 @@
+---
+# Builds a cloud-init template from a Debian cloud image with `qm(1)`.
+#
+# Every step is guarded on the *current* `qm config`.
+# Expect a re-run of a finished template to change nothing.
+# Expect a re-run of a half-built one to resume where it left off.
+# The VMID is expected to be either free or to hold this template. Anything else fails closed.
+
+- name: Validate the template parameters
+  ansible.builtin.assert:
+    that:
+      - (proxmox_template_vmid | string | regex_replace('[0-9]', '')) | length == 0
+      - (proxmox_template_name | regex_replace('[A-Za-z0-9._-]', '')) | length == 0
+      - (proxmox_template_storage | regex_replace('[A-Za-z0-9._-]', '')) | length == 0
+      - (proxmox_template_bridge | regex_replace('[A-Za-z0-9._-]', '')) | length == 0
+      - >-
+        (proxmox_template_disk_size | regex_replace('[0-9]', '')
+        | regex_replace('^[KMGT]$', '')) | length == 0
+      - (proxmox_template_image_url | regex_replace('^https://[A-Za-z0-9._/-]+$', '')) | length == 0
+      - (proxmox_template_image_checksum | regex_replace('^sha512:[0-9a-fA-F]{128}$', '')) | length == 0
+    fail_msg: >-
+      a proxmox_template_* var is missing or unsafe to pass to qm(1). The image
+      pin lives in config/proxmox/cloud-image.yaml; fill in url and sha512
+      before running this role.
+    quiet: true
+
+# check_mode is disabled for the reads because the guards below need real output
+- name: Read the current config for VMID {{ proxmox_template_vmid }}
+  ansible.builtin.command:
+    cmd: "qm config {{ proxmox_template_vmid }}"
+  register: proxmox_template_cfg
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Fail closed when the VMID is held by a VM that is not ours
+  ansible.builtin.assert:
+    that:
+      - "('name: ' ~ proxmox_template_name) in proxmox_template_cfg.stdout"
+    fail_msg: >-
+      VMID {{ proxmox_template_vmid }} already exists on {{ inventory_hostname }}
+      but is not named {{ proxmox_template_name }}. Point proxmox_template_vmid
+      at a free VMID, or destroy the other VM first.
+    quiet: true
+  when: proxmox_template_cfg.rc == 0
+
+- name: Download the base cloud image
+  ansible.builtin.get_url:
+    url: "{{ proxmox_template_image_url }}"
+    dest: "{{ proxmox_template_image_dir }}/{{ proxmox_template_image_url | basename }}"
+    checksum: "{{ proxmox_template_image_checksum | default(omit) }}"
+    mode: "0644"
+
+- name: Create the VM
+  ansible.builtin.command:
+    cmd: >-
+      qm create {{ proxmox_template_vmid }}
+      --memory {{ proxmox_template_memory }}
+      --cores {{ proxmox_template_cores }}
+      --cpu {{ proxmox_template_cpu }}
+      --net0 virtio,bridge={{ proxmox_template_bridge }}
+      --name {{ proxmox_template_name }}
+  changed_when: true
+  when: proxmox_template_cfg.rc != 0
+
+- name: Import the cloud image as the VM's disk
+  ansible.builtin.command:
+    cmd: >-
+      qm importdisk {{ proxmox_template_vmid }}
+      {{ proxmox_template_image_dir }}/{{ proxmox_template_image_url | basename }}
+      {{ proxmox_template_storage }}
+  changed_when: true
+  when:
+    - "'scsi0:' not in proxmox_template_cfg.stdout"
+    - "'unused0:' not in proxmox_template_cfg.stdout"
+
+- name: Attach the imported disk to the virtio-scsi controller
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_template_vmid }}
+      --scsihw virtio-scsi-pci
+      --scsi0 {{ proxmox_template_storage }}:vm-{{ proxmox_template_vmid }}-disk-0
+  changed_when: true
+  when: "'scsi0:' not in proxmox_template_cfg.stdout"
+
+- name: Grow the disk to the template size
+  ansible.builtin.command:
+    cmd: >-
+      qm resize {{ proxmox_template_vmid }} scsi0 {{ proxmox_template_disk_size }}
+  changed_when: true
+  when: not (proxmox_template_cfg.stdout | regex_search('(?m)^scsi0:.*size=' ~ proxmox_template_disk_size ~ '$'))
+
+- name: Attach the cloud-init drive
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_template_vmid }}
+      --ide2 {{ proxmox_template_storage }}:cloudinit
+  changed_when: true
+  when: "'ide2:' not in proxmox_template_cfg.stdout"
+
+- name: Set the boot order
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_template_vmid }}
+      --boot order={{ proxmox_template_boot_order }}
+  changed_when: true
+  when: "('boot: order=' ~ proxmox_template_boot_order) not in proxmox_template_cfg.stdout"
+
+# --ciupgrade 0 turns off Proxmox's own first-boot `apt upgrade`.
+- name: Bake the cloud-init defaults into the template
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_template_vmid }}
+      --ciuser {{ proxmox_template_ciuser }}
+      --sshkeys {{ proxmox_template_sshkeys }}
+      --ipconfig0 {{ proxmox_template_ipconfig }}
+      --ciupgrade 0
+  changed_when: true
+  when: "'ciuser:' not in proxmox_template_cfg.stdout"
+
+- name: Convert the VM to a template
+  ansible.builtin.command:
+    cmd: "qm template {{ proxmox_template_vmid }}"
+  changed_when: true
+  when: "'template: 1' not in proxmox_template_cfg.stdout"
+
+- name: Verify the finished template
+  when: not ansible_check_mode
+  block:
+    - name: Read the finished template config
+      ansible.builtin.command:
+        cmd: "qm config {{ proxmox_template_vmid }}"
+      register: proxmox_template_verify
+      changed_when: false
+
+    - name: Assert the template matches the wanted shape
+      ansible.builtin.assert:
+        that:
+          - "'template: 1' in proxmox_template_verify.stdout"
+          - "('name: ' ~ proxmox_template_name) in proxmox_template_verify.stdout"
+          - "('ciuser: ' ~ proxmox_template_ciuser) in proxmox_template_verify.stdout"
+          - "'ciupgrade: 0' in proxmox_template_verify.stdout"
+          - "('ipconfig0: ' ~ proxmox_template_ipconfig) in proxmox_template_verify.stdout"
+          - "('ide2: ' ~ proxmox_template_storage ~ ':vm-' ~ proxmox_template_vmid ~ '-cloudinit') in proxmox_template_verify.stdout"
+          - "('boot: order=' ~ proxmox_template_boot_order) in proxmox_template_verify.stdout"
+          - "('size=' ~ proxmox_template_disk_size) in proxmox_template_verify.stdout"
+        fail_msg: >-
+          the template did not reach the wanted shape:
+          {{ proxmox_template_verify.stdout }}
+        quiet: true

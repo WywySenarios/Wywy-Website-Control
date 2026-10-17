@@ -1,0 +1,3 @@
+---
+wywy_env: dev
+control_dir: "{{ ansible_config_file | dirname | dirname }}"
