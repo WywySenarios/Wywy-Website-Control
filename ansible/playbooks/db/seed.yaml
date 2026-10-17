@@ -1,0 +1,7 @@
+---
+- name: Seed the Postgres DB VM with roles, databases and extensions
+  hosts: db
+  gather_facts: true
+  roles:
+    - postgres_seed
+    - postgres_password

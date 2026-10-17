@@ -42,6 +42,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "playbook",
         help="playbook path relative to ansible/, e.g. playbooks/db/db.yaml",
     )
+    parser.add_argument(
+        "extra",
+        nargs=argparse.REMAINDER,
+        help="extra arguments for ansible-playbook, e.g. -e key=value",
+    )
     return parser.parse_args(argv)
 
 
@@ -68,6 +73,6 @@ def main() -> None:
     # S606/S607: exec is deliberate; the bare name comes from the venv on PATH.
     os.execvpe(  # noqa: S606
         "ansible-playbook",  # noqa: S607
-        ["ansible-playbook", str(playbook)],
+        ["ansible-playbook", str(playbook), *args.extra],
         environment,
     )

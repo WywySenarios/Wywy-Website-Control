@@ -1,0 +1,70 @@
+---
+- name: Read the role passwords from the ksops stores
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - sops
+      - -d
+      - --extract
+      - '["stringData"]["password"]'
+      - "{{ item.value }}"
+  loop: "{{ postgres_seed_secrets | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  delegate_to: localhost
+  changed_when: false
+  no_log: true
+  register: postgres_seed_reads
+
+- name: Index the passwords by role name
+  ansible.builtin.set_fact:
+    postgres_seed_passwords: >-
+      {{ dict(postgres_seed_reads.results | map(attribute='item.key')
+      | zip(postgres_seed_reads.results | map(attribute='stdout'))) }}
+  no_log: true
+
+- name: Assert password is not empty
+  ansible.builtin.assert:
+    that:
+      - postgres_seed_passwords | dict2items | selectattr('value', 'eq', '') | list | length == 0
+    fail_msg: >-
+      empty password for
+      {{ postgres_seed_passwords | dict2items | selectattr('value', 'eq', '')
+      | map(attribute='key') | join(', ') }}
+    quiet: true
+
+- name: Create the app roles
+  community.postgresql.postgresql_user:
+    name: "{{ item }}"
+    password: "{{ postgres_seed_passwords[item] }}"
+    role_attr_flags: LOGIN
+    login_user: postgres
+  loop: "{{ postgres_seed_roles }}"
+  environment:
+    # pg_hba requires scram-sha-256, so hash the password that way at creation.
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  become: true
+  become_user: postgres
+  no_log: true
+
+- name: Create the app databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    login_user: postgres
+  loop: "{{ postgres_seed_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  become_user: postgres
+
+- name: Install the extensions each database needs
+  community.postgresql.postgresql_ext:
+    db: "{{ item.db }}"
+    name: "{{ item.name }}"
+    login_user: postgres
+  loop: "{{ postgres_seed_extensions }}"
+  loop_control:
+    label: "{{ item.db }}: {{ item.name }}"
+  become: true
+  become_user: postgres

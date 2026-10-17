@@ -1,0 +1,67 @@
+---
+- name: Probe loopback with a deliberately wrong password
+  ansible.builtin.command:
+    argv: "{{ postgres_password_probe_argv }}"
+  environment:
+    PGPASSWORD: definitely-not-the-password
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  register: postgres_password_control
+
+- name: Fail closed when loopback does not check passwords
+  ansible.builtin.assert:
+    that:
+      - postgres_password_control.rc != 0
+    fail_msg: >-
+      loopback accepted a wrong password, so the probe below proves nothing:
+      the 127.0.0.1 rule is not scram-sha-256, or psql is not using TCP.
+    quiet: true
+
+- name: Read the superuser password from its sops store
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - sops
+      - -d
+      - --output-type
+      - binary
+      - "{{ postgres_password_secret }}"
+  delegate_to: localhost
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: postgres_password_read
+
+# Remember to authenticate with peer auth in case the current password is out of date.
+- name: Refresh the superuser password from the store
+  community.postgresql.postgresql_user:
+    name: postgres
+    password: "{{ postgres_password_read.stdout }}"
+    login_user: postgres
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  become: true
+  become_user: postgres
+  no_log: true
+
+- name: Probe the superuser login over loopback
+  ansible.builtin.command:
+    argv: "{{ postgres_password_probe_argv }}"
+  environment:
+    PGPASSWORD: "{{ postgres_password_read.stdout }}"
+  changed_when: false
+  check_mode: false
+  no_log: true
+  failed_when: false
+  register: postgres_password_probe
+
+- name: Fail closed when the superuser cannot log in with the stored password
+  ansible.builtin.assert:
+    that:
+      - postgres_password_probe.rc == 0
+    fail_msg: >-
+      postgres cannot log in over loopback after the password was refreshed from
+      {{ postgres_password_secret }}, so the login path is broken:
+      {{ postgres_password_probe.stderr }}
+    quiet: true
