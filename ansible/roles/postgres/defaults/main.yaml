@@ -15,9 +15,7 @@ postgres_pgdg_gnupg_home: /root/.gnupg
 
 postgres_packages:
   - "postgresql-{{ postgres_version }}"
-  - "postgresql-client-{{ postgres_version }}"
   - "postgresql-{{ postgres_version }}-postgis-3"
-  - "postgresql-{{ postgres_version }}-contrib"
   - ufw
   - python3-psycopg2
   - acl
