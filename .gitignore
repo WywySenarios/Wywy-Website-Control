@@ -2,3 +2,10 @@ secrets/**
 !secrets/**/
 !secrets/**/*.sops.yaml
 !secrets/**/*.sops
+
+# Ansible toolchain: repo-local venv, installed collections, and the
+# operator-run verify recap (evidence, never committed).
+ansible/.venv/
+ansible/.collections/
+ansible/verify/
+.ansible/
