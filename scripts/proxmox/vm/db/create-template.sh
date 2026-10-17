@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
 # Create the Debian cloud-init template for the dedicated Postgres DB VM on
-# the DB hypervisor, and push the DB cloud-init snippet to that host.
+# the DB hypervisor.
 #
-# One template + one snippet per environment (prod/dev), each on its own
-# hypervisor. The template itself gets NO --cicustom: the DB template VMID is
-# shared with the k8s worker flow (2501 + host index), so baking the DB
-# snippet into the template would leak it into worker clones. The DB snippet
-# is applied to each clone by vm/db/create-vm.sh.
+# One template per environment (prod/dev), each on its own hypervisor. The
+# template gets NO --cicustom and installs nothing beyond the base image:
+# postgres is installed and configured on each clone by the Ansible `postgres`
+# role (see vm/db/create-vm.sh), so nothing leaks into the k8s worker clones
+# that share the VMID scheme.
 #
 # Usage:
 #   scripts/proxmox/vm/db/create-template.sh --dev|--prod <image-url>
@@ -20,13 +20,9 @@
 #   scripts/proxmox/vm/db/create-template.sh --dev \
 #     https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2
 #
-# Requires config/.env.network with K8S_POD_CIDR and the DB VM group defined
-# (see vm/db/create-vm.sh).
-#
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-CLOUD_INIT_DIR="$SCRIPT_DIR/../cloud-init"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 ENV_NETWORK="$CONTROL_DIR/config/.env.network"
 SYSUSER="wywy"
@@ -34,7 +30,6 @@ SSH_OPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 STORAGE="data"
 BRIDGE="vmbr0"
 IMAGE_FILE="debian-13-generic-amd64.qcow2"
-SNIPPET="database-vm.yaml"
 
 # ---- Parse mode: --dev|--prod (required) ----
 MODE="${1:-}"
@@ -48,10 +43,6 @@ case "$MODE" in
 	;;
 esac
 shift
-
-# Variable group selected by mode (prod keeps the DATABASE_* names).
-VP="DATABASE"
-[ "$MODE" = "dev" ] && VP="DEV_DATABASE"
 
 # ---- Image URL is required ----
 IMAGE_URL="${1:-}"
@@ -74,91 +65,28 @@ esac
 # shellcheck disable=SC1090
 source "$ENV_NETWORK"
 
+# Variable group selected by mode (prod keeps the DATABASE_* names).
+VP="DATABASE"
+[ "$MODE" = "dev" ] && VP="DEV_DATABASE"
+
 # ---- Guards: every required variable must be non-empty ----
-for var in K8S_POD_CIDR "${VP}_PROXMOX_HOST" "${VP}_TEMPLATE_VMID"; do
+for var in "${VP}_PROXMOX_HOST" "${VP}_TEMPLATE_VMID"; do
 	: "${!var:?$var not set in config/.env.network}"
 done
 
-# ---- Load the selected .env.network group ----
 HOST_DEFAULT="${VP}_PROXMOX_HOST"
 HOST_DEFAULT="${!HOST_DEFAULT}"
 TEMPLATE_VMID="${VP}_TEMPLATE_VMID"
 TEMPLATE_VMID="${!TEMPLATE_VMID}"
-
 NAME="debian-13-db-template-${TEMPLATE_VMID}"
 
-# ---- Validate input files ----
-DB_TEMPLATE="$CLOUD_INIT_DIR/database-vm.yaml.template"
-DB_BOOTSTRAP="$CLOUD_INIT_DIR/db-bootstrap.sh"
-for f in "$DB_TEMPLATE" "$DB_BOOTSTRAP"; do
-	[[ -f "$f" ]] || {
-		echo "Error: $f not found" >&2
-		exit 1
-	}
-done
-
-# ---- Fetch the PGDG signing key (pinned fingerprint, not the keyserver pool) ----
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
-
-# The keyserver pool has served a fake key colliding with the PGDG short ID
-# ACCC4CF8 — fetch from postgresql.org and pin the full fingerprint instead
-# (160-bit fingerprints cannot collide).
-PGDG_KEY_URL="https://www.postgresql.org/media/keys/ACCC4CF8.asc"
-PGDG_KEY_FPR="B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8"
-
-for cmd in curl gpg; do
-	command -v "$cmd" >/dev/null 2>&1 || {
-		echo "Error: '$cmd' is required to fetch/validate the PGDG key" >&2
-		exit 1
-	}
-done
-
-curl -fsSL --retry 5 --retry-delay 5 "$PGDG_KEY_URL" -o "$TMP_DIR/pgdg.asc"
-PGDG_KEY_ACTUAL_FPR="$(
-	gpg --show-keys --with-colons "$TMP_DIR/pgdg.asc" 2>/dev/null |
-		awk -F: '$1 == "fpr" { print $10; exit }'
-)"
-[[ -n "$PGDG_KEY_ACTUAL_FPR" && "$PGDG_KEY_ACTUAL_FPR" == "$PGDG_KEY_FPR" ]] || {
-	echo "FATAL: PGDG key fingerprint mismatch" >&2
-	echo "  got:  ${PGDG_KEY_ACTUAL_FPR:-<none>}" >&2
-	echo "  want: $PGDG_KEY_FPR" >&2
-	exit 1
-}
-echo "  -> PGDG key fetched and validated ($PGDG_KEY_FPR)"
-
-# ---- Render the DB cloud-init snippet (pod CIDR → bootstrap → key → base64) ----
-sed -e "s|{{K8S_POD_CIDR}}|$K8S_POD_CIDR|g" \
-	"$DB_BOOTSTRAP" >"$TMP_DIR/db-bootstrap-rendered.sh"
-
-BOOTSTRAP_B64=$(base64 -w0 <"$TMP_DIR/db-bootstrap-rendered.sh")
-PGDG_KEY_B64="$(gpg --dearmor <"$TMP_DIR/pgdg.asc" | base64 -w0)"
-
-sed -e "s|{{BOOTSTRAP_B64}}|$BOOTSTRAP_B64|g" \
-	-e "s|{{PGDG_KEY_B64}}|$PGDG_KEY_B64|g" \
-	"$DB_TEMPLATE" >"$TMP_DIR/$SNIPPET"
-
-# Fail if any placeholder survived the render.
-if grep -q "{{" "$TMP_DIR/$SNIPPET"; then
-	echo "FATAL: leftover placeholder in rendered snippet:" >&2
-	grep -n "{{" "$TMP_DIR/$SNIPPET" >&2
-	exit 1
-fi
-
-echo "==> Pushing DB snippet to $SYSUSER@$HOST_DEFAULT..."
-scp $SSH_OPTS "$TMP_DIR/$SNIPPET" "$SYSUSER@$HOST_DEFAULT:~/$SNIPPET"
-
-# ---- Create template + install snippet (remote) ----
+# ---- Create the template (remote) ----
 echo "==> Creating DB template $TEMPLATE_VMID ($NAME) on $HOST_DEFAULT..."
 # shellcheck disable=SC2087
 ssh $SSH_OPTS "$SYSUSER@$HOST_DEFAULT" bash -s <<REMOTE
 	set -euo pipefail
 
 	step() { echo ""; echo "==> \$*"; }
-
-	step "Install DB snippet to /var/lib/vz/snippets/"
-	sudo cp ~/$SNIPPET /var/lib/vz/snippets/$SNIPPET
-	rm -f ~/$SNIPPET
 
 	step "Download cloud image"
 	if [ ! -f "$IMAGE_FILE" ]; then

@@ -1,0 +1,6 @@
+---
+- name: Configure the Postgres DB VM
+  hosts: db
+  gather_facts: true
+  roles:
+    - postgres

@@ -1,0 +1,35 @@
+---
+# postgres major version
+postgres_version: "18"
+postgres_service: postgresql
+postgres_conf_dir: "/etc/postgresql/{{ postgres_version }}/main"
+
+postgres_pgdg_uri: https://apt.postgresql.org/pub/repos/apt
+postgres_pgdg_suite: trixie-pgdg
+postgres_pgdg_key_url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+postgres_pgdg_key_fpr: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+postgres_pgdg_key_asc: /var/cache/pgdg-key.asc
+postgres_pgdg_keyring: /etc/apt/keyrings/pgdg.gpg
+postgres_pgdg_sources: /etc/apt/sources.list.d/pgdg.list
+postgres_pgdg_gnupg_home: /root/.gnupg
+
+postgres_packages:
+  - "postgresql-{{ postgres_version }}"
+  - "postgresql-client-{{ postgres_version }}"
+  - "postgresql-{{ postgres_version }}-postgis-3"
+  - "postgresql-{{ postgres_version }}-contrib"
+  - ufw
+  - python3-psycopg2
+  - acl
+
+# pg_hba.conf is generated from this repo file
+postgres_hba_source: "{{ control_dir }}/config/db/pg_hba.conf"
+
+# One pg_hba rule per worker IP
+postgres_hba_worker_line_pat: 'host    all             all             \g<1>/32                 scram-sha-256'
+# Jinja does not decode "\n" in string literals, so the separator is defined once here (YAML does the decoding) and reused.
+postgres_hba_newline: "\n"
+postgres_hba_workers_block: '{{ wywy_worker_ips | map("regex_replace", "^(.*)$", postgres_hba_worker_line_pat) | join(postgres_hba_newline) }}'
+
+# The Jinja open delimiter
+postgres_hba_placeholder_re: '\{\{'

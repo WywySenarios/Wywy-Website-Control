@@ -1,0 +1,5 @@
+---
+ansible_host: >-
+  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~ "/secrets/" ~ wywy_env ~ "/hosts.sops.yaml | grep -w db.internal")).split() | first }}
+wywy_worker_ips: >-
+  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~ "/secrets/" ~ wywy_env ~ "/k8s-workers-hosts.sops | grep -oE ^[0-9.]+")).split() }}

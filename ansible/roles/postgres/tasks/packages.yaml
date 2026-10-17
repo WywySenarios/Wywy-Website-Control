@@ -1,0 +1,78 @@
+---
+- name: Update the apt cache from the base repositories
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  changed_when: false
+
+- name: Ensure the tooling needed to trust a third-party repository is present
+  ansible.builtin.apt:
+    name: gnupg
+    state: present
+  become: true
+
+- name: Ensure the gnupg home used for the key conversion exists
+  ansible.builtin.file:
+    path: "{{ postgres_pgdg_gnupg_home }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  become: true
+
+- name: Fetch the PGDG signing key
+  ansible.builtin.get_url:
+    url: "{{ postgres_pgdg_key_url }}"
+    dest: "{{ postgres_pgdg_key_asc }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Read the fetched key's fingerprint
+  ansible.builtin.command:
+    cmd: "gpg --show-keys --with-colons {{ postgres_pgdg_key_asc }}"
+  become: true
+  register: postgres_pgdg_key_colons
+  changed_when: false
+  environment:
+    GNUPGHOME: "{{ postgres_pgdg_gnupg_home }}"
+
+- name: Assert the fetched key is the pinned PGDG signing key
+  ansible.builtin.assert:
+    that:
+      - postgres_pgdg_key_fpr in postgres_pgdg_key_colons.stdout
+    fail_msg: >-
+      PGDG key fingerprint mismatch (the keyserver pool has served a key colliding with the short ID ACCC4CF8).
+    quiet: true
+
+- name: Install the PGDG keyring
+  ansible.builtin.command:
+    cmd: >-
+      gpg --batch --yes --dearmor
+      --output {{ postgres_pgdg_keyring }} {{ postgres_pgdg_key_asc }}
+    creates: "{{ postgres_pgdg_keyring }}"
+  become: true
+  environment:
+    GNUPGHOME: "{{ postgres_pgdg_gnupg_home }}"
+
+- name: Add the PGDG apt source
+  ansible.builtin.copy:
+    dest: "{{ postgres_pgdg_sources }}"
+    content: "deb [signed-by={{ postgres_pgdg_keyring }}] {{ postgres_pgdg_uri }} {{ postgres_pgdg_suite }} main\n"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Update the apt cache after adding the PGDG repository
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  changed_when: false
+
+- name: Install postgres and its supporting packages
+  ansible.builtin.apt:
+    name: "{{ postgres_packages }}"
+    state: present
+  become: true

@@ -1,0 +1,115 @@
+---
+- name: Ensure postgresql is started and enabled
+  ansible.builtin.service:
+    name: "{{ postgres_service }}"
+    state: started
+    enabled: true
+  become: true
+
+- name: Listen on all interfaces
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_conf_dir }}/postgresql.conf"
+    regexp: '^#?listen_addresses\s*='
+    line: "listen_addresses = '*'"
+    state: present
+  become: true
+  notify: Restart postgresql
+
+- name: Fail closed when no worker IPs are configured
+  ansible.builtin.assert:
+    that:
+      - wywy_worker_ips | length > 0
+    fail_msg: >-
+      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) — refusing
+      to write a pg_hba.conf with no cluster access rules.
+    quiet: true
+
+# pg_hba.conf is generated from the repo file: the <K8S_WORKER_IPS> rule-line
+# token is replaced; comment lines pass through untouched.
+- name: Render pg_hba.conf
+  ansible.builtin.set_fact:
+    postgres_hba_content: >-
+      {{ lookup('file', postgres_hba_source)
+      | replace('{{K8S_WORKER_IPS}}', postgres_hba_workers_block) }}
+
+- name: Assert the render left no placeholder on a rule line
+  ansible.builtin.assert:
+    that:
+      - >-
+        postgres_hba_content.split("\n")
+        | reject('match', '^\s*#')
+        | select('search', postgres_hba_placeholder_re)
+        | list | length == 0
+    fail_msg: "a placeholder survived the pg_hba render on a rule line"
+    quiet: true
+
+- name: Install pg_hba.conf
+  ansible.builtin.copy:
+    content: "{{ postgres_hba_content }}"
+    dest: "{{ postgres_conf_dir }}/pg_hba.conf"
+    owner: root
+    group: postgres
+    mode: "0640"
+  become: true
+  notify: Reload postgresql
+
+- name: Allow SSH before the firewall is enabled
+  community.general.ufw:
+    rule: allow
+    name: ssh
+  become: true
+
+# Pods reach the VM as their worker's IP (Calico SNATs pod -> LAN traffic to
+# the node), so access is gated per worker. There is deliberately no pod-CIDR
+# allow rule — add one only if masquerade is disabled.
+- name: Allow each worker IP on 5432/tcp
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ item }}"
+    to_port: "5432"
+    proto: tcp
+  loop: "{{ wywy_worker_ips }}"
+  become: true
+
+- name: Enable the firewall
+  community.general.ufw:
+    state: enabled
+  become: true
+
+- name: Apply pending postgres config changes before validation
+  ansible.builtin.meta: flush_handlers
+
+- name: Read pg_hba parse errors from the server
+  community.postgresql.postgresql_query:
+    query: "SELECT line_number || ': ' || error AS error FROM pg_hba_file_rules WHERE error IS NOT NULL"
+    login_user: postgres
+  become: true
+  become_user: postgres
+  register: postgres_hba_errors
+  changed_when: false
+
+- name: Assert the server parses pg_hba.conf without errors
+  ansible.builtin.assert:
+    that:
+      - postgres_hba_errors.query_result | length == 0
+    fail_msg: "pg_hba.conf has parse errors: {{ postgres_hba_errors.query_result }}"
+    quiet: true
+
+- name: Read the effective listen_addresses
+  community.postgresql.postgresql_query:
+    query: "SHOW listen_addresses"
+    login_user: postgres
+  become: true
+  become_user: postgres
+  register: postgres_listen_addresses
+  changed_when: false
+
+- name: Assert postgres listens on all interfaces
+  ansible.builtin.assert:
+    that:
+      - postgres_listen_addresses.query_result[0].listen_addresses == '*'
+    fail_msg: >-
+      listen_addresses is
+      '{{ postgres_listen_addresses.query_result[0].listen_addresses }}',
+      expected '*'.
+    quiet: true

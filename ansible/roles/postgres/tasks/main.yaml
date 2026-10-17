@@ -1,0 +1,12 @@
+---
+- name: Wait for cloud-init to finish
+  ansible.builtin.command:
+    cmd: cloud-init status --wait
+  changed_when: false
+  check_mode: false
+
+- name: Install the PGDG repository and the postgres packages
+  ansible.builtin.include_tasks: packages.yaml
+
+- name: Configure postgres
+  ansible.builtin.include_tasks: configure.yaml

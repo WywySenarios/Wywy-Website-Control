@@ -1,6 +1,10 @@
 ---
 all:
   children:
+    db:
+      hosts:
+        db.internal:
+          ansible_user: wywy
     db_pve:
       hosts:
         db-node.internal:
