@@ -1,9 +1,15 @@
 ---
+# We tolerate exit code 2: "finished with recoverable errors".
+# See https://bugzilla.proxmox.com/show_bug.cgi?id=5384 for more detail.
+# TL/DR: Proxmox uses some legacy cloud-init structure to initailize users and more, which causes a deprecation warning.
+# You can run `cloud-init status --long` to see the exact string of warnings (and maybe more that are unrelated to this!).
 - name: Wait for cloud-init to finish
   ansible.builtin.command:
     cmd: cloud-init status --wait
+  register: postgres_cloud_init
   changed_when: false
   check_mode: false
+  failed_when: postgres_cloud_init.rc not in [0, 2]
 
 - name: Install the PGDG repository and the postgres packages
   ansible.builtin.include_tasks: packages.yaml
