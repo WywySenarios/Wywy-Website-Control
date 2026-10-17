@@ -95,6 +95,14 @@
     fail_msg: "pg_hba.conf has parse errors: {{ postgres_hba_errors.query_result }}"
     quiet: true
 
+- name: Apply pg_hba to active database
+  community.postgresql.postgresql_query:
+    query: "SELECT pg_reload_conf()"
+    login_user: postgres
+  become: true
+  become_user: postgres
+  changed_when: false
+
 - name: Read the effective listen_addresses
   community.postgresql.postgresql_query:
     query: "SHOW listen_addresses"
