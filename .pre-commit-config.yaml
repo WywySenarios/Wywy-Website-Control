@@ -10,3 +10,24 @@ repos:
     rev: v8.30.1
     hooks:
       - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: ansible-lint
+        name: ansible-lint
+        entry: scripts/tests/ansible/lint.sh
+        language: system
+        pass_filenames: false
+        files: &ansible-files ^(ansible/|scripts/(install|tests)/ansible)
+      - id: ansible-ruff
+        name: ruff
+        entry: scripts/tests/ansible/ruff.sh
+        language: system
+        pass_filenames: false
+        files: *ansible-files
+      - id: ansible-syntax
+        name: ansible-playbook --syntax-check
+        entry: scripts/tests/ansible/syntax.sh
+        language: system
+        pass_filenames: false
+        files: *ansible-files

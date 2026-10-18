@@ -26,5 +26,10 @@ jobs:
           install -m 0755 /tmp/uv-x86_64-unknown-linux-gnu/uv "$HOME/.local/bin/uv"
           rm -rf /tmp/uv.tar.gz /tmp/uv-x86_64-unknown-linux-gnu
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install the ansible toolchain
+        run: scripts/install/ansible.sh
       - name: Run ansible suite
-        run: scripts/tests/ansible.sh
+        run: |
+          for step in scripts/tests/ansible/*.sh; do
+            "$step"
+          done
