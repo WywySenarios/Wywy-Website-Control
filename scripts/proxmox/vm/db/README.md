@@ -29,5 +29,5 @@ Apply (UPSERT) `.env.network` values to a running VM with the relevant script.
 
 ## Deployment Tests
 
-Remember to run deployments with `test.sh deployment`.
+Remember to run deployments with `scripts/tests/deployment.sh`.
 The helper escapes quoting — passwords may contain any characters.
