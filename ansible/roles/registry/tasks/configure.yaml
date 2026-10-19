@@ -1,0 +1,174 @@
+---
+- name: Fail closed when no worker IPs are configured
+  ansible.builtin.assert:
+    that:
+      - wywy_worker_ips | length > 0
+    fail_msg: >-
+      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) —
+      refusing to run a registry with no cluster access rules.
+    quiet: true
+
+- name: Fail closed when no operator IP is configured
+  ansible.builtin.assert:
+    that:
+      - wywy_operator_ip | length > 0
+    fail_msg: >-
+      wywy_operator_ip is empty — operator.internal is missing from
+      secrets/<env>/hosts.sops, so the operator could not push to the registry.
+    quiet: true
+
+- name: Check the data disk is present
+  ansible.builtin.stat:
+    path: "{{ registry_data_device }}"
+  register: registry_data_disk
+  become: true
+
+- name: Fail closed when the data disk is missing
+  ansible.builtin.assert:
+    that:
+      - registry_data_disk.stat.exists
+    fail_msg: >-
+      {{ registry_data_device }} does not exist. Create the registry VM (its
+      proxmox_vm data-disk step) before running the registry role.
+    quiet: true
+
+- name: Create the ext4 filesystem on the data disk
+  community.general.filesystem:
+    fstype: ext4
+    dev: "{{ registry_data_device }}"
+  become: true
+
+- name: Ensure the image store root exists
+  ansible.builtin.file:
+    path: "{{ registry_data_root }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Mount the data disk at the image store root
+  ansible.posix.mount:
+    path: "{{ registry_data_root }}"
+    src: "{{ registry_data_device }}"
+    fstype: ext4
+    opts: defaults
+    state: mounted
+  become: true
+
+- name: Ensure the credential directory exists
+  ansible.builtin.file:
+    path: "{{ registry_htpasswd_file | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  become: true
+
+- name: Read the admin password from its sops store
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - sops
+      - -d
+      - --output-type
+      - binary
+      - "{{ registry_password_secret }}"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: registry_password_read
+
+- name: Look for an existing htpasswd file
+  ansible.builtin.stat:
+    path: "{{ registry_htpasswd_file }}"
+  become: true
+  register: registry_htpasswd_stat
+
+- name: Verify the stored credential against the sops password
+  ansible.builtin.command:
+    argv:
+      - htpasswd
+      - -vb
+      - "{{ registry_htpasswd_file }}"
+      - "{{ registry_user }}"
+    stdin: "{{ registry_password_read.stdout }}"
+  become: true
+  register: registry_htpasswd_verify
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  no_log: true
+  when: registry_htpasswd_stat.stat.exists
+
+- name: Render the htpasswd entry
+  ansible.builtin.command:
+    argv:
+      - htpasswd
+      - -Bbn
+      - -i
+      - "{{ registry_user }}"
+    stdin: "{{ registry_password_read.stdout }}"
+  become: true
+  register: registry_htpasswd_entry
+  changed_when: false
+  check_mode: false
+  no_log: true
+  when: >-
+    not registry_htpasswd_stat.stat.exists
+    or registry_htpasswd_verify.rc != 0
+
+- name: Install the htpasswd file
+  ansible.builtin.copy:
+    content: "{{ registry_htpasswd_entry.stdout }}\n"
+    dest: "{{ registry_htpasswd_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  no_log: true
+  when: >-
+    not registry_htpasswd_stat.stat.exists
+    or registry_htpasswd_verify.rc != 0
+  notify: Restart the registry
+
+# network_mode: host means the registry binds the VM's own :5000, so the ufw = INPUT rules below (not Docker's DNAT chain) govern who can reach it.
+- name: Run the registry container
+  community.docker.docker_container:
+    name: registry
+    image: "{{ registry_image }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    env:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "{{ registry_htpasswd_realm }}"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    volumes:
+      - "{{ registry_data_root }}:/var/lib/registry"
+      - "{{ registry_htpasswd_file }}:/auth/htpasswd:ro"
+  become: true
+
+- name: Allow SSH before the firewall is enabled
+  community.general.ufw:
+    rule: allow
+    name: ssh
+  become: true
+
+# Pods reach the VM as their worker's IP (Calico SNATs pod -> LAN traffic to
+# the node); the operator pushes from operator.internal. Both are gated
+# explicitly, and there is deliberately no pod-CIDR allow rule.
+- name: Allow the cluster and operator on the registry port
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ item }}"
+    to_port: "{{ registry_port }}"
+    proto: tcp
+  loop: "{{ wywy_worker_ips + [wywy_operator_ip] }}"
+  become: true
+
+- name: Enable the firewall
+  community.general.ufw:
+    state: enabled
+  become: true

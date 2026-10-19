@@ -1,0 +1,12 @@
+---
+- name: Update the apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  changed_when: false
+
+- name: Install the registry and its supporting packages
+  ansible.builtin.apt:
+    name: "{{ registry_packages }}"
+    state: present
+  become: true

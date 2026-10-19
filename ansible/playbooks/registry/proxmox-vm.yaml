@@ -1,0 +1,28 @@
+---
+- name: Create the registry VM from its template
+  hosts: registry_pve
+  gather_facts: false
+  become: true
+  roles:
+    - proxmox_vm
+
+# If you are regenerating the registry VM, remember to remove the old host fingerprint.
+# This guy will not fail fast to fingerprint changes.
+- name: Wait for the registry VM to accept SSH
+  hosts: registry
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH on the clone
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 300
+
+- name: Accept the internal root CA on the registry VM
+  hosts: registry
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install the internal root CA into the system trust store
+      ansible.builtin.include_role:
+        name: internal_ca
+        tasks_from: trust

@@ -17,3 +17,11 @@ all:
       hosts:
         files-node.internal:
           ansible_user: wywy
+    registry:
+      hosts:
+        registry.internal:
+          ansible_user: wywy
+    registry_pve:
+      hosts:
+        registry-node.internal:
+          ansible_user: wywy

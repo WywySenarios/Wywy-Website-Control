@@ -1,0 +1,7 @@
+---
+- name: Restart the registry
+  community.docker.docker_container:
+    name: registry
+    state: started
+    restart: true
+  become: true

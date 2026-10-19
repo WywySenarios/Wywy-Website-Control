@@ -1,0 +1,16 @@
+---
+# We tolerate exit code 2: "finished with recoverable errors".
+# See the postgres role for the Proxmox cloud-init rationale.
+- name: Wait for cloud-init to finish
+  ansible.builtin.command:
+    cmd: cloud-init status --wait
+  register: registry_cloud_init
+  changed_when: false
+  check_mode: false
+  failed_when: registry_cloud_init.rc not in [0, 2]
+
+- name: Install the registry packages
+  ansible.builtin.include_tasks: packages.yaml
+
+- name: Configure the registry
+  ansible.builtin.include_tasks: configure.yaml

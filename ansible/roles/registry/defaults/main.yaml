@@ -1,0 +1,17 @@
+---
+registry_data_device: /dev/sdb
+registry_data_root: /srv/registry
+
+registry_user: admin
+registry_htpasswd_file: /etc/registry/htpasswd
+registry_htpasswd_realm: Registry Realm
+registry_password_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/registry-password.sops"
+
+registry_port: 5000
+registry_image: registry:2
+
+registry_packages:
+  - docker.io
+  - python3-docker
+  - apache2-utils
+  - ufw

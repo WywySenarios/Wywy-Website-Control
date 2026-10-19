@@ -1,0 +1,9 @@
+---
+ansible_host: >-
+  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops ' ~ inventory_hostname) }}
+wywy_worker_ips: >-
+  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~ "/secrets/" ~ wywy_env ~ "/k8s-workers-hosts.sops | grep -oE ^[0-9.]+")).split() }}
+wywy_operator_ip: >-
+  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops operator.internal') }}

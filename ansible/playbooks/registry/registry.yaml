@@ -1,0 +1,6 @@
+---
+- name: Configure the registry VM
+  hosts: registry
+  gather_facts: true
+  roles:
+    - registry

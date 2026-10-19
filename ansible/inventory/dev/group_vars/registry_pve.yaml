@@ -1,0 +1,20 @@
+---
+ansible_host: >-
+  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/proxmox-hosts.sops ' ~ inventory_hostname) }}
+
+# --- proxmox_template role ---
+proxmox_template_vmid: 1303
+proxmox_template_name: "debian-13-registry-template"
+
+# --- proxmox_vm role: the registry VM this hypervisor hosts ---
+proxmox_vm_vmid: 130
+proxmox_vm_name: "registry-vm-dev"
+proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
+proxmox_vm_address: "{{ hostvars['registry.internal'].ansible_host }}"
+proxmox_vm_gateway: "{{ wywy_gateway }}"
+proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+proxmox_vm_disk_size: "16G"
+# Dedicated ext4 disk for /srv/registry.
+# This disk will contain the payload!
+proxmox_vm_data_disk_size: "64G"

@@ -1,0 +1,7 @@
+---
+- name: Build the registry cloud-init template
+  hosts: registry_pve
+  become: true
+  gather_facts: false
+  roles:
+    - proxmox_template
