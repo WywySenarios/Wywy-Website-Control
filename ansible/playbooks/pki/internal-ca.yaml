@@ -1,0 +1,7 @@
+---
+- name: Produce the internal root CA
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - internal_ca

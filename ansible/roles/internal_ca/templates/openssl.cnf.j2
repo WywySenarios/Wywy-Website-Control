@@ -1,0 +1,18 @@
+{#- Root CA config: the only place name constraints can be expressed. -#}
+[ req ]
+prompt             = no
+distinguished_name = dn
+x509_extensions    = v3_ca
+
+[ dn ]
+CN = {{ internal_ca_common_name }}
+O  = {{ internal_ca_organization }}
+
+[ v3_ca ]
+basicConstraints       = critical, CA:true, pathlen:0
+keyUsage               = critical, keyCertSign, cRLSign
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always
+# Certificates beneath this CA may only name hosts under .internal. A stolen
+# CA key therefore cannot impersonate public namespaces.
+nameConstraints        = critical, permitted;DNS:{{ internal_ca_permitted_dns }}

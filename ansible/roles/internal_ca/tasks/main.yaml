@@ -1,0 +1,230 @@
+---
+# Produces the internal root CA once, scoped to one environment.
+# An existing CA is left alone unless internal_ca_force=true.
+
+# internal_ca_env is interpolated into a path below, so whitelist it.
+- name: Validate the target environment
+  ansible.builtin.assert:
+    that:
+      - internal_ca_env in ['dev', 'prod']
+    fail_msg: >-
+      internal_ca_env must be 'dev' or 'prod' (got '{{ internal_ca_env }}').
+    quiet: true
+
+- name: Check whether the internal root CA already exists
+  ansible.builtin.stat:
+    path: "{{ internal_ca_secret }}"
+  delegate_to: localhost
+  become: false
+  register: internal_ca_stat
+
+- name: Check the environment's secrets directory
+  ansible.builtin.stat:
+    path: "{{ internal_ca_control_dir }}/secrets/{{ internal_ca_env }}"
+  delegate_to: localhost
+  become: false
+  register: internal_ca_secrets_dir
+
+- name: Fail closed when the environment's secrets directory is missing
+  ansible.builtin.assert:
+    that:
+      - internal_ca_secrets_dir.stat.isdir | default(false)
+    fail_msg: >-
+      secrets/{{ internal_ca_env }} does not exist. Provision that
+      environment's secrets (and age recipient) before storing a CA there.
+    quiet: true
+  when: not internal_ca_stat.stat.exists or internal_ca_force
+
+- name: Report that the existing root CA is kept
+  ansible.builtin.debug:
+    msg: >-
+      {{ internal_ca_secret }} already exists; nothing to do. Pass
+      -e internal_ca_force=true to rotate it (this invalidates every
+      certificate signed by the old CA).
+  when:
+    - internal_ca_stat.stat.exists
+    - not internal_ca_force
+
+- name: Generate a new internal root CA
+  when: not internal_ca_stat.stat.exists or internal_ca_force
+  block:
+    - name: Create a private temp directory on the controller
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: "{{ internal_ca_temp_prefix }}"
+        suffix: ""
+      delegate_to: localhost
+      become: true
+      register: internal_ca_tmp
+
+    - name: Record the transient CA paths
+      ansible.builtin.set_fact:
+        internal_ca_work_dir: "{{ internal_ca_tmp.path }}"
+        internal_ca_key: "{{ internal_ca_tmp.path }}/internal-ca.key"
+        internal_ca_cert: "{{ internal_ca_tmp.path }}/internal-ca.crt"
+
+    - name: Generate the root CA private key
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - genpkey
+          - -algorithm
+          - RSA
+          - -pkeyopt
+          - rsa_keygen_bits:4096
+          - -out
+          - "{{ internal_ca_key }}"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+
+    - name: Render the name-constrained CA configuration
+      ansible.builtin.template:
+        src: openssl.cnf.j2
+        dest: "{{ internal_ca_work_dir }}/openssl.cnf"
+        owner: root
+        group: root
+        mode: "0600"
+      delegate_to: localhost
+      become: true
+
+    - name: Self-sign the name-constrained root CA certificate
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - req
+          - -x509
+          - -new
+          - -sha256
+          - -key
+          - "{{ internal_ca_key }}"
+          - -config
+          - "{{ internal_ca_work_dir }}/openssl.cnf"
+          - -extensions
+          - v3_ca
+          - -days
+          - "{{ internal_ca_days | string }}"
+          - -out
+          - "{{ internal_ca_cert }}"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+
+    - name: Read the generated root CA material
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      loop:
+        - "{{ internal_ca_key }}"
+        - "{{ internal_ca_cert }}"
+      delegate_to: localhost
+      become: true
+      register: internal_ca_material
+      no_log: true
+
+    - name: Read the generated certificate back from OpenSSL
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - x509
+          - -in
+          - "{{ internal_ca_cert }}"
+          - -noout
+          - -text
+      delegate_to: localhost
+      become: true
+      changed_when: false
+      register: internal_ca_text
+
+    - name: Fail closed when the CA is not name-constrained
+      ansible.builtin.assert:
+        that:
+          - "'CA:TRUE' in internal_ca_text.stdout"
+          - "'Name Constraints' in internal_ca_text.stdout"
+          - "('DNS:' ~ internal_ca_permitted_dns) in internal_ca_text.stdout"
+        fail_msg: >-
+          the generated certificate is not a name-constrained root CA:
+          {{ internal_ca_text.stdout }}
+        quiet: true
+
+    - name: Assemble the CA bundle
+      ansible.builtin.set_fact:
+        internal_ca_bundle: >-
+          {{ {'key': (internal_ca_material.results[0].content | b64decode),
+              'cert': (internal_ca_material.results[1].content | b64decode)}
+             | to_nice_yaml }}
+      no_log: true
+
+    - name: Write the plaintext bundle in the controller-only work directory
+      ansible.builtin.copy:
+        content: "{{ internal_ca_bundle }}"
+        dest: "{{ internal_ca_work_dir }}/internal-ca.yaml"
+        owner: root
+        group: root
+        mode: "0600"
+      delegate_to: localhost
+      become: true
+      no_log: true
+
+    - name: Encrypt the bundle into its sops store
+      ansible.builtin.command:
+        argv:
+          - sops
+          - -e
+          - --config
+          - "{{ internal_ca_control_dir }}/.sops.yaml"
+          - --filename-override
+          - "{{ internal_ca_secret }}"
+          - --input-type
+          - binary
+          - --output-type
+          - binary
+          - "{{ internal_ca_work_dir }}/internal-ca.yaml"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+      register: internal_ca_encrypted
+
+    - name: Install the encrypted bundle
+      ansible.builtin.copy:
+        content: "{{ internal_ca_encrypted.stdout }}\n"
+        dest: "{{ internal_ca_secret }}"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+
+    - name: Verify the encrypted bundle decrypts to the generated certificate
+      ansible.builtin.command:
+        argv:
+          - sudo
+          - sops
+          - -d
+          - --output-type
+          - binary
+          - "{{ internal_ca_secret }}"
+      delegate_to: localhost
+      become: false
+      changed_when: false
+      check_mode: false
+      register: internal_ca_decrypted
+      no_log: true
+
+    - name: Fail closed when the sops bundle does not round-trip
+      ansible.builtin.assert:
+        that:
+          - >-
+            (internal_ca_decrypted.stdout | from_yaml).cert
+            == (internal_ca_material.results[1].content | b64decode)
+        fail_msg: "the encrypted CA bundle does not decrypt to the generated certificate"
+        quiet: true
+      no_log: true
+
+  always:
+    - name: Remove the controller-only temp directory
+      ansible.builtin.file:
+        path: "{{ internal_ca_tmp.path }}"
+        state: absent
+      delegate_to: localhost
+      become: true
+      when:
+        - internal_ca_tmp is defined
+        - internal_ca_tmp.path is defined

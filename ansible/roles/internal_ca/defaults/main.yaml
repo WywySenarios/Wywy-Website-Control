@@ -1,0 +1,19 @@
+---
+internal_ca_control_dir: "{{ ansible_config_file | dirname | dirname }}"
+# The CA is per environment: dev and prod are separate clusters, so neither
+# trusts the other's anchor. The environment is already encoded in the inventory
+# path the entrypoint selects; deriving it from ansible_inventory_sources keeps
+# localhost-only plays (which receive no group_vars) consistent with remote ones.
+internal_ca_env: "{{ ansible_inventory_sources | first | basename }}"
+internal_ca_secret: "{{ internal_ca_control_dir }}/secrets/{{ internal_ca_env }}/internal-ca.sops"
+
+internal_ca_temp_prefix: "wywy-internal-ca-"
+
+internal_ca_common_name: "Wywy Internal Root CA"
+internal_ca_organization: "Wywy"
+internal_ca_permitted_dns: ".internal"
+internal_ca_days: 3650
+
+# An existing CA is not replaced by default.
+# Pass in `-e internal_ca_force=true` to replace it.
+internal_ca_force: false

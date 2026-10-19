@@ -1,0 +1,39 @@
+---
+# Installs the internal root CA into the target host's system trust store.
+# This should be invoked from a proxmox-vm playbook.
+- name: Read the internal root CA from its sops store
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - sops
+      - -d
+      - --output-type
+      - binary
+      - "{{ internal_ca_secret }}"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  check_mode: false
+  register: internal_ca_bundle_read
+  no_log: true
+
+- name: Parse the root CA certificate
+  ansible.builtin.set_fact:
+    internal_ca_certificate: "{{ (internal_ca_bundle_read.stdout | from_yaml).cert }}"
+  no_log: true
+
+- name: Ensure the trust-store tooling is present
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: present
+  become: true
+
+- name: Install the root CA into the system trust store
+  ansible.builtin.copy:
+    content: "{{ internal_ca_certificate }}"
+    dest: /usr/local/share/ca-certificates/internal-ca.crt
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Update the CA certificates
