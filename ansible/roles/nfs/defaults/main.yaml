@@ -1,0 +1,25 @@
+---
+# The exported tree. Each service is /srv/nfs/<name>.
+nfs_export_root: /srv/nfs
+
+# Dedicated XFS disk (scsi1 on the files VM) backing the tree. The mount below
+# adds pquota so the per-service XFS project quotas are enforced.
+nfs_data_device: /dev/sdb
+
+# Shared export options.
+# anonuid/anongid are appended per service so an all_squash write lands on that service's uid/gid.
+nfs_export_opts: rw,sync,no_subtree_check,all_squash
+
+nfs_port: 2049
+
+nfs_packages:
+  - nfs-kernel-server
+  - xfsprogs
+  - ufw
+
+# One entry per exported service
+nfs_services:
+  - name: immich
+    uid: 3001
+    gid: 3001
+    quota: 16G

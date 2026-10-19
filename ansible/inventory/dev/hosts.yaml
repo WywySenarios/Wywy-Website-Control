@@ -9,3 +9,11 @@ all:
       hosts:
         db-node.internal:
           ansible_user: wywy
+    files:
+      hosts:
+        files.internal:
+          ansible_user: wywy
+    files_pve:
+      hosts:
+        files-node.internal:
+          ansible_user: wywy

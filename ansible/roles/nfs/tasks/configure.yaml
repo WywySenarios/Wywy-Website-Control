@@ -1,0 +1,154 @@
+---
+- name: Fail closed when no services are configured
+  ansible.builtin.assert:
+    that:
+      - nfs_services | length > 0
+    fail_msg: >-
+      nfs_services is empty — refusing to configure an NFS server with no
+      exports.
+    quiet: true
+
+- name: Fail closed when no worker IPs are configured
+  ansible.builtin.assert:
+    that:
+      - wywy_worker_ips | length > 0
+    fail_msg: >-
+      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) —
+      refusing to export shares with no cluster access rules.
+    quiet: true
+
+- name: Check the data disk is present
+  ansible.builtin.stat:
+    path: "{{ nfs_data_device }}"
+  register: nfs_data_disk
+  become: true
+
+- name: Fail closed when the data disk is missing
+  ansible.builtin.assert:
+    that:
+      - nfs_data_disk.stat.exists
+    fail_msg: >-
+      {{ nfs_data_device }} does not exist. Create the files VM (its proxmox_vm
+      data-disk step) before running the nfs role.
+    quiet: true
+
+- name: Create the XFS filesystem on the data disk
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ nfs_data_device }}"
+  become: true
+
+- name: Ensure the export root exists
+  ansible.builtin.file:
+    path: "{{ nfs_export_root }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+# pquota enables the XFS project quotas applied per service below.
+- name: Mount the data disk at the export root
+  ansible.posix.mount:
+    path: "{{ nfs_export_root }}"
+    src: "{{ nfs_data_device }}"
+    fstype: xfs
+    opts: defaults,pquota
+    state: mounted
+  become: true
+
+- name: Create the per-service groups
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+  loop: "{{ nfs_services }}"
+  become: true
+
+- name: Create the per-service users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    group: "{{ item.name }}"
+    home: "{{ nfs_export_root }}/{{ item.name }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+  loop: "{{ nfs_services }}"
+  become: true
+
+- name: Create the per-service directories
+  ansible.builtin.file:
+    path: "{{ nfs_export_root }}/{{ item.name }}"
+    state: directory
+    owner: "{{ item.uid }}"
+    group: "{{ item.gid }}"
+    mode: "0750"
+  loop: "{{ nfs_services }}"
+  become: true
+
+# XFS project quotas are named: /etc/projid maps name -> id and /etc/projects
+# maps id -> path. uid doubles as the project id.
+- name: Register the per-service project names
+  ansible.builtin.lineinfile:
+    path: /etc/projid
+    create: true
+    mode: "0644"
+    regexp: "^{{ item.name }}:"
+    line: "{{ item.name }}:{{ item.uid }}"
+  loop: "{{ nfs_services }}"
+  become: true
+
+- name: Register the per-service project paths
+  ansible.builtin.lineinfile:
+    path: /etc/projects
+    create: true
+    mode: "0644"
+    regexp: "^{{ item.uid }}:"
+    line: "{{ item.uid }}:{{ nfs_export_root }}/{{ item.name }}"
+  loop: "{{ nfs_services }}"
+  become: true
+
+- name: Apply the per-service project quotas
+  community.general.xfs_quota:
+    type: project
+    name: "{{ item.name }}"
+    mountpoint: "{{ nfs_export_root }}"
+    bhard: "{{ item.quota }}"
+    state: present
+  loop: "{{ nfs_services }}"
+  become: true
+
+- name: Render /etc/exports
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Re-export the NFS shares
+
+- name: Ensure the NFS server is started and enabled
+  ansible.builtin.service:
+    name: nfs-kernel-server
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow SSH before the firewall is enabled
+  community.general.ufw:
+    rule: allow
+    name: ssh
+  become: true
+
+- name: Allow each worker IP to reach the NFS server
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ item }}"
+    to_port: "{{ nfs_port }}"
+    proto: tcp
+  loop: "{{ wywy_worker_ips }}"
+  become: true
+
+- name: Enable the firewall
+  community.general.ufw:
+    state: enabled
+  become: true

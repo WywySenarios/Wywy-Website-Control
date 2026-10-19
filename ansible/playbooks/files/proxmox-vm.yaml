@@ -1,0 +1,18 @@
+---
+- name: Create the files VM from its template
+  hosts: files_pve
+  gather_facts: false
+  become: true
+  roles:
+    - proxmox_vm
+
+# if you are regenerating the files VM, remember to remove the old host
+# fingerprint. this guy will not fail fast to fingerprint changes.
+- name: Wait for the files VM to accept SSH
+  hosts: files
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH on the clone
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 300

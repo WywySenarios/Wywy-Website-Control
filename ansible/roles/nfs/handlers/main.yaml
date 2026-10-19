@@ -1,0 +1,6 @@
+---
+- name: Re-export the NFS shares
+  ansible.builtin.command:
+    cmd: exportfs -ra
+  changed_when: true
+  become: true

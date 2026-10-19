@@ -1,0 +1,4 @@
+{#- Renders the NFS server's /etc/exports from the nfs_services list. -#}
+{% for svc in nfs_services %}
+{{ nfs_export_root }}/{{ svc.name }}{% for ip in wywy_worker_ips %} {{ ip }}({{ nfs_export_opts }},anonuid={{ svc.uid }},anongid={{ svc.gid }}){% endfor %}
+{% endfor %}

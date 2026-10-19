@@ -1,0 +1,6 @@
+---
+- name: Configure the NFS files VM
+  hosts: files
+  gather_facts: true
+  roles:
+    - nfs

@@ -1,0 +1,7 @@
+---
+- name: Build the files cloud-init template
+  hosts: files_pve
+  become: true
+  gather_facts: false
+  roles:
+    - proxmox_template
