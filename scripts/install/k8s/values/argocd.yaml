@@ -10,6 +10,13 @@
 # copies the ksops + kustomize binaries from the viaductoss/ksops image.
 
 configs:
+  # Helm repositories consumed by Applications.
+  repositories:
+    csi-driver-nfs:
+      name: csi-driver-nfs
+      url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+      type: helm
+
   cm:
     # Enable kustomize KRM exec plugins — required for the ksops generator.
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"

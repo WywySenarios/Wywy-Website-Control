@@ -11,11 +11,12 @@ spec:
     - https://github.com/WywySenarios/Wywy-Website-Control.git
     - https://github.com/WywySenarios/Wywy-Website-Master-Database.git
     - https://github.com/WywySenarios/wywy-config.git
+    - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster
       namespace: "*"
-  # clusterResourceWhitelist — five kinds, required for the app-of-apps tree:
+  # clusterResourceWhitelist, required for the app-of-apps tree:
   #   Namespace (REQUIRED) — every Application uses CreateNamespace=true and
   #     ArgoCD's sync context appends a PreSync Namespace task that runs through
   #     the SAME project permission validator; without Namespace whitelisted,
@@ -25,9 +26,10 @@ spec:
   #   argoproj.io Application/AppProject (defense-in-depth) — Application and
   #     AppProject are NAMESPACED-scope CRDs under ArgoCD 2.x, so an empty
   #     whitelist does NOT deny them; whitelisted for future-proofing.
+  #   storage.k8s.io CSIDriver/StorageClass (REQUIRED)
   # Security trade-off (accepted for dev): any Application in wywy-dev can
-  # create Namespaces/ClusterRoles/ClusterRoleBindings. Revisit for prod's
-  # separate project.
+  # create Namespaces/ClusterRoles/ClusterRoleBindings/CSIDrivers/
+  # StorageClasses. Revisit for prod's separate project.
   clusterResourceWhitelist:
     - group: argoproj.io
       kind: Application
@@ -39,4 +41,8 @@ spec:
       kind: ClusterRole
     - group: rbac.authorization.k8s.io
       kind: ClusterRoleBinding
+    - group: storage.k8s.io
+      kind: CSIDriver
+    - group: storage.k8s.io
+      kind: StorageClass
   roles: []
