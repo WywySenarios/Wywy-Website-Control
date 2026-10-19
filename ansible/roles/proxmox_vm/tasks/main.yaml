@@ -11,10 +11,14 @@
       - >-
         (proxmox_vm_disk_size | regex_replace('[0-9]', '')
         | regex_replace('^[KMGT]$', '')) | length == 0
+      - >-
+        (proxmox_vm_data_disk_size | regex_replace('[0-9]', '')
+        | regex_replace('^[KMGT]$', '')) | length == 0
     fail_msg: >-
       a proxmox_vm_* var is missing or unsafe to pass to qm(1). The VM's
-      identity lives in ansible/inventory/<env>/group_vars/db_pve.yaml; the
-      addresses come from the encrypted hosts file.
+      identity lives in ansible/inventory/<env>/group_vars/<group>_pve.yaml;
+      the addresses come from the encrypted hosts file. proxmox_vm_data_disk_size
+      is a human size such as "128G".
     quiet: true
 
 # check_mode is disabled for the reads because the guards below need real output
@@ -64,6 +68,17 @@
   changed_when: true
   when: not (proxmox_vm_cfg.stdout | regex_search('(?m)^scsi0:.*size=' ~ proxmox_vm_disk_size ~ '$'))
 
+# scsi1 is the optional data disk: the NFS role formats it XFS and mounts it.
+- name: Create the data disk
+  ansible.builtin.command:
+    cmd: >-
+      qm set {{ proxmox_vm_vmid }}
+      --scsi1 {{ proxmox_vm_data_disk_storage }}:{{ proxmox_vm_data_disk_size_gib }}
+  changed_when: true
+  when:
+    - proxmox_vm_data_disk_size | length > 0
+    - "'scsi1:' not in proxmox_vm_cfg.stdout"
+
 - name: Read the power state
   ansible.builtin.command:
     cmd: "qm status {{ proxmox_vm_vmid }}"
@@ -107,3 +122,13 @@
           {{ proxmox_vm_verify.stdout }}
           {{ proxmox_vm_verify_state.stdout }}
         quiet: true
+
+    - name: Assert the data disk exists
+      ansible.builtin.assert:
+        that:
+          - "'scsi1:' in proxmox_vm_verify.stdout"
+        fail_msg: >-
+          the data disk (scsi1) was not created:
+          {{ proxmox_vm_verify.stdout }}
+        quiet: true
+      when: proxmox_vm_data_disk_size | length > 0

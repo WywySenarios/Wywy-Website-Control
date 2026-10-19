@@ -1,0 +1,12 @@
+---
+# Optional second disk, created only when a size is given. The NFS files VM
+# uses it as the dedicated /srv/nfs volume, so the share is isolated from the
+# OS disk and survives an OS reinstall.
+# Same human form as proxmox_vm_disk_size (e.g. "128G").
+proxmox_vm_data_disk_size: ""
+# qm allocates a new disk with STORAGE_ID:SIZE_IN_GiB, a bare integer, so the size above is converted to GiB before it reaches qm(1).
+proxmox_vm_data_disk_size_gib: >-
+  {{ (((proxmox_vm_data_disk_size | human_to_bytes) / 1073741824) | int)
+     if proxmox_vm_data_disk_size | length > 0 else "" }}
+# Storage pool for the data volume, which becomes <storage>:vm-<vmid>-disk-1.
+proxmox_vm_data_disk_storage: data
