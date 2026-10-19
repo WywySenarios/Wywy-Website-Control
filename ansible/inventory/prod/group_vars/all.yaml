@@ -3,7 +3,7 @@ wywy_env: prod
 control_dir: "{{ ansible_config_file | dirname | dirname }}"
 wywy_gateway: >-
   {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops.yaml gateway.internal') }}
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops gateway.internal') }}
 wywy_nameserver: >-
   {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops.yaml nameserver.internal') }}
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops nameserver.internal') }}

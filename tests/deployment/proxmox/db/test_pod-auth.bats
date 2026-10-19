@@ -3,20 +3,20 @@
 # ephemeral postgres pod.
 #
 # Validates that a k8s pod can reach the dev DB VM and authenticate with the
-# password from secrets/dev/postgres-password.sops.yaml.
+# password from secrets/dev/postgres-password.sops.
 #
 # Dev only — tests never run against prod.
 #
 # Prerequisites:
 #   - kubectl configured for the invoking user
-#   - hosts file entry db.internal (secrets/dev/hosts.sops.yaml)
-#   - secrets/dev/postgres-password.sops.yaml (decrypt needs root — age key)
+#   - hosts file entry db.internal (secrets/dev/hosts.sops)
+#   - secrets/dev/postgres-password.sops (decrypt needs root — age key)
 #   - postgres password set on the server to match the sops value
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 SECRETS_DIR="$CONTROL_DIR/secrets"
-PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops.yaml"
+PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops"
 POD="pg-auth-test-$$"
 IMAGE="postgres:18"
 
@@ -25,9 +25,9 @@ setup() {
     # shellcheck source=../../../../scripts/lib/hosts.sh
     source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
     DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
-    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops.yaml not found"
-    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops.yaml"
-    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops.yaml decrypted to an empty value"
+    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops not found"
+    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
+    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops decrypted to an empty value"
     command -v kubectl >/dev/null 2>&1 || skip "kubectl not found"
     kubectl cluster-info >/dev/null 2>&1 || skip "kubectl cannot reach the cluster"
 }

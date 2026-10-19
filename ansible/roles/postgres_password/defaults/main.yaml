@@ -1,5 +1,5 @@
 ---
-postgres_password_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/postgres-password.sops.yaml"
+postgres_password_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/postgres-password.sops"
 # Ping an IP so scram auth is attempted (rather than a login with a linux user)
 postgres_password_probe_argv:
   - psql

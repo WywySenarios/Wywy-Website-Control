@@ -16,7 +16,7 @@
 # Prerequisites:
 #   - kubectl configured for the invoking user, cluster on the same LAN as
 #     the DB VM
-#   - hosts file entry db.internal (secrets/dev/hosts.sops.yaml)
+#   - hosts file entry db.internal (secrets/dev/hosts.sops)
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"

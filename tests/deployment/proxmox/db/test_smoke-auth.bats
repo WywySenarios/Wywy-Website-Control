@@ -2,7 +2,7 @@
 # Deployment test: quick postgres password check over the VM loopback.
 #
 # Connects to the dev DB VM via ssh and runs psql over TCP to 127.0.0.1 with
-# the password from secrets/dev/postgres-password.sops.yaml. Verifies the password
+# the password from secrets/dev/postgres-password.sops. Verifies the password
 # itself (scram over TCP) WITHOUT the cluster — use this to rule the DB VM in
 # or out, then use test_pod-auth.bats for the full pod → ufw → DB path.
 #
@@ -15,13 +15,13 @@
 #   - ssh key auth from the invoking user to wywy@<DB_IP> (VMs are provisioned
 #     with --ciuser wywy and the user's authorized_keys)
 #   - root owns the sops age key
-#   - hosts file entry db.internal (secrets/dev/hosts.sops.yaml)
+#   - hosts file entry db.internal (secrets/dev/hosts.sops)
 #   - postgres password set on the server to match the sops value
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
 CONTROL_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 SECRETS_DIR="$CONTROL_DIR/secrets"
-PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops.yaml"
+PASSWORD_SOPS="$SECRETS_DIR/dev/postgres-password.sops"
 SYSUSER="wywy"
 SSH_OPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
@@ -30,9 +30,9 @@ setup() {
     # shellcheck source=../../../../scripts/lib/hosts.sh
     source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
     DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
-    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops.yaml not found"
-    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops.yaml"
-    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops.yaml decrypted to an empty value"
+    [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops not found"
+    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
+    [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops decrypted to an empty value"
 }
 
 @test "smoke auth: sops password can login to database via 127.0.0.1 loopback" {

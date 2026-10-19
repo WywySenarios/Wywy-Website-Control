@@ -38,7 +38,7 @@ HOSTS_MODE="$MODE"
 source "$SCRIPT_DIR/../../lib/hosts.sh"
 
 [[ -f "$HOSTS_FILE" ]] || {
-	echo "Error: $HOSTS_FILE not found (secrets/$MODE/hosts.sops.yaml)" >&2
+	echo "Error: $HOSTS_FILE not found (secrets/$MODE/hosts.sops)" >&2
 	exit 1
 }
 

@@ -23,7 +23,7 @@ dev | prod) ;;
 	exit 1
 	;;
 esac
-HOSTS_FILE="$hosts_control_dir/secrets/$HOSTS_MODE/hosts.sops.yaml"
+HOSTS_FILE="$hosts_control_dir/secrets/$HOSTS_MODE/hosts.sops"
 
 hosts_ip() {
 	local name="${1:-}" plain ip
