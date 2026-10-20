@@ -45,6 +45,11 @@ spec:
                 secretKeyRef:
                   name: jenkins-github-pat
                   key: token
+            - name: JENKINS_GITHUB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-github-pat
+                  key: username
             - name: JENKINS_REGISTRY_USER
               valueFrom:
                 secretKeyRef:
