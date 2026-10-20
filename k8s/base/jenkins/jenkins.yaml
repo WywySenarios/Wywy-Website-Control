@@ -201,3 +201,31 @@ jobs:
         }
       }
     }
+- script: |
+    multibranchPipelineJob('Wywy-Website-Control') {
+      branchSources {
+        github {
+          id('control')
+          scanCredentialsId('github-pat')
+          repoOwner('WywySenarios')
+          repository('Wywy-Website-Control')
+          buildForkPRHead(false)
+          buildForkPRMerge(false)
+        }
+      }
+      factory {
+        workflowBranchProjectFactory {
+          scriptPath('Jenkinsfile')
+        }
+      }
+      orphanedItemStrategy {
+        discardOldItems {
+          numToKeep(20)
+        }
+      }
+      triggers {
+        periodicFolderTrigger {
+          interval('2')
+        }
+      }
+    }
