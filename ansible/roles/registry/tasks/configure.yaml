@@ -89,7 +89,7 @@
   ansible.builtin.command:
     argv:
       - htpasswd
-      - -vb
+      - -vbi
       - "{{ registry_htpasswd_file }}"
       - "{{ registry_user }}"
     stdin: "{{ registry_password_read.stdout }}"
@@ -132,6 +132,9 @@
     or registry_htpasswd_verify.rc != 0
   notify: Restart the registry
 
+- name: Configure the registry TLS certificate
+  ansible.builtin.include_tasks: tls.yaml
+
 # network_mode: host means the registry binds the VM's own :5000, so the ufw = INPUT rules below (not Docker's DNAT chain) govern who can reach it.
 - name: Run the registry container
   community.docker.docker_container:
@@ -145,9 +148,13 @@
       REGISTRY_AUTH_HTPASSWD_REALM: "{{ registry_htpasswd_realm }}"
       REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+      REGISTRY_HTTP_ADDR: "0.0.0.0:{{ registry_port }}"
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/registry.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/registry.key
     volumes:
       - "{{ registry_data_root }}:/var/lib/registry"
       - "{{ registry_htpasswd_file }}:/auth/htpasswd:ro"
+      - "{{ registry_tls_dir }}:/certs:ro"
   become: true
 
 - name: Allow SSH before the firewall is enabled

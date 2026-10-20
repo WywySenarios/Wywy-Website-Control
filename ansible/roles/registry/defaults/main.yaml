@@ -10,6 +10,18 @@ registry_password_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/registry-pas
 registry_port: 5000
 registry_image: registry:2
 
+registry_internal_ca_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/internal-ca.sops"
+registry_tls_dir: /etc/registry/tls
+registry_tls_cert: "{{ registry_tls_dir }}/registry.crt"
+registry_tls_key: "{{ registry_tls_dir }}/registry.key"
+registry_tls_cn: registry.internal
+registry_tls_days: 825
+# Re-issue certificate when fewer than 30 days remain.
+registry_tls_renew_seconds: 2592000
+registry_tls_temp_prefix: "wywy-registry-tls-"
+# We need to restart the Docker daemon to pick up on new certificates.
+registry_restart_operator_docker: true
+
 registry_packages:
   - docker.io
   - python3-docker

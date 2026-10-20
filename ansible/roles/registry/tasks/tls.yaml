@@ -1,0 +1,317 @@
+---
+- name: Read the internal root CA bundle from its sops store
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - sops
+      - -d
+      - --output-type
+      - binary
+      - "{{ registry_internal_ca_secret }}"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: registry_ca_bundle_read
+
+- name: Parse the internal root CA key and certificate
+  ansible.builtin.set_fact:
+    registry_ca_key: "{{ (registry_ca_bundle_read.stdout | from_yaml).key }}"
+    registry_ca_cert: "{{ (registry_ca_bundle_read.stdout | from_yaml).cert }}"
+  no_log: true
+
+- name: Check for an existing registry TLS certificate
+  ansible.builtin.stat:
+    path: "{{ registry_tls_cert }}"
+  become: true
+  register: registry_tls_cert_stat
+
+- name: Check for an existing registry TLS private key
+  ansible.builtin.stat:
+    path: "{{ registry_tls_key }}"
+  become: true
+  register: registry_tls_key_stat
+
+- name: Check the existing certificate's remaining lifetime
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ registry_tls_cert }}"
+      - -noout
+      - -checkend
+      - "{{ registry_tls_renew_seconds | string }}"
+  become: true
+  register: registry_tls_cert_check
+  changed_when: false
+  failed_when: false
+  when: registry_tls_cert_stat.stat.exists
+
+- name: Check the existing certificate's name
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ registry_tls_cert }}"
+      - -noout
+      - -checkhost
+      - "{{ registry_tls_cn }}"
+  become: true
+  register: registry_tls_host_check
+  changed_when: false
+  failed_when: false
+  when: registry_tls_cert_stat.stat.exists
+
+- name: Initialize the recorded CA fingerprint
+  ansible.builtin.set_fact:
+    registry_tls_ca_fingerprint_content: ""
+
+- name: Check for a recorded CA fingerprint
+  ansible.builtin.stat:
+    path: "{{ registry_tls_dir }}/ca.sha256"
+  become: true
+  register: registry_tls_ca_fingerprint_stat
+  when: registry_tls_cert_stat.stat.exists
+
+- name: Read the recorded CA fingerprint
+  ansible.builtin.slurp:
+    src: "{{ registry_tls_dir }}/ca.sha256"
+  become: true
+  register: registry_tls_ca_fingerprint
+  when:
+    - registry_tls_cert_stat.stat.exists
+    - registry_tls_ca_fingerprint_stat.stat.exists | default(false)
+
+- name: Decode the recorded CA fingerprint
+  ansible.builtin.set_fact:
+    registry_tls_ca_fingerprint_content: "{{ registry_tls_ca_fingerprint.content | b64decode | trim }}"
+  when:
+    - registry_tls_cert_stat.stat.exists
+    - registry_tls_ca_fingerprint_stat.stat.exists | default(false)
+
+- name: Determine whether the registry TLS certificate must be (re)issued
+  ansible.builtin.set_fact:
+    registry_tls_needs_issue: >-
+      {{
+        (not registry_tls_cert_stat.stat.exists)
+        or (not registry_tls_key_stat.stat.exists)
+        or ((registry_tls_cert_check.rc | default(1)) != 0)
+        or ((registry_tls_host_check.rc | default(1)) != 0)
+        or (registry_tls_ca_fingerprint_content != (registry_ca_cert | hash('sha256')))
+      }}
+
+- name: Issue the registry TLS certificate
+  when: registry_tls_needs_issue | bool
+  block:
+    - name: Create a controller-only TLS work directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: "{{ registry_tls_temp_prefix }}"
+        suffix: ""
+      delegate_to: localhost
+      become: true
+      register: registry_tls_tmp
+
+    - name: Write the internal CA private key for signing
+      ansible.builtin.copy:
+        content: "{{ registry_ca_key }}"
+        dest: "{{ registry_tls_tmp.path }}/ca.key"
+        owner: root
+        group: root
+        mode: "0600"
+      delegate_to: localhost
+      become: true
+      no_log: true
+
+    - name: Write the internal CA certificate for signing
+      ansible.builtin.copy:
+        content: "{{ registry_ca_cert }}"
+        dest: "{{ registry_tls_tmp.path }}/ca.crt"
+        owner: root
+        group: root
+        mode: "0644"
+      delegate_to: localhost
+      become: true
+      no_log: true
+
+    - name: Generate the registry private key
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - genpkey
+          - -algorithm
+          - RSA
+          - -pkeyopt
+          - rsa_keygen_bits:2048
+          - -out
+          - "{{ registry_tls_tmp.path }}/registry.key"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+
+    - name: Render the leaf certificate extensions
+      ansible.builtin.copy:
+        content: |
+          basicConstraints = critical,CA:FALSE
+          keyUsage = critical,digitalSignature,keyEncipherment
+          extendedKeyUsage = serverAuth
+          subjectAltName = DNS:{{ registry_tls_cn }}
+          subjectKeyIdentifier = hash
+          authorityKeyIdentifier = keyid,issuer
+        dest: "{{ registry_tls_tmp.path }}/ext.cnf"
+        owner: root
+        group: root
+        mode: "0600"
+      delegate_to: localhost
+      become: true
+
+    - name: Generate the registry certificate signing request
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - req
+          - -new
+          - -sha256
+          - -key
+          - "{{ registry_tls_tmp.path }}/registry.key"
+          - -subj
+          - "/CN={{ registry_tls_cn }}"
+          - -out
+          - "{{ registry_tls_tmp.path }}/registry.csr"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+
+    - name: Sign the registry certificate with the internal CA
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - x509
+          - -req
+          - -sha256
+          - -days
+          - "{{ registry_tls_days | string }}"
+          - -in
+          - "{{ registry_tls_tmp.path }}/registry.csr"
+          - -CA
+          - "{{ registry_tls_tmp.path }}/ca.crt"
+          - -CAkey
+          - "{{ registry_tls_tmp.path }}/ca.key"
+          - -CAcreateserial
+          - -extfile
+          - "{{ registry_tls_tmp.path }}/ext.cnf"
+          - -out
+          - "{{ registry_tls_tmp.path }}/registry.crt"
+      delegate_to: localhost
+      become: true
+      changed_when: true
+
+    - name: Verify the issued certificate against the internal CA
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - verify
+          - -CAfile
+          - "{{ registry_tls_tmp.path }}/ca.crt"
+          - "{{ registry_tls_tmp.path }}/registry.crt"
+      delegate_to: localhost
+      become: true
+      changed_when: false
+
+    - name: Read the issued certificate and key
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      loop:
+        - "{{ registry_tls_tmp.path }}/registry.crt"
+        - "{{ registry_tls_tmp.path }}/registry.key"
+      delegate_to: localhost
+      become: true
+      register: registry_tls_material
+      no_log: true
+
+    - name: Ensure the registry TLS directory exists
+      ansible.builtin.file:
+        path: "{{ registry_tls_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+      become: true
+
+    - name: Install the registry TLS certificate
+      ansible.builtin.copy:
+        content: "{{ registry_tls_material.results[0].content | b64decode }}"
+        dest: "{{ registry_tls_cert }}"
+        owner: root
+        group: root
+        mode: "0644"
+      become: true
+      notify: Restart the registry
+
+    - name: Install the registry TLS private key
+      ansible.builtin.copy:
+        content: "{{ registry_tls_material.results[1].content | b64decode }}"
+        dest: "{{ registry_tls_key }}"
+        owner: root
+        group: root
+        mode: "0600"
+      become: true
+      no_log: true
+      notify: Restart the registry
+
+    - name: Record the CA fingerprint used for the certificate
+      ansible.builtin.copy:
+        content: "{{ registry_ca_cert | hash('sha256') }}\n"
+        dest: "{{ registry_tls_dir }}/ca.sha256"
+        owner: root
+        group: root
+        mode: "0644"
+      become: true
+
+  always:
+    - name: Remove the controller-only TLS work directory
+      ansible.builtin.file:
+        path: "{{ registry_tls_tmp.path }}"
+        state: absent
+      delegate_to: localhost
+      become: true
+      when:
+        - registry_tls_tmp is defined
+        - registry_tls_tmp.path is defined
+
+# Docker reads per-registry CA bundles from /etc/docker/certs.d. The operator
+# is the Ansible controller, so this is the host that runs docker push.
+- name: Ensure the operator Docker trust directory exists
+  ansible.builtin.file:
+    path: "/etc/docker/certs.d/{{ registry_tls_cn }}:{{ registry_port }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  delegate_to: localhost
+  become: true
+
+- name: Trust the internal CA for the operator Docker daemon
+  ansible.builtin.copy:
+    content: "{{ registry_ca_cert }}"
+    dest: "/etc/docker/certs.d/{{ registry_tls_cn }}:{{ registry_port }}/ca.crt"
+    owner: root
+    group: root
+    mode: "0644"
+  delegate_to: localhost
+  become: true
+  register: registry_operator_ca
+  no_log: true
+
+- name: Restart the operator Docker daemon to load the internal CA
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+  delegate_to: localhost
+  become: true
+  when:
+    - registry_operator_ca is changed
+    - registry_restart_operator_docker | bool
