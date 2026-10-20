@@ -75,6 +75,33 @@ All secrets are located under `./secrets`, organized per environment (`secrets/d
 | secrets/shared/id_ed25519     | The private SSH key to use when querying another service. |
 | secrets/shared/id_ed25519.pub | The public SSH key to use when querying another service.  |
 
+## Jenkins GitHub PAT
+
+The Jenkins controller uses a fine-grained GitHub PAT. Create it in GitHub and store it as a Kubernetes Secret manifest at `k8s/dev/jenkins/secrets/jenkins-github-pat.sops.yaml`; it renders into the `ci` namespace as `jenkins-github-pat`.
+
+Grant repository access to every repository Jenkins builds, plus `wywy-config` because it is checked out as a submodule.
+
+Repository permissions:
+
+- **Contents: Read-only** — clone, checkout, recursive submodules.
+- **Metadata: Read-only** — mandatory; GitHub selects it automatically.
+- **Pull requests: Read-only** — Multibranch PR discovery.
+- **Commit statuses: Read and write** — publish the `Jenkins CI` status that branch protection requires.
+
+Do **not** grant:
+
+- `Contents: Write`
+- `Actions`
+- `Administration`
+- `Webhooks`
+- `Secrets`
+- `Workflows`
+- `Packages`
+- `Deployments`
+- `Environments`
+
+If the organization enforces SAML/SSO, authorize the token for the organization. Set an expiry and rotate it before it lapses; an expired PAT breaks every multibranch scan and status update.
+
 # File Permissions
 
 Every Wywy-Website file except secrets should be readable by GID 2523. The user who installs the services will automatically be added to this group.
