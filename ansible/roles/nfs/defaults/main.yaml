@@ -12,6 +12,8 @@ nfs_export_opts: rw,sync,no_subtree_check,all_squash
 
 nfs_port: 2049
 
+nfs_export_clients: >-
+  {{ (wywy_worker_ips + [wywy_control_plane_ip, wywy_pod_cidr]) | unique }}
 nfs_packages:
   - nfs-kernel-server
   - xfsprogs

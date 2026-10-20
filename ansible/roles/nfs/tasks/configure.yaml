@@ -17,6 +17,25 @@
       refusing to export shares with no cluster access rules.
     quiet: true
 
+- name: Fail closed when the control-plane IP is not configured
+  ansible.builtin.assert:
+    that:
+      - wywy_control_plane_ip | length > 0
+    fail_msg: >-
+      wywy_control_plane_ip is empty (secrets/<env>/hosts.sops
+      control-plane.internal) — the CSI controller mounts from the control-plane
+      node, so exports would time out.
+    quiet: true
+
+- name: Fail closed when the pod CIDR is not configured
+  ansible.builtin.assert:
+    that:
+      - wywy_pod_cidr | length > 0
+    fail_msg: >-
+      wywy_pod_cidr is empty (secrets/<env>/k8s-pod-cidr.sops) — refusing to
+      export shares with an unknown pod network.
+    quiet: true
+
 - name: Check the data disk is present
   ansible.builtin.stat:
     path: "{{ nfs_data_device }}"
@@ -139,13 +158,13 @@
     name: ssh
   become: true
 
-- name: Allow each worker IP to reach the NFS server
+- name: Allow each export client to reach the NFS server
   community.general.ufw:
     rule: allow
     from_ip: "{{ item }}"
     to_port: "{{ nfs_port }}"
     proto: tcp
-  loop: "{{ wywy_worker_ips }}"
+  loop: "{{ nfs_export_clients }}"
   become: true
 
 - name: Enable the firewall

@@ -1,4 +1,5 @@
 {#- Renders the NFS server's /etc/exports from the nfs_services list. -#}
-{% for svc in nfs_services %}
-{{ nfs_export_root }}/{{ svc.name }}{% for ip in wywy_worker_ips %} {{ ip }}({{ nfs_export_opts }},anonuid={{ svc.uid }},anongid={{ svc.gid }}){% endfor %}
-{% endfor %}
+{#- One line per service. The explicit newline matters: Ansible's Jinja has
+    trim_blocks=True, which would otherwise strip the newline after the inner
+    endfor and concatenate consecutive service lines into one invalid line. -#}
+{% for svc in nfs_services %}{{ nfs_export_root }}/{{ svc.name }}{% for client in nfs_export_clients %} {{ client }}({{ nfs_export_opts }},anonuid={{ svc.uid }},anongid={{ svc.gid }}){% endfor %}{{ '\n' }}{% endfor %}

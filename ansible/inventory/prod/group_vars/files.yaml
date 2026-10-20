@@ -3,4 +3,11 @@ ansible_host: >-
   {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~
   "/secrets/" ~ wywy_env ~ "/hosts.sops | grep -w files.internal")).split() | first }}
 wywy_worker_ips: >-
-  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~ "/secrets/" ~ wywy_env ~ "/k8s-workers-hosts.sops | grep -oE ^[0-9.]+")).split() }}
+  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~
+  "/secrets/" ~ wywy_env ~ "/k8s-workers-hosts.sops | grep -oE ^[0-9.]+")).split() }}
+wywy_control_plane_ip: >-
+  {{ (lookup('pipe', "sudo sops -d --output-type binary " ~ control_dir ~
+  "/secrets/" ~ wywy_env ~ "/hosts.sops | grep -w control-plane.internal")).split() | first }}
+wywy_pod_cidr: >-
+  {{ (lookup('pipe', "sudo sops -d --input-type json " ~ control_dir ~
+  '/secrets/' ~ wywy_env ~ '/k8s-pod-cidr.sops')).strip() }}
