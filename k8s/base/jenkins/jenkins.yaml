@@ -181,8 +181,12 @@ jobs:
           scanCredentialsId('github-pat')
           repoOwner('WywySenarios')
           repository('Wywy-Website-Master-Database')
-          buildForkPRHead(false)
+          buildOriginBranch(true)
+          buildOriginBranchWithPR(true)
+          buildOriginPRMerge(true)
+          buildOriginPRHead(false)
           buildForkPRMerge(false)
+          buildForkPRHead(false)
         }
       }
       factory {
@@ -209,8 +213,12 @@ jobs:
           scanCredentialsId('github-pat')
           repoOwner('WywySenarios')
           repository('Wywy-Website-Control')
-          buildForkPRHead(false)
+          buildOriginBranch(true)
+          buildOriginBranchWithPR(true)
+          buildOriginPRMerge(true)
+          buildOriginPRHead(false)
           buildForkPRMerge(false)
+          buildForkPRHead(false)
         }
       }
       factory {
