@@ -18,4 +18,5 @@ resources:
   - app-master-database.yaml
   - app-master-database-secrets.yaml
   - app-csi-driver-nfs.yaml
+  - app-jenkins.yaml
   - app-secrets.yaml

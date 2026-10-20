@@ -77,7 +77,7 @@ All secrets are located under `./secrets`, organized per environment (`secrets/d
 
 ## Jenkins GitHub PAT
 
-The Jenkins controller uses a fine-grained GitHub PAT. Create it in GitHub and store it as a Kubernetes Secret manifest at `k8s/dev/jenkins/secrets/jenkins-github-pat.sops.yaml`; it renders into the `ci` namespace as `jenkins-github-pat`.
+The Jenkins controller uses a fine-grained GitHub PAT. Create it in GitHub and store it as a Kubernetes Secret manifest at `k8s/dev/jenkins/secrets/jenkins-github-pat.sops.yaml`; it renders into the `jenkins` namespace as `jenkins-github-pat`.
 
 Grant repository access to every repository Jenkins builds, plus `wywy-config` because it is checked out as a submodule.
 
