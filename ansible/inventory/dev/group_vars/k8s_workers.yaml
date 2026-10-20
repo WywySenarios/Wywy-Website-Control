@@ -1,0 +1,6 @@
+---
+# TEMPORARY: workers are still cloud-init-managed and are not part of the long-term Ansible worker role.
+ansible_host: >-
+  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+  control_dir ~ '/secrets/' ~ wywy_env ~ '/k8s-workers-hosts.sops ' ~
+  inventory_hostname) }}

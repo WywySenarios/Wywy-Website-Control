@@ -25,3 +25,12 @@ all:
       hosts:
         registry-node.internal:
           ansible_user: wywy
+    # TEMPORARY: workers are still cloud-init-managed.
+    k8s_workers:
+      hosts:
+        k8s-worker-1.internal:
+          ansible_user: wywy
+        k8s-worker-2.internal:
+          ansible_user: wywy
+        k8s-worker-3.internal:
+          ansible_user: wywy
