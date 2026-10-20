@@ -102,6 +102,10 @@ Do **not** grant:
 
 If the organization enforces SAML/SSO, authorize the token for the organization. Set an expiry and rotate it before it lapses; an expired PAT breaks every multibranch scan and status update.
 
+## Jenkins admin
+
+The controller's `admin` password is at `k8s/dev/jenkins/secretsjenkins-admin.sops.yaml`.
+
 # File Permissions
 
 Every Wywy-Website file except secrets should be readable by GID 2523. The user who installs the services will automatically be added to this group.

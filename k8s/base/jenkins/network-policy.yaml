@@ -1,0 +1,78 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jenkins-controller
+  labels:
+    app: jenkins-controller
+spec:
+  podSelector:
+    matchLabels:
+      app: jenkins-controller
+  policyTypes:
+    - Ingress
+  # The controller is trusted and has no egress policy. It must reach the API server, GitHub, and the registry.
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: jenkins-agent
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jenkins-agent
+  labels:
+    app: jenkins-agent
+spec:
+  podSelector:
+    matchLabels:
+      app: jenkins-agent
+  policyTypes:
+    - Egress
+  # Agents initiate every connection. The registry CIDR is replaced in the dev
+  # overlay from the KSOPS-rendered registry-endpoint ConfigMap.
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 203.0.113.0/32
+      ports:
+        - protocol: TCP
+          port: 5000
+    - to:
+        - podSelector:
+            matchLabels:
+              app: jenkins-controller
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50000

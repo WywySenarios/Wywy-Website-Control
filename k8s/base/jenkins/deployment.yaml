@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  labels:
+    app: jenkins-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jenkins-controller
+  template:
+    metadata:
+      labels:
+        app: jenkins-controller
+    spec:
+      serviceAccountName: jenkins
+      imagePullSecrets:
+        - name: regcred
+      securityContext:
+        runAsUser: 3002
+        runAsGroup: 3002
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: jenkins
+          image: registry.internal:5000/jenkins:2.580.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: jnlp
+              containerPort: 50000
+          env:
+            - name: CASC_JENKINS_CONFIG
+              value: /var/jenkins_home/casc_configs/jenkins.yaml
+            - name: JAVA_OPTS
+              value: -Djenkins.install.runSetupWizard=false
+            - name: JENKINS_SLAVE_AGENT_PORT
+              value: "50000"
+            - name: JENKINS_GITHUB_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-github-pat
+                  key: token
+            - name: JENKINS_REGISTRY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-registry-creds
+                  key: username
+            - name: JENKINS_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-registry-creds
+                  key: password
+            - name: JENKINS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin
+                  key: password
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: casc-config
+              mountPath: /var/jenkins_home/casc_configs
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2
+              memory: 4Gi
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-home
+        - name: casc-config
+          configMap:
+            name: jenkins-casc

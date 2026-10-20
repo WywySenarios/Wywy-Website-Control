@@ -1,0 +1,203 @@
+jenkins:
+  systemMessage: Wywy Jenkins
+  numExecutors: 0
+  slaveAgentPort: 50000
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+      - id: admin
+        password: ${JENKINS_ADMIN_PASSWORD}
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  clouds:
+  - kubernetes:
+      name: kubernetes
+      serverUrl: https://kubernetes.default.svc
+      namespace: jenkins
+      jenkinsUrl: http://jenkins.jenkins.svc.cluster.local:8080
+      jenkinsTunnel: jenkins.jenkins.svc.cluster.local:50000
+      containerCapStr: '10'
+      maxRequestsPerHostStr: '32'
+      templates:
+      - name: generic
+        label: generic
+        serviceAccount: jenkins-agent
+        nodeUsageMode: NORMAL
+        instanceCap: 5
+        idleMinutes: 5
+        activeDeadlineSeconds: 3600
+        yaml: |
+          metadata:
+            labels:
+              app: jenkins-agent
+        containers:
+        - name: jnlp
+          image: registry.internal:5000/jenkins-agent:3391.va_37fa_a_305d6d-5
+          alwaysPullImage: true
+          workingDir: /home/jenkins/agent
+          privileged: true
+          resourceRequestCpu: 250m
+          resourceRequestMemory: 512Mi
+          resourceRequestEphemeralStorage: 10Gi
+          resourceLimitCpu: '2'
+          resourceLimitMemory: 2Gi
+          resourceLimitEphemeralStorage: 10Gi
+        volumes:
+        - emptyDirVolume:
+            mountPath: /var/lib/docker
+        - configMapVolume:
+            configMapName: jenkins-registry-ca
+            mountPath: /etc/docker/certs.d/registry.internal:5000
+      - name: dind
+        label: dind
+        serviceAccount: jenkins-agent
+        nodeUsageMode: NORMAL
+        instanceCap: 5
+        idleMinutes: 5
+        activeDeadlineSeconds: 3600
+        yaml: |
+          metadata:
+            labels:
+              app: jenkins-agent
+        containers:
+        - name: jnlp
+          image: registry.internal:5000/jenkins-agent:3391.va_37fa_a_305d6d-5
+          alwaysPullImage: true
+          workingDir: /home/jenkins/agent
+          privileged: true
+          resourceRequestCpu: 250m
+          resourceRequestMemory: 512Mi
+          resourceRequestEphemeralStorage: 10Gi
+          resourceLimitCpu: '2'
+          resourceLimitMemory: 2Gi
+          resourceLimitEphemeralStorage: 10Gi
+        volumes:
+        - emptyDirVolume:
+            mountPath: /var/lib/docker
+        - configMapVolume:
+            configMapName: jenkins-registry-ca
+            mountPath: /etc/docker/certs.d/registry.internal:5000
+      - name: kind
+        label: kind
+        serviceAccount: jenkins-agent
+        nodeUsageMode: NORMAL
+        instanceCap: 5
+        idleMinutes: 5
+        activeDeadlineSeconds: 3600
+        yaml: |
+          metadata:
+            labels:
+              app: jenkins-agent
+        containers:
+        - name: jnlp
+          image: registry.internal:5000/jenkins-agent-kind:3391.va_37fa_a_305d6d-5
+          alwaysPullImage: true
+          workingDir: /home/jenkins/agent
+          privileged: true
+          resourceRequestCpu: 250m
+          resourceRequestMemory: 512Mi
+          resourceRequestEphemeralStorage: 10Gi
+          resourceLimitCpu: '2'
+          resourceLimitMemory: 2Gi
+          resourceLimitEphemeralStorage: 10Gi
+        volumes:
+        - emptyDirVolume:
+            mountPath: /var/lib/docker
+        - configMapVolume:
+            configMapName: jenkins-registry-ca
+            mountPath: /etc/docker/certs.d/registry.internal:5000
+      - name: uv
+        label: uv
+        serviceAccount: jenkins-agent
+        nodeUsageMode: NORMAL
+        instanceCap: 5
+        idleMinutes: 5
+        activeDeadlineSeconds: 3600
+        yaml: |
+          metadata:
+            labels:
+              app: jenkins-agent
+        containers:
+        - name: jnlp
+          image: registry.internal:5000/jenkins-agent:3391.va_37fa_a_305d6d-5
+          alwaysPullImage: true
+          workingDir: /home/jenkins/agent
+          privileged: true
+          resourceRequestCpu: 250m
+          resourceRequestMemory: 512Mi
+          resourceRequestEphemeralStorage: 10Gi
+          resourceLimitCpu: '2'
+          resourceLimitMemory: 2Gi
+          resourceLimitEphemeralStorage: 10Gi
+        - name: uv
+          image: ghcr.io/astral-sh/uv:0.11.28-python3.12-trixie-slim
+          alwaysPullImage: true
+          workingDir: /home/jenkins/agent
+          command: cat
+          ttyEnabled: true
+          resourceRequestCpu: 250m
+          resourceRequestMemory: 512Mi
+          resourceLimitCpu: '1'
+          resourceLimitMemory: 1Gi
+        volumes:
+        - emptyDirVolume:
+            mountPath: /var/lib/docker
+        - configMapVolume:
+            configMapName: jenkins-registry-ca
+            mountPath: /etc/docker/certs.d/registry.internal:5000
+unclassified:
+  location:
+    url: http://jenkins.jenkins.svc.cluster.local:8080/
+    adminAddress: jenkins@wywy.invalid
+  gitHubPluginConfig:
+    configs:
+    - name: github.com
+      apiUrl: https://api.github.com
+      manageHooks: false
+      credentialsId: github-pat
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - string:
+          scope: GLOBAL
+          id: github-pat
+          secret: ${JENKINS_GITHUB_PAT}
+          description: GitHub PAT
+      - usernamePassword:
+          scope: GLOBAL
+          id: registry-creds
+          username: ${JENKINS_REGISTRY_USER}
+          password: ${JENKINS_REGISTRY_PASSWORD}
+          description: Internal registry credentials
+jobs:
+- script: |
+    multibranchPipelineJob('Wywy-Website-Master-Database') {
+      branchSources {
+        github {
+          id('master-database')
+          scanCredentialsId('github-pat')
+          repoOwner('WywySenarios')
+          repository('Wywy-Website-Master-Database')
+          buildForkPRHead(false)
+          buildForkPRMerge(false)
+        }
+      }
+      factory {
+        workflowBranchProjectFactory {
+          scriptPath('Jenkinsfile')
+        }
+      }
+      orphanedItemStrategy {
+        discardOldItems {
+          numToKeep(20)
+        }
+      }
+      triggers {
+        periodicFolderTrigger {
+          interval('2')
+        }
+      }
+    }
