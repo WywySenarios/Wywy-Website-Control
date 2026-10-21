@@ -10,8 +10,8 @@
     wywy_env: dev
     cloudflare_api_base: https://api.cloudflare.com/client/v4
     cloudflare_tunnel_name: jenkins
-    cloudflare_hostname: jenkins.ericzhu.me
-    cloudflare_ingress_file: "{{ control_dir }}/ansible/playbooks/jenkins/files/cloudflared-ingress.json"
+    cloudflare_public_url_file: "{{ control_dir }}/k8s/{{ wywy_env }}/jenkins/public-url.yaml"
+    cloudflare_ingress_file: "{{ control_dir }}/ansible/playbooks/jenkins/files/cloudflared-ingress.json.j2"
     cloudflare_tunnel_token_file: "{{ control_dir }}/k8s/dev/jenkins/secrets/cloudflared-tunnel-token.sops.yaml"
     cloudflare_tunnel_rotate: false
     cloudflare_access_allowed_emails: []
@@ -79,6 +79,14 @@
               Content-Type: application/json
           no_log: true
 
+        - name: Read the Jenkins public URL
+          ansible.builtin.set_fact:
+            cloudflare_public_url_config: "{{ lookup('file', cloudflare_public_url_file) | from_yaml }}"
+
+        - name: Set the Jenkins public hostname
+          ansible.builtin.set_fact:
+            cloudflare_hostname: "{{ cloudflare_public_url_config.data.public_url | urlsplit('hostname') }}"
+
         - name: Look up the tunnel
           ansible.builtin.uri:
             url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel?name={{ cloudflare_tunnel_name }}&is_deleted=false"
@@ -121,7 +129,7 @@
 
         - name: Read the tunnel ingress
           ansible.builtin.set_fact:
-            cloudflare_ingress: "{{ lookup('file', cloudflare_ingress_file) | from_json }}"
+            cloudflare_ingress: "{{ lookup('template', cloudflare_ingress_file) }}"
           changed_when: false
 
         - name: Apply the tunnel ingress
@@ -220,8 +228,8 @@
         - name: Bump the cloudflared token rotation annotation
           ansible.builtin.replace:
             path: "{{ control_dir }}/k8s/base/jenkins/cloudflared-deployment.yaml"
-            regexp: 'jenkins\.ericzhu\.me/token-rotation: .*'
-            replace: 'jenkins.ericzhu.me/token-rotation: "{{ now(utc=true).strftime("%Y-%m-%dT%H:%M:%SZ") }}"'
+            regexp: 'jenkins\.wywy/token-rotation: .*'
+            replace: 'jenkins.wywy/token-rotation: "{{ now(utc=true).strftime("%Y-%m-%dT%H:%M:%SZ") }}"'
           when: cloudflare_tunnel_rotate | bool
 
         - name: Look up the DNS record

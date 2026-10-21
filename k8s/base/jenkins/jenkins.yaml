@@ -149,10 +149,10 @@ jenkins:
                   mountPath: /etc/docker/certs.d/registry.internal:5000
 unclassified:
   location:
-    url: https://jenkins.ericzhu.me/
+    url: ${JENKINS_PUBLIC_URL}
     adminAddress: jenkins@wywy.invalid
   gitHubPluginConfig:
-    hookUrl: https://jenkins.ericzhu.me/github-webhook/
+    hookUrl: ${JENKINS_PUBLIC_URL}github-webhook/
     hookSecretConfigs:
       - credentialsId: github-webhook-secret
     configs:

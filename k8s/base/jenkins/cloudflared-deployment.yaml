@@ -14,7 +14,7 @@ spec:
       labels:
         app: cloudflared
       annotations:
-        jenkins.ericzhu.me/token-rotation: "initial"
+        jenkins.wywy/token-rotation: "initial"
     spec:
       automountServiceAccountToken: false
       securityContext:

@@ -23,7 +23,7 @@ setup() {
 	run grep -q 'key: TUNNEL_TOKEN' <<<"$MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'jenkins.ericzhu.me/token-rotation' <<<"$MANIFESTS"
+	run grep -q 'jenkins.wywy/token-rotation' <<<"$MANIFESTS"
 	[ "$status" -eq 0 ]
 }
 
@@ -38,11 +38,17 @@ setup() {
 	[ "$status" -eq 0 ]
 }
 
-@test "JCasC has the public URL, managed hooks, and webhook secret" {
-	run grep -q 'url: https://jenkins.ericzhu.me/' <<<"$MANIFESTS"
+@test "JCasC uses the public URL and managed hooks" {
+	run grep -q 'name: JENKINS_PUBLIC_URL' <<<"$MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'hookUrl: https://jenkins.ericzhu.me/github-webhook/' <<<"$MANIFESTS"
+	run grep -q 'name: jenkins-public-url' <<<"$MANIFESTS"
+	[ "$status" -eq 0 ]
+
+	run grep -q 'url: ${JENKINS_PUBLIC_URL}' <<<"$MANIFESTS"
+	[ "$status" -eq 0 ]
+
+	run grep -q 'hookUrl: ${JENKINS_PUBLIC_URL}github-webhook/' <<<"$MANIFESTS"
 	[ "$status" -eq 0 ]
 
 	run grep -q 'manageHooks: true' <<<"$MANIFESTS"
@@ -67,4 +73,9 @@ setup() {
 
 	run grep -q 'TUNNEL_TOKEN: eyJ' <<<"$MANIFESTS"
 	[ "$status" -eq 1 ]
+}
+
+@test "public URL is defined once in the dev overlay" {
+	run grep -q '^  public_url:' k8s/dev/jenkins/public-url.yaml
+	[ "$status" -eq 0 ]
 }

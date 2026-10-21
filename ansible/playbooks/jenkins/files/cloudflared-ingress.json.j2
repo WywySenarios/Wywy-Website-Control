@@ -1,7 +1,7 @@
 {
   "ingress": [
     {
-      "hostname": "jenkins.ericzhu.me",
+      "hostname": "{{ cloudflare_hostname }}",
       "service": "http://jenkins.jenkins.svc.cluster.local:8080"
     },
     {

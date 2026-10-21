@@ -40,6 +40,11 @@ spec:
               value: -Djenkins.install.runSetupWizard=false
             - name: JENKINS_SLAVE_AGENT_PORT
               value: "50000"
+            - name: JENKINS_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: jenkins-public-url
+                  key: public_url
             - name: JENKINS_GITHUB_PAT
               valueFrom:
                 secretKeyRef:
