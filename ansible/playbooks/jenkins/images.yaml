@@ -10,6 +10,7 @@
     wywy_env: dev
 
     jenkins_version: "2.580.1"
+    jenkins_image_tag: "2.580.1-2"
     agent_version: "3391.va_37fa_a_305d6d-5"
     docker_version: "29.6.2"
     compose_version: "5.4.0"
@@ -20,7 +21,7 @@
     registry: "registry.internal:5000"
     registry_user: admin
 
-    jenkins_image: "{{ registry }}/jenkins:{{ jenkins_version }}"
+    jenkins_image: "{{ registry }}/jenkins:{{ jenkins_image_tag }}"
     agent_image: "{{ registry }}/jenkins-agent:{{ agent_version }}"
     kind_image: "{{ registry }}/jenkins-agent-kind:{{ agent_version }}"
 
