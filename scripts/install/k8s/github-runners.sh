@@ -22,9 +22,6 @@ CONTROL_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # (repo, pool) pairs to install
 OVERLAYS=(
-	master-db-dind
-	master-db-kind
-	docs-dind
 	cache-dind
 )
 
