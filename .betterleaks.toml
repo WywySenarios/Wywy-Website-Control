@@ -1,0 +1,10 @@
+title = "Wywy-Website-Control betterleaks config"
+
+# Review this list when upgrading betterleaks.
+filter = '''
+filter.matchesAny(finding["secret"], [
+  // SOPS ciphertext and public age keys.
+  // `ENC\[[A-Za-z0-9+/=,:]+\]`,
+  // `age1[0-9a-z]{58}`,
+])
+'''

@@ -87,7 +87,7 @@ Repository permissions:
 - **Metadata: Read-only** — mandatory; GitHub selects it automatically.
 - **Pull requests: Read-only** — Multibranch PR discovery.
 - **Commit statuses: Read and write** — publish the branch-source status and the per-stage status checks.
-- **Checks: Read and write** — publish the `gitleaks` and `ansible-code-check` GitHub check runs.
+- **Checks: Read and write**
 - **Webhooks: Read and write**
 
 If the organization enforces SAML/SSO, authorize the token for the organization. Set an expiry and rotate it before it lapses; an expired PAT breaks every multibranch scan and status update.

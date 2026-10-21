@@ -14,7 +14,7 @@
     agent_version: "3391.va_37fa_a_305d6d-5"
     docker_version: "29.6.2"
     compose_version: "5.4.0"
-    gitleaks_version: "8.30.1"
+    betterleaks_version: "1.9.0"
     kind_version: "v0.33.0"
     kubectl_version: "v1.37.1"
 
@@ -50,7 +50,7 @@
           - --build-arg
           - "COMPOSE_VERSION={{ compose_version }}"
           - --build-arg
-          - "GITLEAKS_VERSION={{ gitleaks_version }}"
+          - "BETTERLEAKS_VERSION={{ betterleaks_version }}"
           - -t
           - "{{ agent_image }}"
           - "{{ control_dir }}/docker/jenkins-agent"

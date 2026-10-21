@@ -215,6 +215,38 @@ jobs:
         }
       }
   - script: |
+      multibranchPipelineJob('Wywy-Docs') {
+        branchSources {
+          github {
+            id('docs')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('Wywy-Docs')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+  - script: |
       multibranchPipelineJob('Wywy-Website-Control') {
         branchSources {
           github {

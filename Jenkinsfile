@@ -7,10 +7,10 @@ pipeline {
   }
 
   stages {
-    stage('gitleaks') {
+    stage('betterleaks') {
       steps {
-        withChecks('gitleaks') {
-          sh 'gitleaks detect --source . --config .gitleaks.toml --redact --no-banner --verbose'
+        withChecks('betterleaks') {
+          sh 'betterleaks git . --config .betterleaks.toml --redact --no-banner --verbose'
         }
       }
     }

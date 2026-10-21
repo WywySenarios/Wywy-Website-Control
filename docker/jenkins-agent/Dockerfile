@@ -4,14 +4,13 @@
 ARG AGENT_VERSION=3391.va_37fa_a_305d6d-5
 ARG DOCKER_VERSION=29.6.2
 ARG COMPOSE_VERSION=5.4.0
-ARG GITLEAKS_VERSION=8.30.1
 FROM jenkins/inbound-agent:${AGENT_VERSION}-jdk21
 
 USER root
 
 ARG DOCKER_VERSION
 ARG COMPOSE_VERSION
-ARG GITLEAKS_VERSION
+ARG BETTERLEAKS_VERSION=1.9.0
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -49,12 +48,12 @@ RUN mkdir -p /usr/libexec/docker/cli-plugins \
         "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
     && chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
-# ── gitleaks ──────────────────────────────────────────────────────────
-RUN curl -fsSL -o /tmp/gitleaks.tgz \
-        "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-    && tar -xzf /tmp/gitleaks.tgz -C /usr/local/bin gitleaks \
-    && chmod +x /usr/local/bin/gitleaks \
-    && rm /tmp/gitleaks.tgz
+# ── betterleaks ───────────────────────────────────────────────────────
+RUN curl -fsSL -o /tmp/betterleaks.tgz \
+        "https://github.com/betterleaks/betterleaks/releases/download/v${BETTERLEAKS_VERSION}/betterleaks_${BETTERLEAKS_VERSION}_linux_x64.tar.gz" \
+    && tar -xzf /tmp/betterleaks.tgz -C /usr/local/bin betterleaks \
+    && chmod +x /usr/local/bin/betterleaks \
+    && rm /tmp/betterleaks.tgz
 
 # ── uv ────────────────────────────────────────────────────────────────
 COPY --from=ghcr.io/astral-sh/uv:0.11.28 /uv /uvx /usr/local/bin/
