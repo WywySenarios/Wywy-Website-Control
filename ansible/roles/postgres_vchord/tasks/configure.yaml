@@ -1,0 +1,82 @@
+---
+- name: Check that the VectorChord library is installed
+  ansible.builtin.stat:
+    path: >-
+      /usr/lib/postgresql/{{ postgres_vchord_pg_version }}/lib/{{
+      postgres_vchord_library }}
+  become: true
+  register: postgres_vchord_library_file
+
+- name: Check that the VectorChord extension control file is installed
+  ansible.builtin.stat:
+    path: >-
+      /usr/share/postgresql/{{ postgres_vchord_pg_version }}/extension/vchord.control
+  become: true
+  register: postgres_vchord_control_file
+
+- name: Fail closed before restarting Postgres without a loadable library
+  ansible.builtin.assert:
+    that:
+      - postgres_vchord_library_file.stat.exists
+      - postgres_vchord_control_file.stat.exists
+    fail_msg: >-
+      VectorChord files are missing under /usr/lib/postgresql/ or
+      /usr/share/postgresql/; refusing to add {{ postgres_vchord_library }} to
+      shared_preload_libraries, which would make Postgres fail to start.
+    quiet: true
+
+- name: Read the current shared_preload_libraries
+  community.postgresql.postgresql_query:
+    query: "SHOW shared_preload_libraries"
+    login_user: postgres
+  become: true
+  become_user: postgres
+  register: postgres_vchord_show_preload
+  changed_when: false
+
+- name: Parse the current shared_preload_libraries
+  ansible.builtin.set_fact:
+    postgres_vchord_preload_list: >-
+      {{ (postgres_vchord_show_preload.query_result[0].shared_preload_libraries
+          | split(',')) | map('trim') | reject('equalto', '') | list }}
+
+- name: Add vchord.so when it is not already preloaded
+  ansible.builtin.set_fact:
+    postgres_vchord_preload_list: >-
+      {{ postgres_vchord_preload_list
+         if postgres_vchord_library in postgres_vchord_preload_list
+         else (postgres_vchord_preload_list + [postgres_vchord_library]) }}
+
+- name: Preload vchord.so on the next Postgres start
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_vchord_conf_dir }}/postgresql.conf"
+    regexp: '^#?\s*shared_preload_libraries\s*='
+    line: "shared_preload_libraries = '{{ postgres_vchord_preload_list | join(',') }}'"
+    state: present
+  become: true
+  notify: Restart postgresql for VectorChord
+
+- name: Restart Postgres before the extension is created
+  ansible.builtin.meta: flush_handlers
+
+- name: Read the effective shared_preload_libraries
+  community.postgresql.postgresql_query:
+    query: "SHOW shared_preload_libraries"
+    login_user: postgres
+  become: true
+  become_user: postgres
+  register: postgres_vchord_effective_preload
+  changed_when: false
+
+- name: Fail closed when vchord.so is not preloaded after the restart
+  ansible.builtin.assert:
+    that:
+      - >-
+        postgres_vchord_library
+        in (postgres_vchord_effective_preload.query_result[0].shared_preload_libraries
+        | split(',') | map('trim') | list)
+    fail_msg: >-
+      shared_preload_libraries is
+      '{{ postgres_vchord_effective_preload.query_result[0].shared_preload_libraries }}',
+      expected it to contain {{ postgres_vchord_library }}.
+    quiet: true

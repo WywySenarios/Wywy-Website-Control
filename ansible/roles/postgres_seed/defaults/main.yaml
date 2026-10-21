@@ -2,17 +2,29 @@
 postgres_seed_secrets:
   master_db_migrator: "{{ control_dir }}/k8s/{{ wywy_env }}/master-database/secrets/migrator-password.sops.yaml"
   master_db_app: "{{ control_dir }}/k8s/{{ wywy_env }}/master-database/secrets/app-password.sops.yaml"
+  immich: "{{ control_dir }}/k8s/{{ wywy_env }}/immich/secrets/immich-db-password.sops.yaml"
 
 postgres_seed_roles:
   - master_db_migrator
   - master_db_app
+  - immich
 
 postgres_seed_databases:
   - name: wywywebsite
     owner: master_db_migrator
   - name: info
     owner: master_db_migrator
+  - name: immich
+    owner: immich
 
 postgres_seed_extensions:
   - db: wywywebsite
     name: postgis
+  # vchord pulls in vector (pgvector) and earthdistance pulls in cube. Neither
+  # dependency exists in a fresh database, so CREATE EXTENSION must CASCADE.
+  - db: immich
+    name: vchord
+    cascade: true
+  - db: immich
+    name: earthdistance
+    cascade: true

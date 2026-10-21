@@ -1,0 +1,15 @@
+---
+- name: Fail closed on an architecture without a pinned VectorChord package
+  ansible.builtin.assert:
+    that:
+      - ansible_architecture == 'x86_64'
+    fail_msg: >-
+      the pinned VectorChord package is amd64-only; this host reports
+      {{ ansible_architecture }}.
+    quiet: true
+
+- name: Install pgvector and VectorChord
+  ansible.builtin.include_tasks: packages.yaml
+
+- name: Preload VectorChord
+  ansible.builtin.include_tasks: configure.yaml

@@ -1,0 +1,6 @@
+---
+- name: Restart postgresql for VectorChord
+  ansible.builtin.service:
+    name: "{{ postgres_vchord_service }}"
+    state: restarted
+  become: true

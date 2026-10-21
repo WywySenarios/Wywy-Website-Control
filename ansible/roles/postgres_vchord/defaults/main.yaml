@@ -1,0 +1,27 @@
+---
+# VectorChord release to install. The project moved from tensorchord/VectorChord
+# to supervc-stack/VectorChord; the old URLs redirect.
+postgres_vchord_version: "1.1.1"
+postgres_vchord_deb_release: "1.1.1-1"
+postgres_vchord_deb_arch: "amd64"
+postgres_vchord_deb_url: >-
+  https://github.com/supervc-stack/VectorChord/releases/download/{{
+  postgres_vchord_version }}/postgresql-{{ postgres_vchord_pg_version }}-vchord_{{
+  postgres_vchord_deb_release }}_{{ postgres_vchord_deb_arch }}.deb
+postgres_vchord_deb_checksum: "sha256:7637a18a97157db8d904bb7093e5ce33b6a395c0acac9ae6b660032f3d57a33e"
+postgres_vchord_deb_path: >-
+  /tmp/postgresql-{{ postgres_vchord_pg_version }}-vchord_{{
+  postgres_vchord_deb_release }}_{{ postgres_vchord_deb_arch }}.deb
+
+# Fall back to the postgres role's values so this role is usable on its own.
+postgres_vchord_pg_version: "{{ postgres_version | default('18') }}"
+postgres_vchord_conf_dir: >-
+  {{ postgres_conf_dir | default('/etc/postgresql/' ~ postgres_vchord_pg_version ~ '/main') }}
+postgres_vchord_service: "{{ postgres_service | default('postgresql') }}"
+
+postgres_vchord_pgvector_package: "postgresql-{{ postgres_vchord_pg_version }}-pgvector"
+# Immich accepts pgvector >= 0.7 and < 0.9.
+postgres_vchord_pgvector_min: "0.7"
+postgres_vchord_pgvector_max: "0.9"
+
+postgres_vchord_library: "vchord.so"
