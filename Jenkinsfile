@@ -9,14 +9,18 @@ pipeline {
   stages {
     stage('gitleaks') {
       steps {
-        sh 'gitleaks detect --source . --config .gitleaks.toml --redact --no-banner --verbose'
+        withChecks('gitleaks') {
+          sh 'gitleaks detect --source . --config .gitleaks.toml --redact --no-banner --verbose'
+        }
       }
     }
 
-    stage('ansible') {
+    stage('ansible-code-check') {
       steps {
-        sh './scripts/install/ansible.sh'
-        sh 'for step in scripts/tests/ansible/*.sh; do "$step"; done'
+        withChecks('ansible-code-check') {
+          sh './scripts/install/ansible.sh'
+          sh 'for step in scripts/tests/ansible/*.sh; do "$step"; done'
+        }
       }
     }
   }

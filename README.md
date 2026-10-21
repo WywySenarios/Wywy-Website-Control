@@ -86,7 +86,8 @@ Repository permissions:
 - **Contents: Read-only** — clone, checkout, recursive submodules.
 - **Metadata: Read-only** — mandatory; GitHub selects it automatically.
 - **Pull requests: Read-only** — Multibranch PR discovery.
-- **Commit statuses: Read and write** — publish the `Jenkins CI` status that branch protection requires.
+- **Commit statuses: Read and write** — publish the branch-source status and the per-stage status checks.
+- **Checks: Read and write** — publish the `gitleaks` and `ansible-code-check` GitHub check runs.
 
 Do **not** grant:
 
