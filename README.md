@@ -88,24 +88,28 @@ Repository permissions:
 - **Pull requests: Read-only** — Multibranch PR discovery.
 - **Commit statuses: Read and write** — publish the branch-source status and the per-stage status checks.
 - **Checks: Read and write** — publish the `gitleaks` and `ansible-code-check` GitHub check runs.
-
-Do **not** grant:
-
-- `Contents: Write`
-- `Actions`
-- `Administration`
-- `Webhooks`
-- `Secrets`
-- `Workflows`
-- `Packages`
-- `Deployments`
-- `Environments`
+- **Webhooks: Read and write**
 
 If the organization enforces SAML/SSO, authorize the token for the organization. Set an expiry and rotate it before it lapses; an expired PAT breaks every multibranch scan and status update.
 
+## Jenkins Cloudflare API token
+
+The Ansible Cloudflare playbook uses a scoped Cloudflare management API token stored at `secrets/dev/cloudflare.sops`.
+
+### Required Permissions
+
+Account permissions:
+
+- Cloudflare Tunnel: Edit
+- Access: Apps and Policies: Edit
+
+Zone permissions for your domain:
+
+- DNS: Edit
+
 ## Jenkins admin
 
-The controller's `admin` password is at `k8s/dev/jenkins/secretsjenkins-admin.sops.yaml`.
+The controller's `admin` password is at `k8s/dev/jenkins/secrets/jenkins-admin.sops.yaml`.
 
 # File Permissions
 

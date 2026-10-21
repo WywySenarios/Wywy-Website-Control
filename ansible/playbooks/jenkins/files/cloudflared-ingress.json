@@ -1,0 +1,11 @@
+{
+  "ingress": [
+    {
+      "hostname": "jenkins.ericzhu.me",
+      "service": "http://jenkins.jenkins.svc.cluster.local:8080"
+    },
+    {
+      "service": "http_status:404"
+    }
+  ]
+}

@@ -50,6 +50,11 @@ spec:
                 secretKeyRef:
                   name: jenkins-github-pat
                   key: username
+            - name: GITHUB_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-webhook
+                  key: GITHUB_WEBHOOK_SECRET
             - name: JENKINS_REGISTRY_USER
               valueFrom:
                 secretKeyRef:

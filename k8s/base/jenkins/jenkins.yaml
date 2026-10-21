@@ -149,13 +149,16 @@ jenkins:
                   mountPath: /etc/docker/certs.d/registry.internal:5000
 unclassified:
   location:
-    url: http://jenkins.jenkins.svc.cluster.local:8080/
+    url: https://jenkins.ericzhu.me/
     adminAddress: jenkins@wywy.invalid
   gitHubPluginConfig:
+    hookUrl: https://jenkins.ericzhu.me/github-webhook/
+    hookSecretConfigs:
+      - credentialsId: github-webhook-secret
     configs:
       - name: github.com
         apiUrl: https://api.github.com
-        manageHooks: false
+        manageHooks: true
         credentialsId: github-pat
 credentials:
   system:
@@ -173,6 +176,11 @@ credentials:
               username: ${JENKINS_REGISTRY_USER}
               password: ${JENKINS_REGISTRY_PASSWORD}
               description: Internal registry credentials
+          - string:
+              scope: GLOBAL
+              id: github-webhook-secret
+              secret: ${GITHUB_WEBHOOK_SECRET}
+              description: GitHub webhook secret
 jobs:
   - script: |
       multibranchPipelineJob('Wywy-Website-Master-Database') {
@@ -202,7 +210,7 @@ jobs:
         }
         triggers {
           periodicFolderTrigger {
-            interval('2')
+            interval('15')
           }
         }
       }
@@ -234,7 +242,7 @@ jobs:
         }
         triggers {
           periodicFolderTrigger {
-            interval('2')
+            interval('15')
           }
         }
       }

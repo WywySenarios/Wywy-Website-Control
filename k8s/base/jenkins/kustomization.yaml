@@ -9,6 +9,7 @@ resources:
   - pvc.yaml
   - service.yaml
   - deployment.yaml
+  - cloudflared-deployment.yaml
   - network-policy.yaml
 
 configMapGenerator:
