@@ -94,7 +94,19 @@ If the organization enforces SAML/SSO, authorize the token for the organization.
 
 ## Jenkins Cloudflare API token
 
-The Ansible Cloudflare playbook uses a scoped Cloudflare management API token stored at `secrets/dev/cloudflare.sops`.
+The Ansible Cloudflare playbook uses a scoped Cloudflare management API token stored at `secrets/dev/cloudflare.sops.yaml`.
+
+The file should look like:
+
+```yaml
+api_token: xxx
+account_id: xxx
+zone_id: xxx
+```
+
+Tip: Your zone ID will be visible under your domain registration details.
+
+Note: you will need to pass in the email associated with your cloudflare account into the cloudflare playbook. You should pass in `-e '{"cloudflare_access_allowed_emails": ["you@example.com"]}'` when calling the playbook. Alternatively, you could search the repository for key `cloudflare_access_allowed_emails` and inject your email there.
 
 ### Required Permissions
 
