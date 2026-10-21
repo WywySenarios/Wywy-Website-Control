@@ -50,6 +50,28 @@ jenkins:
               - configMapVolume:
                   configMapName: jenkins-registry-ca
                   mountPath: /etc/docker/certs.d/registry.internal:5000
+          - name: betterleaks
+            label: betterleaks
+            serviceAccount: jenkins-agent
+            nodeUsageMode: NORMAL
+            instanceCap: 2
+            idleMinutes: 5
+            activeDeadlineSeconds: 1800
+            yaml: |
+              metadata:
+                labels:
+                  app: jenkins-agent
+            containers:
+              - name: jnlp
+                image: registry.internal:5000/jenkins-agent-betterleaks:3391.va_37fa_a_305d6d-5
+                alwaysPullImage: true
+                workingDir: /home/jenkins/agent
+                resourceRequestCpu: 100m
+                resourceRequestMemory: 256Mi
+                resourceRequestEphemeralStorage: 2Gi
+                resourceLimitCpu: "1"
+                resourceLimitMemory: 1Gi
+                resourceLimitEphemeralStorage: 5Gi
           - name: dind
             label: dind
             serviceAccount: jenkins-agent

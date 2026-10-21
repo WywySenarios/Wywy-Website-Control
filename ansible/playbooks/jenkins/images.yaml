@@ -15,6 +15,7 @@
     docker_version: "29.6.2"
     compose_version: "5.4.0"
     betterleaks_version: "1.9.0"
+    betterleaks_sha256: "f8b185a39ffcece2a1ca82bf3a4e7435cd81963ffd16b7a9128daf75f35f6de7"
     kind_version: "v0.33.0"
     kubectl_version: "v1.37.1"
 
@@ -23,6 +24,7 @@
 
     jenkins_image: "{{ registry }}/jenkins:{{ jenkins_image_tag }}"
     agent_image: "{{ registry }}/jenkins-agent:{{ agent_version }}"
+    betterleaks_image: "{{ registry }}/jenkins-agent-betterleaks:{{ agent_version }}"
     kind_image: "{{ registry }}/jenkins-agent-kind:{{ agent_version }}"
 
   tasks:
@@ -54,6 +56,22 @@
           - -t
           - "{{ agent_image }}"
           - "{{ control_dir }}/docker/jenkins-agent"
+      changed_when: true
+
+    - name: Build the Jenkins betterleaks agent image
+      ansible.builtin.command:
+        argv:
+          - docker
+          - build
+          - --build-arg
+          - "AGENT_VERSION={{ agent_version }}"
+          - --build-arg
+          - "BETTERLEAKS_VERSION={{ betterleaks_version }}"
+          - --build-arg
+          - "BETTERLEAKS_SHA256={{ betterleaks_sha256 }}"
+          - -t
+          - "{{ betterleaks_image }}"
+          - "{{ control_dir }}/docker/jenkins-agent-betterleaks"
       changed_when: true
 
     - name: Build the Jenkins kind agent image
@@ -113,6 +131,7 @@
           loop:
             - "{{ jenkins_image }}"
             - "{{ agent_image }}"
+            - "{{ betterleaks_image }}"
             - "{{ kind_image }}"
           environment:
             DOCKER_CONFIG: "{{ docker_config_dir.stdout | trim }}"
