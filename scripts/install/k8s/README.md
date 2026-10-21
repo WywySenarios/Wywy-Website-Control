@@ -27,5 +27,6 @@ Orchestration wrappers:
 | Grafana | 8081 | http://localhost:8081 |
 | Linkerd | 8082 | http://localhost:8082 |
 | ArgoCD  | 8083 | http://localhost:8083 |
+| Jenkins | 8084 | http://localhost:8084 |
 
 Each component script also installs its own service automatically.

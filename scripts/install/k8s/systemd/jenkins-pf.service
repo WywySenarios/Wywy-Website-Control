@@ -1,0 +1,15 @@
+[Unit]
+Description=Jenkins controller port-forward (kubectl)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=HOME=%h
+Environment=KUBECONFIG=%h/.kube/config
+ExecStart=/usr/bin/kubectl -n jenkins port-forward svc/jenkins 8084:8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
