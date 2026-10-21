@@ -49,7 +49,7 @@
               - -d
               - --output-type
               - yaml
-              - "{{ control_dir }}/secrets/{{ wywy_env }}/cloudflare.sops"
+              - "{{ control_dir }}/secrets/{{ wywy_env }}/cloudflare.sops.yaml"
           register: cloudflare_secret_read
           changed_when: false
           check_mode: false
@@ -68,7 +68,7 @@
               - cloudflare_secrets.account_id is defined
               - cloudflare_secrets.zone_id is defined
               - cloudflare_access_allowed_emails | length > 0
-            fail_msg: "cloudflare.sops must define api_token, account_id, and zone_id; pass cloudflare_access_allowed_emails"
+            fail_msg: "cloudflare.sops.yaml must define api_token, account_id, and zone_id; pass cloudflare_access_allowed_emails"
             quiet: true
           no_log: true
 

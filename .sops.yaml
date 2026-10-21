@@ -1,8 +1,10 @@
 creation_rules:
+  - path_regex: (^|/)k8s/.*\.sops(\.yaml)?$
+    encrypted_regex: ^(data|stringData)$
+    age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
   - path_regex: .*\.sops$
     age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
   - path_regex: .*\.sops\.yaml$
-    encrypted_regex: ^(data|stringData)$
     age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
   - path_regex: secrets/.*
     age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
