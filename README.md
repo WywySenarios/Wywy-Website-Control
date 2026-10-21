@@ -1,6 +1,6 @@
 # Security: Self-Hosted Runner PR Protection
 
-**This repository uses self-hosted GitHub Actions runners.**
+**Other Wywy repositories use self-hosted GitHub Actions runners. This repository runs its CI on Jenkins.**
 
 A self-hosted runner executes code on our own infrastructure. Any pull request from an outside collaborator (i.e., anyone who is not a repository maintainer) can inject arbitrary code into that runner — including access to internal network services, the Docker daemon, and cluster resources.
 

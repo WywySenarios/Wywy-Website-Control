@@ -43,8 +43,7 @@ scripts/install/k8s/github-runners.sh
    `docker/github-runner/Dockerfile`.
 2. Set `DOCKER_VERSION` and/or `RUNNER_VERSION` env vars, then run the build and push scripts
 3. Update the inline `image:` tags in the pool bases:
-   - `k8s/dev/github-runner/base/generic/deployment.yaml` and
-     `k8s/dev/github-runner/base/dind/deployment.yaml` →
+   - `k8s/dev/github-runner/base/dind/deployment.yaml` →
      `ghcr.io/wywysenarios/gh-runner:<RUNNER_VERSION>`
    - `k8s/dev/github-runner/base/kind/deployment.yaml` →
      `ghcr.io/wywysenarios/gh-runner-kind:<RUNNER_VERSION>`
