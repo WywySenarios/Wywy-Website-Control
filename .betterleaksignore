@@ -1,0 +1,22 @@
+
+# Ignores for historical commits from before betterleaks.
+
+# `--from-file=htpasswd=/dev/stdin` in a shell comment example.
+b72a6208bf7c4346e728c464b5cf0c249a43cb9b:k8s/base/docker-registry/kustomization.yaml:generic-password:16
+b4ef707789c3e9e672ad144b5e3ddd135bad2471:k8s/dev/docker-registry/kustomization.yaml:generic-password:16
+
+# Test placeholder assigned to PGPASSWORD (`definitely-not-the-password`) in the role's smoke-test task. 
+232469ab136df211832f9fe9328392c133bdf207:ansible/roles/postgres_password/tasks/main.yaml:generic-password:6
+
+# Structural match on a Secret manifest skeleton (`kind: Secret` plus `stringData:`).
+# The password values are Jinja expressions resolved at run time.
+0abcb963474ee9ad51e6f3794f87f660be2882a5:ansible/playbooks/jenkins/secrets.yaml:kubernetes-secret-yaml:91
+
+# Matches the Jinja variable name `registry_password` in the dockerconfig template.
+0abcb963474ee9ad51e6f3794f87f660be2882a5:ansible/playbooks/jenkins/secrets.yaml:generic-password:102
+
+# Dev-only .env placeholders. The value in each file is the literal string `password`, which the generic rule cannot distinguish from a real secret.
+# The files are not tracked with production credentials; real secrets live in sops-encrypted files under secrets/.
+06d1bda20964c01ce201835b7242ac8291f36a78:config/master-database/.env:generic-password:15
+b2ac2950fab32ecd2ae0db8340d7078cd3f797c5:config/cache/.env:generic-password:31
+b2ac2950fab32ecd2ae0db8340d7078cd3f797c5:config/website/.env:generic-password:29
