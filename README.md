@@ -4,18 +4,6 @@ This repo is part of the Wywy repo line and is subject to Wywy conventions.
 
 Infrastructure-as-code and scripts for the Wywy cloud stack.
 
-## Layout
-
-| Path       | Contents                                                                   |
-| ---------- | -------------------------------------------------------------------------- |
-| `ansible/` | Playbooks and dev/prod inventories that create VMs and configure services. |
-| `k8s/`     | Kustomize manifests for the cluster (`base/` and `dev/`).                  |
-| `docker/`  | Jenkins and GitHub Actions runner images.                                  |
-| `scripts/` | Host bootstrap, installation, and test entrypoints.                        |
-| `config/`  | Universal and per-service environment files, plus `config.yml`.            |
-| `secrets/` | sops-encrypted secrets (`dev/`, `shared/`).                                |
-| `tests/`   | Deployment tests.                                                          |
-
 ## Requirements
 
 For the operator machine (the machine you will call scripts from):
