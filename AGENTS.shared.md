@@ -4,7 +4,7 @@ This file lives in the [Wywy-Website-Control](https://github.com/wywy/website-co
 
 ## Testing
 
-When root-level `test.sh` (or `run-tests.sh`) exists, you MUST use it exclusively to run tests — never invoke test runners (`pytest`, `bats`, etc.) directly. Only use direct invocation if no test script exists. If none exist, remind the user to create one.
+Run tests through the suite scripts under `scripts/tests/**` — never invoke test runners (`pytest`, `bats`, etc.) directly. If the repository has no suite scripts, remind the user to create one.
 
 ## Wywy-Docs MCP tools
 
