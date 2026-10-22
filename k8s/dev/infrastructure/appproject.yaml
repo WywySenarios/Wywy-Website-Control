@@ -12,6 +12,7 @@ spec:
     - https://github.com/WywySenarios/Wywy-Website-Master-Database.git
     - https://github.com/WywySenarios/wywy-config.git
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+    - ghcr.io/immich-app/immich-charts
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster

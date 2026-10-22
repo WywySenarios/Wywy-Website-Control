@@ -16,6 +16,12 @@ configs:
       name: csi-driver-nfs
       url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
       type: helm
+    immich-charts:
+      name: immich-charts
+      url: ghcr.io/immich-app/immich-charts
+      type: helm
+      # The argo-cd chart base64-encodes every value, so this must be a string.
+      enableOCI: "true"
 
   cm:
     # Enable kustomize KRM exec plugins — required for the ksops generator.
