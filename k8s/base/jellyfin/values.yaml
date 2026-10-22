@@ -1,0 +1,10 @@
+---
+deploymentStrategy:
+  type: Recreate
+
+service:
+  type: ClusterIP
+
+persistence:
+  media:
+    storageClass: nfs-jellyfin

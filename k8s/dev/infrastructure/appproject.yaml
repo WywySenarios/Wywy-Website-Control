@@ -13,6 +13,7 @@ spec:
     - https://github.com/WywySenarios/wywy-config.git
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     - ghcr.io/immich-app/immich-charts
+    - https://jellyfin.github.io/jellyfin-helm
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster

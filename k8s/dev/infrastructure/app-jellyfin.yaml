@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-jellyfin
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argoproj.io
+spec:
+  project: wywy-dev
+  sources:
+    - repoURL: https://jellyfin.github.io/jellyfin-helm
+      chart: jellyfin
+      targetRevision: 3.2.0
+      helm:
+        releaseName: jellyfin
+        valueFiles:
+          - $values/k8s/base/jellyfin/values.yaml
+          - $values/k8s/dev/jellyfin/values.yaml
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: jellyfin
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

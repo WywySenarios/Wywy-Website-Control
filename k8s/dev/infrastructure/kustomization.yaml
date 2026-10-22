@@ -15,3 +15,4 @@ resources:
   - app-immich.yaml
   - app-csi-driver-nfs.yaml
   - app-jenkins.yaml
+  - app-jellyfin.yaml

@@ -15,3 +15,12 @@ storageClasses:
     volumeBindingMode: Immediate
     mountOptions:
       - nfsvers=4.1
+  - name: nfs-jellyfin
+    parameters:
+      server: files.internal
+      share: /srv/nfs/jellyfin
+      subDir: media
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+      - nfsvers=4.1

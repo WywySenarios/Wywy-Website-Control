@@ -29,3 +29,7 @@ nfs_services:
     uid: 3002
     gid: 3002
     quota: 32G
+  - name: jellyfin
+    uid: 3003
+    gid: 3003
+    quota: 32G
