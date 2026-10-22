@@ -51,7 +51,6 @@ Then flash those images to your Proxmox VE nodes
    ```bash
    scripts/install/k8s/k8s-base.sh
    scripts/install/k8s/prometheus-stack.sh
-   scripts/install/k8s/linkerd.sh
    scripts/install/k8s/keda.sh
    scripts/install/k8s/argocd.sh
    ```

@@ -8,14 +8,13 @@ fresh cluster. All are idempotent — safe to re-run.
 2. Bring up some nodes (enough to run the monitoring nodes, etc.)
 3. **prometheus-stack.sh** — monitoring
    kube-prometheus-stack (Prometheus + Grafana + Alertmanager), grafana port-forward systemd service
-4. **linkerd.sh** — service mesh
-5. **keda.sh** — event-driven autoscaling (KEDA + ScaledObject for runners)
-6. **argocd.sh** — GitOps
+4. **keda.sh** — event-driven autoscaling (KEDA + ScaledObject for runners)
+5. **argocd.sh** — GitOps
 
 Orchestration wrappers:
 
 - **dev-1.sh** — runs k8s-base.sh (before workers join)
-- **dev-2.sh** — runs prometheus-stack.sh, linkerd.sh, argocd.sh (after workers join)
+- **dev-2.sh** — runs prometheus-stack.sh, argocd.sh (after workers join)
 
 ## Port forwarding
 
@@ -24,7 +23,6 @@ Orchestration wrappers:
 | Service | Port | URL                   |
 | ------- | ---- | --------------------- |
 | Grafana | 8081 | http://localhost:8081 |
-| Linkerd | 8082 | http://localhost:8082 |
 | ArgoCD  | 8083 | http://localhost:8083 |
 | Jenkins | 8084 | http://localhost:8084 |
 | Immich  | 8085 | http://localhost:8085 |
