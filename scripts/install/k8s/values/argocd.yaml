@@ -27,7 +27,21 @@ configs:
     # Enable kustomize KRM exec plugins — required for the ksops generator.
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
+server:
+  livenessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+
 repoServer:
+  livenessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
   volumes:
     - name: argocd-age-key
       secret:
