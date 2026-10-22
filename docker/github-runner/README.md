@@ -16,23 +16,16 @@ local testing.
 
 Strict superset of `gh-runner` with pinned versions of `kind` & `kubectl`.
 
-Jobs opt in per-workflow via `runs-on:` labels. KinD jobs use `[self-hosted, wywy, kind]` (the kind pool bundles DinD — a job must NOT request both `dind` and `kind`, no pool carries both labels). See `internal/github-runners.mdx` in Wywy-Docs for job-authoring conventions and `k8s/dev/github-runner/README.md` for the deployed pools.
+Jobs opt in per-workflow via `runs-on:` labels. KinD jobs use `[self-hosted, wywy, kind]` (the kind pool bundles DinD — a job must NOT request both `dind` and `kind`, no pool carries both labels). See `internal/github-runners.mdx` in Wywy-Docs for job-authoring conventions.
 
-## Cold start — manual image push
+## Building and pushing images
 
-The KEDA-scaled deployment in `k8s/dev/github-runner/` pulls both images
-from GHCR. You must build and push them at least once before KEDA can
-spin up pods. Do this from any machine with Docker and a GHCR token:
+These images remain buildable if the CI runner deployment stack is
+reintroduced. Build and push from any machine with Docker and a GHCR token:
 
 ```bash
 scripts/install/github-runner/build.sh
 scripts/install/github-runner/push-image.sh
-```
-
-After the push, apply the runner manifests to K8s:
-
-```bash
-scripts/install/k8s/github-runners.sh
 ```
 
 ## Bumping versions
@@ -41,24 +34,14 @@ scripts/install/k8s/github-runners.sh
 
 1. Update the `FROM` arg and `RUNNER_VERSION` arg in
    `docker/github-runner/Dockerfile`.
-2. Set `DOCKER_VERSION` and/or `RUNNER_VERSION` env vars, then run the build and push scripts
-3. Update the inline `image:` tags in the pool bases:
-   - `k8s/dev/github-runner/base/dind/deployment.yaml` →
-     `ghcr.io/wywysenarios/gh-runner:<RUNNER_VERSION>`
-   - `k8s/dev/github-runner/base/kind/deployment.yaml` →
-     `ghcr.io/wywysenarios/gh-runner-kind:<RUNNER_VERSION>`
-     There is no kustomize `images:` transform — each pool base pins its
-     image directly.
-4. Re-run `scripts/install/k8s/github-runners.sh` to apply.
-5. KEDA will pick up the new tag on the next scale-up.
+2. Set `DOCKER_VERSION` and/or `RUNNER_VERSION` env vars, then run the build and push scripts.
 
 ### kind & kubectl
 
 1. Update `KIND_VERSION` / `KUBECTL_VERSION` in
    `docker/github-runner-kind/Dockerfile` (or pass the env vars to
    `build.sh`).
-2. Rebuild + push. No K8s manifest change is needed: the tag is still
-   `<RUNNER_VERSION>`, so the Deployment image reference does not change.
+2. Rebuild + push.
 
 ## Verify the images
 

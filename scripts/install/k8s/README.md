@@ -8,8 +8,7 @@ fresh cluster. All are idempotent — safe to re-run.
 2. Bring up some nodes (enough to run the monitoring nodes, etc.)
 3. **prometheus-stack.sh** — monitoring
    kube-prometheus-stack (Prometheus + Grafana + Alertmanager), grafana port-forward systemd service
-4. **keda.sh** — event-driven autoscaling (KEDA + ScaledObject for runners)
-5. **argocd.sh** — GitOps
+4. **argocd.sh** — GitOps
 
 Orchestration wrappers:
 
