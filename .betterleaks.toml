@@ -1,5 +1,8 @@
 title = "Wywy-Website-Control betterleaks config"
 
+[extend]
+useDefault = true
+
 # Review this list when upgrading betterleaks.
 filter = '''
 filter.matchesAny(finding["secret"], [
