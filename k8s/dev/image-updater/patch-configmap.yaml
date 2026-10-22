@@ -1,8 +1,7 @@
 # Dev overlay registries.conf — patches the base ConfigMap's empty placeholder.
 # The reference secret:argocd/image-updater-registry#auth resolves at runtime
 # (Image Updater reads it via the namespaced Role grant), not at render time.
-# Prefix MUST match how the runner's deploy workflow pushes (docker-registry
-# Service DNS name, plain HTTP, insecure).
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,10 +9,9 @@ metadata:
 data:
   registries.conf: |
     registries:
-      - name: in-cluster
-        api_url: http://docker-registry.github-runner:5000
-        prefix: docker-registry.github-runner
-        insecure: true
+      - name: internal
+        api_url: https://registry.internal:5000
+        prefix: registry.internal:5000
         credentials: secret:argocd/image-updater-registry#auth
       - name: ghcr
         api_url: https://ghcr.io

@@ -10,6 +10,35 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        fsGroup: 65534
+      initContainers:
+        - name: build-ca-bundle
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - cat /host-ca/ca-certificates.crt /internal-ca/ca.crt > /combined/ca-certificates.crt
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: host-ca
+              mountPath: /host-ca
+              readOnly: true
+            - name: registry-ca
+              mountPath: /internal-ca
+              readOnly: true
+            - name: combined-ca
+              mountPath: /combined
       containers:
         - name: argocd-image-updater
           image: quay.io/argoprojlabs/argocd-image-updater:v0.17.0
@@ -18,3 +47,19 @@ spec:
               value: https://argocd-server.argocd.svc.cluster.local
             - name: ARGOCD_INSECURE
               value: "true"
+            - name: SSL_CERT_FILE
+              value: /etc/ssl/custom/ca-certificates.crt
+          volumeMounts:
+            - name: combined-ca
+              mountPath: /etc/ssl/custom
+              readOnly: true
+      volumes:
+        - name: host-ca
+          hostPath:
+            path: /etc/ssl/certs/ca-certificates.crt
+            type: File
+        - name: registry-ca
+          secret:
+            secretName: registry-ca
+        - name: combined-ca
+          emptyDir: {}

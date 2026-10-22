@@ -1,0 +1,97 @@
+---
+# Refresh the shared registry-endpoint ConfigMap from secrets/<env>/hosts.sops.
+- name: Generate the shared registry endpoint manifest
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    control_dir: "{{ ansible_config_file | dirname | dirname }}"
+    wywy_env: "{{ ansible_inventory_sources | first | basename }}"
+    registry_endpoint_file: "{{ control_dir }}/k8s/{{ wywy_env }}/base/registry-endpoint/registry-endpoint.sops.yaml"
+    registry_endpoint_check: false
+
+    registry_ip: >-
+      {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
+      control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops registry.internal') | trim }}
+
+  tasks:
+    - name: Validate the registry endpoint
+      ansible.builtin.assert:
+        that:
+          - registry_ip is match('^([0-9]{1,3}\.){3}[0-9]{1,3}$')
+        fail_msg: "registry.internal did not resolve to a usable IPv4 address"
+        quiet: true
+
+    - name: Read the current endpoint value
+      ansible.builtin.command:
+        argv:
+          - sudo
+          - -n
+          - sops
+          - -d
+          - --extract
+          - '["data"]["ip"]'
+          - "{{ registry_endpoint_file }}"
+      register: registry_endpoint_current
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      no_log: true
+
+    - name: Set whether the endpoint changed
+      ansible.builtin.set_fact:
+        registry_endpoint_stale: >-
+          {{ registry_endpoint_current.rc != 0
+             or (registry_endpoint_current.stdout | trim) != (registry_ip ~ '/32') }}
+
+    - name: Fail when the endpoint is stale in check mode
+      ansible.builtin.fail:
+        msg: >-
+          {{ registry_endpoint_file }} is stale: expected {{ registry_ip }}/32.
+      when:
+        - registry_endpoint_check | bool
+        - registry_endpoint_stale | bool
+
+    - name: Render the shared registry endpoint
+      when: registry_endpoint_stale | bool
+      block:
+        - name: Create a temporary work directory
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: wywy-registry-endpoint-
+            suffix: ""
+          register: registry_endpoint_tmp
+
+        - name: Write the plaintext ConfigMap
+          ansible.builtin.copy:
+            content: |
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: registry-endpoint
+              data:
+                ip: "{{ registry_ip }}/32"
+            dest: "{{ registry_endpoint_tmp.path }}/registry-endpoint.yaml"
+            mode: "0600"
+
+        - name: Encrypt the ConfigMap into the repository
+          ansible.builtin.shell:
+            cmd: |
+              set -euo pipefail
+              sudo -n sops -e --filename-override "{{ registry_endpoint_file }}" \
+                "{{ registry_endpoint_tmp.path }}/registry-endpoint.yaml" \
+                > "{{ registry_endpoint_tmp.path }}/registry-endpoint.enc.yaml"
+              mv "{{ registry_endpoint_tmp.path }}/registry-endpoint.enc.yaml" \
+                "{{ registry_endpoint_file }}"
+              chmod 0664 "{{ registry_endpoint_file }}"
+            executable: /bin/bash
+          changed_when: true
+
+      always:
+        - name: Remove the temporary work directory
+          ansible.builtin.file:
+            path: "{{ registry_endpoint_tmp.path }}"
+            state: absent
+          when: registry_endpoint_tmp is defined

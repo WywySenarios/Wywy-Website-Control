@@ -3,9 +3,13 @@ kind: Kustomization
 namespace: github-runner
 
 resources:
+  - ../../../base/registry-endpoint
   - deployment.yaml
   - scaled-object.yaml
   - network-policy.yaml
+
+components:
+  - ../../components/registry-egress
 
 # Pre-create secrets with:
 #   kubectl create secret generic github-runner-pat -n github-runner \

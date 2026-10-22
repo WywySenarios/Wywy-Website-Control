@@ -3,9 +3,6 @@
 # Locks runner pods to outbound HTTPS only, and blocks access to
 # private/internal IP ranges (where cluster services Live).
 #
-# This prevents an exploited runner from reaching the K8s API server,
-# internal services, or the Docker registry inside the cluster.
-#
 # Requirements:
 #   - A CNI that enforces NetworkPolicy
 # Note: Flannel alone does NOT enforce policies
@@ -47,17 +44,5 @@ spec:
         - port: 80
           protocol: TCP
 
-    # In-cluster Docker registry on port 5000 — the runner pushes
-    # docker-registry.github-runner:5000 from the deploy workflow.
-    # podSelector form (NOT ipBlock ClusterIP): with kube-proxy (iptables),
-    # ClusterIP traffic is DNAT'd to the backend pod IP in PREROUTING BEFORE
-    # Calico's workload policy in FORWARD, so the destination the egress rule
-    # sees is the registry POD IP. The ClusterIP ipBlock form silently drops
-    # on iptables-mode Calico (the ipBlock form is the eBPF alternative only).
-    - to:
-        - podSelector:
-            matchLabels:
-              app: docker-registry
-      ports:
-        - port: 5000
-          protocol: TCP
+    # The VM registry egress rule (and its CIDR parameter) lives in the
+    # registry-egress component.

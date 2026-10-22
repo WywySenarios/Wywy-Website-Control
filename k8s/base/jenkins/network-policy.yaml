@@ -86,8 +86,6 @@ spec:
       app: jenkins-agent
   policyTypes:
     - Egress
-  # Agents initiate every connection. The registry CIDR is replaced in the dev
-  # overlay from the KSOPS-rendered registry-endpoint ConfigMap.
   egress:
     - to:
         - namespaceSelector:

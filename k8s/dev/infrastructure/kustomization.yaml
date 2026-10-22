@@ -8,7 +8,6 @@ kind: Kustomization
 resources:
   - appproject.yaml
   - app-of-apps.yaml
-  - app-docker-registry.yaml
   - app-github-runner-cache-dind.yaml
   - app-image-updater.yaml
   - app-master-database.yaml

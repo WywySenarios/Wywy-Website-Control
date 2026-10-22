@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: jenkins
 resources:
   - ../../base/jenkins
+  - ../base/registry-endpoint
   - public-url.yaml
   - secrets
 replacements:

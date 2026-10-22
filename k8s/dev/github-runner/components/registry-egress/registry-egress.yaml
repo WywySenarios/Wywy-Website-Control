@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: github-runner-registry-egress
+  labels:
+    app: github-runner
+spec:
+  podSelector:
+    matchLabels:
+      app: github-runner
+  policyTypes:
+    - Egress
+  egress:
+    # Placeholder; the component's replacement swaps in the registry VM's /32 from the shared registry-endpoint ConfigMap. TEST-NET-3 allows nothing if the replacement ever goes missing.
+    - to:
+        - ipBlock:
+            cidr: 203.0.113.0/32
+      ports:
+        - port: 5000
+          protocol: TCP
