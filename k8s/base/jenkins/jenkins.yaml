@@ -50,6 +50,9 @@ jenkins:
               - configMapVolume:
                   configMapName: jenkins-registry-ca
                   mountPath: /etc/docker/certs.d/registry.internal:5000
+              - hostPathVolume:
+                  hostPath: /dev/fuse
+                  mountPath: /dev/fuse
           - name: betterleaks
             label: betterleaks
             serviceAccount: jenkins-agent
@@ -101,6 +104,9 @@ jenkins:
               - configMapVolume:
                   configMapName: jenkins-registry-ca
                   mountPath: /etc/docker/certs.d/registry.internal:5000
+              - hostPathVolume:
+                  hostPath: /dev/fuse
+                  mountPath: /dev/fuse
           - name: kind
             label: kind
             serviceAccount: jenkins-agent
@@ -276,6 +282,303 @@ jobs:
             scanCredentialsId('github-pat')
             repoOwner('WywySenarios')
             repository('Wywy-Website-Control')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc') {
+        branchSources {
+          github {
+            id('wc')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-tools') {
+        branchSources {
+          github {
+            id('wc-tools')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-tools')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-log') {
+        branchSources {
+          github {
+            id('wc-log')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-log')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-tool-call') {
+        branchSources {
+          github {
+            id('wc-tool-call')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-tool-call')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-fuse') {
+        branchSources {
+          github {
+            id('wc-fuse')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-fuse')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-fuse-client') {
+        branchSources {
+          github {
+            id('wc-fuse-client')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-fuse-client')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-chat-completions') {
+        branchSources {
+          github {
+            id('wc-chat-completions')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-chat-completions')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-prompt') {
+        branchSources {
+          github {
+            id('wc-prompt')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-prompt')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
+      multibranchPipelineJob('wc-harness') {
+        branchSources {
+          github {
+            id('wc-harness')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wc-harness')
             buildOriginBranch(true)
             buildOriginBranchWithPR(true)
             buildOriginPRMerge(true)
