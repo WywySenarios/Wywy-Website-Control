@@ -14,24 +14,11 @@ spec:
     - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
     - ghcr.io/immich-app/immich-charts
     - https://jellyfin.github.io/jellyfin-helm
+    - https://prometheus-community.github.io/helm-charts
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster
       namespace: "*"
-  # clusterResourceWhitelist, required for the app-of-apps tree:
-  #   Namespace (REQUIRED) — every Application uses CreateNamespace=true and
-  #     ArgoCD's sync context appends a PreSync Namespace task that runs through
-  #     the SAME project permission validator; without Namespace whitelisted,
-  #     any first sync into a new namespace fails PermissionDenied.
-  #   rbac ClusterRole/ClusterRoleBinding (REQUIRED) — Image Updater's
-  #     cluster-scoped RBAC; without them dev-image-updater's sync fails.
-  #   argoproj.io Application/AppProject (defense-in-depth) — Application and
-  #     AppProject are NAMESPACED-scope CRDs under ArgoCD 2.x, so an empty
-  #     whitelist does NOT deny them; whitelisted for future-proofing.
-  #   storage.k8s.io CSIDriver/StorageClass (REQUIRED)
-  # Security trade-off (accepted for dev): any Application in wywy-dev can
-  # create Namespaces/ClusterRoles/ClusterRoleBindings/CSIDrivers/
-  # StorageClasses. Revisit for prod's separate project.
   clusterResourceWhitelist:
     - group: argoproj.io
       kind: Application
@@ -47,4 +34,10 @@ spec:
       kind: CSIDriver
     - group: storage.k8s.io
       kind: StorageClass
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
   roles: []

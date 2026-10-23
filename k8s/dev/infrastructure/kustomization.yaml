@@ -11,6 +11,7 @@ resources:
   - app-image-updater.yaml
   - app-master-database.yaml
   - app-master-database-secrets.yaml
+  - app-observability.yaml
   - app-immich-secrets.yaml
   - app-immich.yaml
   - app-csi-driver-nfs.yaml

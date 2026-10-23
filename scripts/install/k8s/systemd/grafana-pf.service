@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 Environment=HOME=%h
 Environment=KUBECONFIG=%h/.kube/config
-ExecStart=/usr/bin/kubectl -n monitoring port-forward svc/prometheus-stack-grafana 8081:80
+ExecStart=/usr/bin/kubectl -n observability port-forward svc/prometheus-stack-grafana 8081:80
 Restart=always
 RestartSec=5
 

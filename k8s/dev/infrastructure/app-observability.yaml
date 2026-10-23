@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-observability
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argoproj.io
+spec:
+  project: wywy-dev
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 92.8.0
+      helm:
+        releaseName: prometheus-stack
+        valueFiles:
+          - $values/k8s/base/observability/values.yaml
+          - $values/k8s/dev/observability/values.yaml
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      path: k8s/dev/observability/secrets
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      # Prometheus/Alertmanager CRDs are large.
+      # Server-side apply avoids the 256 KiB client-side last-applied-configuration annotation limit.
+      - ServerSideApply=true
