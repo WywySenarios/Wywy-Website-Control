@@ -1,0 +1,367 @@
+---
+- name: Issue the ArgoCD server TLS certificate
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    control_dir: "{{ ansible_config_file | dirname | dirname }}"
+    argocd_tls_cn: argocd.internal
+    argocd_tls_ip: 192.168.18.150
+    argocd_tls_days: 825
+    # Re-issue the certificate when fewer than 30 days remain.
+    argocd_tls_renew_seconds: 2592000
+    argocd_tls_temp_prefix: wywy-argocd-tls-
+
+  tasks:
+    - name: Manage the ArgoCD TLS certificate
+      block:
+        - name: Determine the target environment from the selected inventory
+          ansible.builtin.set_fact:
+            argocd_env: "{{ ansible_inventory_sources | first | basename }}"
+
+        - name: Validate the target environment
+          ansible.builtin.assert:
+            that:
+              - argocd_env in ['dev', 'prod']
+            fail_msg: >-
+              argocd_env must be 'dev' or 'prod' (got '{{ argocd_env }}').
+            quiet: true
+
+        - name: Derive the encrypted secret path
+          ansible.builtin.set_fact:
+            argocd_tls_secret: >-
+              {{ control_dir }}/k8s/{{ argocd_env }}/argocd/tls/argocd-server-tls.sops.yaml
+
+        - name: Install the internal CA into the operator trust store
+          ansible.builtin.include_role:
+            name: internal_ca
+            tasks_from: trust
+
+        - name: Read the internal root CA bundle from its sops store
+          ansible.builtin.command:
+            argv:
+              - sudo
+              - -n
+              - sops
+              - -d
+              - --output-type
+              - binary
+              - "{{ control_dir }}/secrets/{{ argocd_env }}/internal-ca.sops"
+          changed_when: false
+          check_mode: false
+          no_log: true
+          register: argocd_ca_bundle_read
+
+        - name: Parse the internal root CA key and certificate
+          ansible.builtin.set_fact:
+            argocd_ca_key: "{{ (argocd_ca_bundle_read.stdout | from_yaml).key }}"
+            argocd_ca_cert: "{{ (argocd_ca_bundle_read.stdout | from_yaml).cert }}"
+          no_log: true
+
+        - name: Create a private work directory on the controller
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: "{{ argocd_tls_temp_prefix }}"
+            suffix: ""
+          register: argocd_tls_tmp
+
+        - name: Restrict the work directory
+          ansible.builtin.file:
+            path: "{{ argocd_tls_tmp.path }}"
+            state: directory
+            mode: "0700"
+
+        - name: Write the canonical CA certificate for verification
+          ansible.builtin.copy:
+            content: "{{ argocd_ca_cert }}"
+            dest: "{{ argocd_tls_tmp.path }}/ca.crt"
+            mode: "0600"
+          no_log: true
+
+        - name: Ensure the TLS secret directory exists
+          ansible.builtin.file:
+            path: "{{ argocd_tls_secret | dirname }}"
+            state: directory
+            mode: "0755"
+
+        - name: Check for an existing ArgoCD TLS secret
+          ansible.builtin.stat:
+            path: "{{ argocd_tls_secret }}"
+          register: argocd_tls_target_stat
+
+        - name: Initialize the existing-certificate state
+          ansible.builtin.set_fact:
+            argocd_tls_existing_crt: ""
+
+        - name: Inspect the existing certificate
+          when: argocd_tls_target_stat.stat.exists
+          block:
+            - name: Decrypt the existing TLS secret
+              ansible.builtin.command:
+                argv:
+                  - sudo
+                  - -n
+                  - sops
+                  - -d
+                  - --output-type
+                  - yaml
+                  - "{{ argocd_tls_secret }}"
+              changed_when: false
+              check_mode: false
+              no_log: true
+              register: argocd_tls_target_read
+
+            - name: Extract the existing certificate
+              ansible.builtin.set_fact:
+                argocd_tls_existing_crt: >-
+                  {{
+                    (argocd_tls_target_read.stdout | from_yaml).get('stringData', {}).get('tls.crt')
+                    or (((argocd_tls_target_read.stdout | from_yaml).get('data', {}).get('tls.crt', '')) | b64decode)
+                    or ''
+                  }}
+              no_log: true
+
+            - name: Write the existing certificate for inspection
+              ansible.builtin.copy:
+                content: "{{ argocd_tls_existing_crt }}"
+                dest: "{{ argocd_tls_tmp.path }}/current.crt"
+                mode: "0600"
+              when: argocd_tls_existing_crt | length > 0
+              no_log: true
+
+            - name: Check the existing certificate's remaining lifetime
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - x509
+                  - -in
+                  - "{{ argocd_tls_tmp.path }}/current.crt"
+                  - -noout
+                  - -checkend
+                  - "{{ argocd_tls_renew_seconds | string }}"
+              changed_when: false
+              failed_when: false
+              when: argocd_tls_existing_crt | length > 0
+              register: argocd_tls_cert_check
+
+            - name: Check the existing certificate's DNS name
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - x509
+                  - -in
+                  - "{{ argocd_tls_tmp.path }}/current.crt"
+                  - -noout
+                  - -checkhost
+                  - "{{ argocd_tls_cn }}"
+              changed_when: false
+              failed_when: false
+              when: argocd_tls_existing_crt | length > 0
+              register: argocd_tls_host_check
+
+            - name: Check the existing certificate's IP address
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - x509
+                  - -in
+                  - "{{ argocd_tls_tmp.path }}/current.crt"
+                  - -noout
+                  - -checkip
+                  - "{{ argocd_tls_ip }}"
+              changed_when: false
+              failed_when: false
+              when: argocd_tls_existing_crt | length > 0
+              register: argocd_tls_ip_check
+
+            - name: Verify the existing certificate against the canonical CA
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - verify
+                  - -CAfile
+                  - "{{ argocd_tls_tmp.path }}/ca.crt"
+                  - "{{ argocd_tls_tmp.path }}/current.crt"
+              changed_when: false
+              failed_when: false
+              when: argocd_tls_existing_crt | length > 0
+              register: argocd_tls_ca_verify
+
+            - name: Read the existing certificate's SAN set
+              ansible.builtin.shell:
+                cmd: |
+                  set -euo pipefail
+                  openssl x509 -in "{{ argocd_tls_tmp.path }}/current.crt" -noout -ext subjectAltName \
+                    | tail -n +2 \
+                    | tr -d ' ' \
+                    | sed 's/IPAddress:/IP:/g' \
+                    | tr ',' '\n' \
+                    | sed '/^$/d' \
+                    | sort \
+                    | paste -sd, -
+                executable: /bin/bash
+              changed_when: false
+              failed_when: false
+              when: argocd_tls_existing_crt | length > 0
+              register: argocd_tls_existing_sans
+
+        - name: Determine whether the ArgoCD TLS certificate must be (re)issued
+          ansible.builtin.set_fact:
+            argocd_tls_needs_issue: >-
+              {{
+                (not argocd_tls_target_stat.stat.exists)
+                or ((argocd_tls_existing_crt | default('') | length) == 0)
+                or ((argocd_tls_cert_check.rc | default(1)) != 0)
+                or ((argocd_tls_host_check.rc | default(1)) != 0)
+                or ((argocd_tls_ip_check.rc | default(1)) != 0)
+                or ((argocd_tls_ca_verify.rc | default(1)) != 0)
+                or ((argocd_tls_existing_sans.stdout | default('') | trim)
+                    != ('DNS:' ~ argocd_tls_cn ~ ',IP:' ~ argocd_tls_ip))
+              }}
+
+        - name: Issue the ArgoCD TLS certificate
+          when: argocd_tls_needs_issue | bool
+          block:
+            - name: Write the internal CA private key for signing
+              ansible.builtin.copy:
+                content: "{{ argocd_ca_key }}"
+                dest: "{{ argocd_tls_tmp.path }}/ca.key"
+                mode: "0600"
+              no_log: true
+
+            - name: Generate the ArgoCD private key
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - genpkey
+                  - -algorithm
+                  - RSA
+                  - -pkeyopt
+                  - rsa_keygen_bits:2048
+                  - -out
+                  - "{{ argocd_tls_tmp.path }}/argocd.key"
+              changed_when: true
+              no_log: true
+
+            - name: Render the leaf certificate extensions
+              ansible.builtin.copy:
+                content: |
+                  basicConstraints = critical,CA:FALSE
+                  keyUsage = critical,digitalSignature,keyEncipherment
+                  extendedKeyUsage = serverAuth
+                  subjectAltName = DNS:{{ argocd_tls_cn }},IP:{{ argocd_tls_ip }}
+                  subjectKeyIdentifier = hash
+                  authorityKeyIdentifier = keyid,issuer
+                dest: "{{ argocd_tls_tmp.path }}/ext.cnf"
+                mode: "0600"
+
+            - name: Generate the ArgoCD certificate signing request
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - req
+                  - -new
+                  - -sha256
+                  - -key
+                  - "{{ argocd_tls_tmp.path }}/argocd.key"
+                  - -subj
+                  - "/CN={{ argocd_tls_cn }}"
+                  - -out
+                  - "{{ argocd_tls_tmp.path }}/argocd.csr"
+              changed_when: true
+              no_log: true
+
+            - name: Sign the ArgoCD certificate with the internal CA
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - x509
+                  - -req
+                  - -sha256
+                  - -days
+                  - "{{ argocd_tls_days | string }}"
+                  - -in
+                  - "{{ argocd_tls_tmp.path }}/argocd.csr"
+                  - -CA
+                  - "{{ argocd_tls_tmp.path }}/ca.crt"
+                  - -CAkey
+                  - "{{ argocd_tls_tmp.path }}/ca.key"
+                  - -CAcreateserial
+                  - -extfile
+                  - "{{ argocd_tls_tmp.path }}/ext.cnf"
+                  - -out
+                  - "{{ argocd_tls_tmp.path }}/argocd.crt"
+              changed_when: true
+              no_log: true
+
+            - name: Verify the issued certificate against the internal CA
+              ansible.builtin.command:
+                argv:
+                  - openssl
+                  - verify
+                  - -CAfile
+                  - "{{ argocd_tls_tmp.path }}/ca.crt"
+                  - "{{ argocd_tls_tmp.path }}/argocd.crt"
+              changed_when: false
+
+            - name: Read the issued certificate and key
+              ansible.builtin.slurp:
+                src: "{{ item }}"
+              loop:
+                - "{{ argocd_tls_tmp.path }}/argocd.crt"
+                - "{{ argocd_tls_tmp.path }}/argocd.key"
+              register: argocd_tls_material
+              no_log: true
+
+            - name: Assemble the ArgoCD TLS Secret
+              ansible.builtin.set_fact:
+                argocd_tls_secret_content: >-
+                  {{
+                    {'apiVersion': 'v1',
+                     'kind': 'Secret',
+                     'metadata': {'name': 'argocd-server-tls', 'namespace': 'argocd'},
+                     'type': 'kubernetes.io/tls',
+                     'stringData': {
+                       'tls.crt': argocd_tls_material.results[0].content | b64decode,
+                       'tls.key': argocd_tls_material.results[1].content | b64decode,
+                       'ca.crt': argocd_ca_cert
+                     }}
+                    | to_nice_yaml
+                  }}
+              no_log: true
+
+            - name: Write the plaintext secret in the work directory
+              ansible.builtin.copy:
+                content: "{{ argocd_tls_secret_content }}"
+                dest: "{{ argocd_tls_tmp.path }}/argocd-server-tls.yaml"
+                mode: "0600"
+              no_log: true
+
+            - name: Encrypt the secret into its sops store
+              ansible.builtin.shell:
+                cmd: |
+                  set -euo pipefail
+                  sudo -n sops -e --filename-override "{{ argocd_tls_secret }}" \
+                    "{{ argocd_tls_tmp.path }}/argocd-server-tls.yaml" > "{{ argocd_tls_tmp.path }}/argocd-server-tls.enc.yaml"
+                  mv "{{ argocd_tls_tmp.path }}/argocd-server-tls.enc.yaml" "{{ argocd_tls_secret }}"
+                executable: /bin/bash
+              changed_when: true
+              no_log: true
+
+        - name: Report the certificate state
+          ansible.builtin.debug:
+            msg: >-
+              {{ 'issued a new certificate'
+                 if argocd_tls_needs_issue | bool
+                 else 'the existing certificate is valid; nothing to do' }}
+
+      always:
+        - name: Remove the work directory
+          ansible.builtin.file:
+            path: "{{ argocd_tls_tmp.path }}"
+            state: absent
+          when:
+            - argocd_tls_tmp is defined
+            - argocd_tls_tmp.path is defined

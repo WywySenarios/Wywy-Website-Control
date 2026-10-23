@@ -30,12 +30,21 @@ configs:
       name: prometheus-community
       url: https://prometheus-community.github.io/helm-charts
       type: helm
+    metallb:
+      name: metallb
+      url: https://metallb.github.io/metallb
+      type: helm
 
   cm:
     # Enable kustomize KRM exec plugins — required for the ksops generator.
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
 server:
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 192.168.18.150
+    loadBalancerSourceRanges:
+      - 192.168.18.0/24
   livenessProbe:
     timeoutSeconds: 10
     failureThreshold: 6

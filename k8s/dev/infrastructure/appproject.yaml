@@ -15,6 +15,7 @@ spec:
     - ghcr.io/immich-app/immich-charts
     - https://jellyfin.github.io/jellyfin-helm
     - https://prometheus-community.github.io/helm-charts
+    - https://metallb.github.io/metallb
   destinations:
     - server: https://kubernetes.default.svc
       name: in-cluster

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-argocd-tls
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argoproj.io
+spec:
+  project: wywy-dev
+  source:
+    repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+    targetRevision: main
+    path: k8s/dev/argocd/tls
+  destination:
+    # The argocd namespace and the argocd-server Service come from argocd.sh, so this Application must not fight over them.
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true

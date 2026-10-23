@@ -16,18 +16,20 @@ kube-prometheus-stack (Prometheus, Grafana, Alertmanager) from
 
 ## Port forwarding
 
-`systemd/install.sh` pushes all port-forward services to systemd:
+`systemd/install.sh` pushes the port-forward services to systemd:
 
 | Service  | Port | URL                   |
 | -------- | ---- | --------------------- |
 | Grafana  | 8081 | http://localhost:8081 |
 | Jellyfin | 8082 | http://localhost:8082 |
-| ArgoCD   | 8083 | http://localhost:8083 |
 | Jenkins  | 8084 | http://localhost:8084 |
 | Immich   | 8085 | http://localhost:8085 |
 
-Each component script also installs its own service automatically. Grafana has
-no component script (it is deployed by ArgoCD), and Jellyfin has none at all, so
-install their units with `systemd/install.sh grafana-pf.service` and
+No component script installs a unit automatically. Grafana has no component
+script (it is deployed by ArgoCD) and Jellyfin has none at all, so install the
+units you need with `systemd/install.sh grafana-pf.service` and
 `systemd/install.sh jellyfin-pf.service` (or run the installer bare for all
 units).
+
+ArgoCD has no port-forward: it is served directly on the LAN by MetalLB at
+`https://192.168.18.150`.
