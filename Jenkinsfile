@@ -20,7 +20,9 @@ pipeline {
       steps {
         withChecks('ansible-code-check') {
           sh './scripts/install/ansible.sh'
-          sh 'for step in scripts/tests/ansible/*.sh; do "$step"; done'
+          sh 'scripts/tests/ansible/lint.sh'
+          sh 'scripts/tests/ansible/ruff.sh'
+          sh 'scripts/tests/ansible/syntax.sh'
         }
       }
     }
