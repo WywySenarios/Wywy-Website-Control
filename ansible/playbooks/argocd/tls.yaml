@@ -42,8 +42,6 @@
         - name: Read the internal root CA bundle from its sops store
           ansible.builtin.command:
             argv:
-              - sudo
-              - -n
               - sops
               - -d
               - --output-type
@@ -343,7 +341,7 @@
               ansible.builtin.shell:
                 cmd: |
                   set -euo pipefail
-                  sudo -n sops -e --filename-override "{{ argocd_tls_secret }}" \
+                  sops -e --filename-override "{{ argocd_tls_secret }}" \
                     "{{ argocd_tls_tmp.path }}/argocd-server-tls.yaml" > "{{ argocd_tls_tmp.path }}/argocd-server-tls.enc.yaml"
                   mv "{{ argocd_tls_tmp.path }}/argocd-server-tls.enc.yaml" "{{ argocd_tls_secret }}"
                 executable: /bin/bash

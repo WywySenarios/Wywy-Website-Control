@@ -7,7 +7,7 @@
 #   hosts_ip_real <name>   # like hosts_ip, but rejects RFC 5737 placeholders
 #
 # Environment: HOSTS_MODE=dev|prod selects the file. It is required.
-# Requires: sops (decrypts with the operator age key, hence sudo).
+# Requires: sops (decrypts with the operator age key).
 #
 # This file is meant to be sourced. CONVENTION EXCETION: this script does not `set -euo pipefail`. We don't want to leak it into callees.
 
@@ -35,7 +35,7 @@ hosts_ip() {
 		echo "hosts_ip: $HOSTS_FILE not found" >&2
 		return 1
 	}
-	plain="$(sudo sops -d --output-type binary "$HOSTS_FILE")" || {
+	plain="$(sops -d --output-type binary "$HOSTS_FILE")" || {
 		echo "hosts_ip: sops decrypt failed for $HOSTS_FILE" >&2
 		return 1
 	}

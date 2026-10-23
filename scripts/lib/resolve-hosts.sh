@@ -12,7 +12,7 @@
 #   scripts/lib/resolve-hosts.sh --dev|--prod              # interactive shell
 #   scripts/lib/resolve-hosts.sh --dev|--prod -- <cmd...>  # run a command
 #
-# Requires: unshare with user+mount namespaces (Debian 13 default), sudo
+# Requires: unshare with user+mount namespaces (Debian 13 default),
 #           sops (operator age key).
 #
 set -euo pipefail
@@ -41,7 +41,7 @@ source "$SCRIPT_DIR/hosts.sh"
 MERGED="$(mktemp)"
 chmod 644 "$MERGED" # the overlay must stay world-readable in the namespace
 cat /etc/hosts >"$MERGED"
-sudo sops -d --output-type binary "$HOSTS_FILE" >>"$MERGED" || {
+sops -d --output-type binary "$HOSTS_FILE" >>"$MERGED" || {
 	echo "resolve-hosts: failed to decrypt $HOSTS_FILE" >&2
 	rm -f "$MERGED"
 	exit 1

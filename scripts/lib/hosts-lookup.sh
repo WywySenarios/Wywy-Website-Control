@@ -30,7 +30,7 @@
 # problem. A name repeated within a single line is not ambiguous — same line,
 # same address.
 #
-# Requires: sops and the operator age key (hence sudo), by convention. There is
+# Requires: sops and the operator age key, by convention. There is
 # deliberately no SCRIPT_DIR resolution: this script reads no sibling file.
 set -euo pipefail
 
@@ -47,7 +47,7 @@ host_name="$2"
 # Everything the file can be wrong about — absent, unreadable, bad ciphertext,
 # wrong key — is sops's to report, and it reports it more precisely than this
 # script could. Let its message and exit code through; set -e stops here.
-plain="$(sudo sops -d --output-type binary "$hosts_file")"
+plain="$(sops -d --output-type binary "$hosts_file")"
 
 # Field 1 must look like an address, so a comment line's '#' is never read as
 # one. `next` emits at most one match per line, so a name repeated on a line

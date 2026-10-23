@@ -10,7 +10,7 @@
 # Prerequisites:
 #   - kubectl configured for the invoking user
 #   - hosts file entry db.internal (secrets/dev/hosts.sops)
-#   - secrets/dev/postgres-password.sops (decrypt needs root — age key)
+#   - secrets/dev/postgres-password.sops (decrypted with the operator age key)
 #   - postgres password set on the server to match the sops value
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BATS_TEST_FILENAME}")")" && pwd)"
@@ -26,7 +26,7 @@ setup() {
     source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
     DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
     [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops not found"
-    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
+    PGPASSWORD="$(sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
     [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops decrypted to an empty value"
     command -v kubectl >/dev/null 2>&1 || skip "kubectl not found"
     kubectl cluster-info >/dev/null 2>&1 || skip "kubectl cannot reach the cluster"

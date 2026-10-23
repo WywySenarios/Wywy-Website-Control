@@ -2,7 +2,6 @@
 - name: Read the internal root CA bundle from its sops store
   ansible.builtin.command:
     argv:
-      - sudo
       - sops
       - -d
       - --output-type

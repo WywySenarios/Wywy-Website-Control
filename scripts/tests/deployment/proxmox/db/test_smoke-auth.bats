@@ -6,15 +6,14 @@
 # itself (scram over TCP) WITHOUT the cluster — use this to rule the DB VM in
 # or out, then use test_pod-auth.bats for the full pod → ufw → DB path.
 #
-# Runs as the invoking user; only the sops decrypt needs root (root owns the
-# age key at /root/.config/sops/age/keys.txt), so it uses sudo per command.
+# Runs as the invoking user and decrypts with the operator age key.
 #
 # Dev only — tests never run against prod.
 #
 # Prerequisites:
 #   - ssh key auth from the invoking user to wywy@<DB_IP> (VMs are provisioned
 #     with --ciuser wywy and the user's authorized_keys)
-#   - root owns the sops age key
+#   - the operator owns the sops age key
 #   - hosts file entry db.internal (secrets/dev/hosts.sops)
 #   - postgres password set on the server to match the sops value
 
@@ -31,7 +30,7 @@ setup() {
     source "$CONTROL_DIR/scripts/lib/hosts.sh" 2>/dev/null || skip "scripts/lib/hosts.sh not found"
     DB_IP="$(hosts_ip_real db.internal)" || skip "db.internal not resolvable from the hosts file (missing or placeholder)"
     [[ -f "$PASSWORD_SOPS" ]] || skip "secrets/dev/postgres-password.sops not found"
-    PGPASSWORD="$(sudo sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
+    PGPASSWORD="$(sops --decrypt "$PASSWORD_SOPS")" || fail "failed to decrypt secrets/dev/postgres-password.sops"
     [[ -n "$PGPASSWORD" ]] || fail "secrets/dev/postgres-password.sops decrypted to an empty value"
 }
 

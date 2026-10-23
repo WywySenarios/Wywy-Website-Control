@@ -111,11 +111,9 @@
           ansible.builtin.shell:
             cmd: |
               set -euo pipefail
-              if [ "$(id -u)" -eq 0 ]; then
-                sops -d --output-type binary "{{ control_dir }}/secrets/{{ wywy_env }}/registry-password.sops"
-              else
-                sudo -n sops -d --output-type binary "{{ control_dir }}/secrets/{{ wywy_env }}/registry-password.sops"
-              fi | docker login --password-stdin -u "{{ registry_user }}" "{{ registry }}"
+              sops -d --output-type binary \
+                "{{ control_dir }}/secrets/{{ wywy_env }}/registry-password.sops" \
+                | docker login --password-stdin -u "{{ registry_user }}" "{{ registry }}"
             executable: /bin/bash
           environment:
             DOCKER_CONFIG: "{{ docker_config_dir.stdout | trim }}"

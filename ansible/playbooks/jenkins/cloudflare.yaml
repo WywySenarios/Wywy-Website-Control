@@ -43,8 +43,6 @@
         - name: Read the Cloudflare API secret
           ansible.builtin.command:
             argv:
-              - sudo
-              - -n
               - sops
               - -d
               - --output-type
@@ -217,7 +215,7 @@
           ansible.builtin.shell:
             cmd: |
               set -euo pipefail
-              sudo -n sops -e --filename-override "{{ cloudflare_tunnel_token_file }}" \
+              sops -e --filename-override "{{ cloudflare_tunnel_token_file }}" \
                 "{{ tmp }}/cloudflared-tunnel-token.yaml" > "{{ tmp }}/cloudflared-tunnel-token.enc.yaml"
               mv "{{ tmp }}/cloudflared-tunnel-token.enc.yaml" "{{ cloudflare_tunnel_token_file }}"
             executable: /bin/bash

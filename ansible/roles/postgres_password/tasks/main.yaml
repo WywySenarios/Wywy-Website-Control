@@ -21,7 +21,6 @@
 - name: Read the superuser password from its sops store
   ansible.builtin.command:
     argv:
-      - sudo
       - sops
       - -d
       - --output-type

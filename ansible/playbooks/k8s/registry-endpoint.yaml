@@ -27,8 +27,6 @@
     - name: Read the current endpoint value
       ansible.builtin.command:
         argv:
-          - sudo
-          - -n
           - sops
           - -d
           - --extract
@@ -80,7 +78,7 @@
           ansible.builtin.shell:
             cmd: |
               set -euo pipefail
-              sudo -n sops -e --filename-override "{{ registry_endpoint_file }}" \
+              sops -e --filename-override "{{ registry_endpoint_file }}" \
                 "{{ registry_endpoint_tmp.path }}/registry-endpoint.yaml" \
                 > "{{ registry_endpoint_tmp.path }}/registry-endpoint.enc.yaml"
               mv "{{ registry_endpoint_tmp.path }}/registry-endpoint.enc.yaml" \

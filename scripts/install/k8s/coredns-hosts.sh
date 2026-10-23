@@ -6,7 +6,7 @@
 # Usage:
 #   coredns-hosts.sh --dev|--prod [--dry-run]
 #
-# Requires: kubectl (cluster access), sudo sops (operator age key).
+# Requires: kubectl (cluster access), sops (operator age key).
 #
 set -euo pipefail
 
@@ -49,7 +49,7 @@ CURRENT_COREFILE="$(kubectl -n kube-system get cm coredns -o jsonpath='{.data.Co
 }
 
 # ---- Build the hosts block from the encrypted hosts file ----
-HOSTS_BLOCK="$(sudo sops -d --output-type binary "$HOSTS_FILE" | awk '{printf "        %s %s\n", $1, $2}')" || {
+HOSTS_BLOCK="$(sops -d --output-type binary "$HOSTS_FILE" | awk '{printf "        %s %s\n", $1, $2}')" || {
 	echo "Error: failed to decrypt $HOSTS_FILE" >&2
 	exit 1
 }

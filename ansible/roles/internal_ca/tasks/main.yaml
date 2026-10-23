@@ -54,7 +54,7 @@
         prefix: "{{ internal_ca_temp_prefix }}"
         suffix: ""
       delegate_to: localhost
-      become: true
+      become: false
       register: internal_ca_tmp
 
     - name: Record the transient CA paths
@@ -158,11 +158,9 @@
       ansible.builtin.copy:
         content: "{{ internal_ca_bundle }}"
         dest: "{{ internal_ca_work_dir }}/internal-ca.yaml"
-        owner: root
-        group: root
         mode: "0600"
       delegate_to: localhost
-      become: true
+      become: false
       no_log: true
 
     - name: Encrypt the bundle into its sops store
@@ -180,7 +178,7 @@
           - binary
           - "{{ internal_ca_work_dir }}/internal-ca.yaml"
       delegate_to: localhost
-      become: true
+      become: false
       changed_when: true
       register: internal_ca_encrypted
 
@@ -195,7 +193,6 @@
     - name: Verify the encrypted bundle decrypts to the generated certificate
       ansible.builtin.command:
         argv:
-          - sudo
           - sops
           - -d
           - --output-type
