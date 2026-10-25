@@ -1,9 +1,13 @@
 # Wywy Control: Ansible
 
-Remember to pull dependencies:
+To install Ansible:
 
 ```bash
-uv sync
+# from the repository root
+scripts/install/ansible.sh
+
+# from ansible/
+../scripts/install/ansible.sh
 ```
 
 Run a playbook with the command below:
