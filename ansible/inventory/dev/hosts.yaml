@@ -1,31 +1,37 @@
 ---
 all:
   children:
-    db:
+    # Physical Proxmox node pool. X nodes, independent of the number of roles.
+    proxmox:
       hosts:
-        db.internal:
+        db-node.internal:
           ansible_user: wywy
+        files-node.internal:
+          ansible_user: wywy
+        registry-node.internal:
+          ansible_user: wywy
+    # Role tags. Each tag selects exactly one node; tags may overlap.
     db_pve:
       hosts:
         db-node.internal:
+    files_pve:
+      hosts:
+        files-node.internal:
+    registry_pve:
+      hosts:
+        registry-node.internal:
+    db:
+      hosts:
+        db.internal:
           ansible_user: wywy
     files:
       hosts:
         files.internal:
           ansible_user: wywy
-    files_pve:
-      hosts:
-        files-node.internal:
-          ansible_user: wywy
     registry:
       hosts:
         registry.internal:
           ansible_user: wywy
-    registry_pve:
-      hosts:
-        registry-node.internal:
-          ansible_user: wywy
-    # TEMPORARY: workers are still cloud-init-managed.
     k8s_workers:
       hosts:
         k8s-worker-1.internal:

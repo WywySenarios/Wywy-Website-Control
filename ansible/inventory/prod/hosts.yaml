@@ -1,19 +1,30 @@
 ---
 all:
   children:
+    # Physical Proxmox node pool. X nodes, independent of the number of roles.
+    proxmox:
+      hosts:
+        db-node.internal:
+          ansible_user: wywy
+        files-node.internal:
+          ansible_user: wywy
+        registry-node.internal:
+          ansible_user: wywy
+    # Role tags. Each tag selects exactly one node; tags may overlap.
+    db_pve:
+      hosts:
+        db-node.internal:
+    files_pve:
+      hosts:
+        files-node.internal:
+    registry_pve:
+      hosts:
+        registry-node.internal:
     db:
       hosts:
         db.internal:
           ansible_user: wywy
-    db_pve:
-      hosts:
-        db-node.internal:
-          ansible_user: wywy
     files:
       hosts:
         files.internal:
-          ansible_user: wywy
-    files_pve:
-      hosts:
-        files-node.internal:
           ansible_user: wywy

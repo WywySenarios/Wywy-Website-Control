@@ -1,8 +1,4 @@
 ---
-ansible_host: >-
-  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/proxmox-hosts.sops ' ~ inventory_hostname) }}
-
 # --- proxmox_template role ---
 proxmox_template_vmid: 1302
 proxmox_template_name: "debian-13-files-template"
