@@ -3,3 +3,4 @@ profile: production
 exclude_paths:
   - ansible/.venv
   - ansible/.collections
+  - ansible/inventory/**/*.sops.yaml

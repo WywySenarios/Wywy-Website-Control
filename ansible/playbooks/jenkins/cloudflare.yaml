@@ -40,40 +40,25 @@
 
     - name: Manage the Cloudflare tunnel
       block:
-        - name: Read the Cloudflare API secret
-          ansible.builtin.command:
-            argv:
-              - sops
-              - -d
-              - --output-type
-              - yaml
-              - "{{ control_dir }}/secrets/{{ wywy_env }}/cloudflare.sops.yaml"
-          register: cloudflare_secret_read
-          changed_when: false
-          check_mode: false
-          no_log: true
-
-        - name: Parse the Cloudflare API secret
-          ansible.builtin.set_fact:
-            cloudflare_secrets: "{{ cloudflare_secret_read.stdout | from_yaml }}"
-          no_log: true
-
         - name: Validate the Cloudflare inputs
           ansible.builtin.assert:
             that:
-              - cloudflare_secrets.api_token is defined
-              - cloudflare_secrets.api_token | length > 0
-              - cloudflare_secrets.account_id is defined
-              - cloudflare_secrets.zone_id is defined
+              - cloudflare_api_token is defined
+              - cloudflare_api_token | length > 0
+              - cloudflare_account_id is defined
+              - cloudflare_account_id | length > 0
+              - cloudflare_zone_id is defined
+              - cloudflare_zone_id | length > 0
               - cloudflare_access_allowed_emails | length > 0
-            fail_msg: "cloudflare.sops.yaml must define api_token, account_id, and zone_id; pass cloudflare_access_allowed_emails"
+            fail_msg: >-
+              Cloudflare secrets must be defined in inventory/<env>/group_vars/all.sops.yaml
             quiet: true
           no_log: true
 
         - name: Build the Cloudflare API headers
           ansible.builtin.set_fact:
             cloudflare_headers:
-              Authorization: "Bearer {{ cloudflare_secrets.api_token }}"
+              Authorization: "Bearer {{ cloudflare_api_token }}"
               Content-Type: application/json
           no_log: true
 
@@ -87,7 +72,7 @@
 
         - name: Look up the tunnel
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel?name={{ cloudflare_tunnel_name }}&is_deleted=false"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ cloudflare_tunnel_name }}&is_deleted=false"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -105,7 +90,7 @@
 
         - name: Create the tunnel
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -132,7 +117,7 @@
 
         - name: Apply the tunnel ingress
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/configurations"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/configurations"
             method: PUT
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -149,7 +134,7 @@
 
         - name: Retrieve the tunnel token
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/token"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/token"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -171,7 +156,7 @@
 
         - name: Rotate the tunnel token
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}"
             method: PATCH
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -232,7 +217,7 @@
 
         - name: Look up the DNS record
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_secrets.zone_id }}/dns_records?type=CNAME&name={{ cloudflare_hostname }}"
+            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records?type=CNAME&name={{ cloudflare_hostname }}"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -242,7 +227,7 @@
 
         - name: Create the DNS record
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_secrets.zone_id }}/dns_records"
+            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -259,7 +244,7 @@
 
         - name: Update the DNS record
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_secrets.zone_id }}/dns_records/{{ item.id }}"
+            url: "{{ cloudflare_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records/{{ item.id }}"
             method: PATCH
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -275,7 +260,7 @@
 
         - name: Look up the Access applications
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -293,7 +278,7 @@
 
         - name: Create the UI application
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -323,7 +308,7 @@
 
         - name: Look up the UI policies
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps/{{ cloudflare_ui_app_id }}/policies"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps/{{ cloudflare_ui_app_id }}/policies"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -333,7 +318,7 @@
 
         - name: Create the UI allow policies
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps/{{ cloudflare_ui_app_id }}/policies"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps/{{ cloudflare_ui_app_id }}/policies"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -360,7 +345,7 @@
 
         - name: Create the webhook application
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json
@@ -390,7 +375,7 @@
 
         - name: Look up the webhook policies
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps/{{ cloudflare_webhook_app_id }}/policies"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps/{{ cloudflare_webhook_app_id }}/policies"
             method: GET
             headers: "{{ cloudflare_headers }}"
             status_code: 200
@@ -400,7 +385,7 @@
 
         - name: Create the webhook bypass policy
           ansible.builtin.uri:
-            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_secrets.account_id }}/access/apps/{{ cloudflare_webhook_app_id }}/policies"
+            url: "{{ cloudflare_api_base }}/accounts/{{ cloudflare_account_id }}/access/apps/{{ cloudflare_webhook_app_id }}/policies"
             method: POST
             headers: "{{ cloudflare_headers }}"
             body_format: json

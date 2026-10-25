@@ -63,20 +63,15 @@
     mode: "0700"
   become: true
 
-- name: Read the admin password from its sops store
-  ansible.builtin.command:
-    argv:
-      - sops
-      - -d
-      - --output-type
-      - binary
-      - "{{ registry_password_secret }}"
-  delegate_to: localhost
-  become: false
-  changed_when: false
-  check_mode: false
+- name: Fail closed when the registry password is not configured
+  ansible.builtin.assert:
+    that:
+      - registry_password is defined
+      - registry_password | length > 0
+    fail_msg: >-
+      Secret "registry_password" is not resolveable.
+    quiet: true
   no_log: true
-  register: registry_password_read
 
 - name: Look for an existing htpasswd file
   ansible.builtin.stat:
@@ -91,7 +86,7 @@
       - -vbi
       - "{{ registry_htpasswd_file }}"
       - "{{ registry_user }}"
-    stdin: "{{ registry_password_read.stdout }}"
+    stdin: "{{ registry_password }}"
   become: true
   register: registry_htpasswd_verify
   changed_when: false
@@ -107,7 +102,7 @@
       - -Bbn
       - -i
       - "{{ registry_user }}"
-    stdin: "{{ registry_password_read.stdout }}"
+    stdin: "{{ registry_password }}"
   become: true
   register: registry_htpasswd_entry
   changed_when: false

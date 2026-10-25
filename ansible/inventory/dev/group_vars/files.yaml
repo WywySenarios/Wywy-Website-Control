@@ -8,6 +8,3 @@ wywy_worker_ips: >-
 wywy_control_plane_ip: >-
   {{ (lookup('pipe', "sops -d --output-type binary " ~ control_dir ~
   "/secrets/" ~ wywy_env ~ "/hosts.sops | grep -w control-plane.internal")).split() | first }}
-wywy_pod_cidr: >-
-  {{ (lookup('pipe', "sops -d --input-type json " ~ control_dir ~
-  '/secrets/' ~ wywy_env ~ '/k8s-pod-cidr.sops')).strip() }}

@@ -108,13 +108,15 @@
             mode: "0700"
 
         - name: Authenticate to the internal registry
-          ansible.builtin.shell:
-            cmd: |
-              set -euo pipefail
-              sops -d --output-type binary \
-                "{{ control_dir }}/secrets/{{ wywy_env }}/registry-password.sops" \
-                | docker login --password-stdin -u "{{ registry_user }}" "{{ registry }}"
-            executable: /bin/bash
+          ansible.builtin.command:
+            argv:
+              - docker
+              - login
+              - --password-stdin
+              - -u
+              - "{{ registry_user }}"
+              - "{{ registry }}"
+            stdin: "{{ registry_password }}"
           environment:
             DOCKER_CONFIG: "{{ docker_config_dir.stdout | trim }}"
           changed_when: true

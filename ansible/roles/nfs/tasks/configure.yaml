@@ -32,8 +32,7 @@
     that:
       - wywy_pod_cidr | length > 0
     fail_msg: >-
-      wywy_pod_cidr is empty (secrets/<env>/k8s-pod-cidr.sops) — refusing to
-      export shares with an unknown pod network.
+      Group variable "wywy_pod_cidr" is not resolveable.
     quiet: true
 
 - name: Check the data disk is present
