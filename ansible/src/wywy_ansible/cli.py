@@ -15,6 +15,14 @@ ANSIBLE_DIR = Path(__file__).resolve().parents[2]
 CONFIG_FILE = ANSIBLE_DIR / "ansible.cfg"
 INVENTORY_DIR = ANSIBLE_DIR / "inventory"
 PLAYBOOKS_DIR = ANSIBLE_DIR / "playbooks"
+COLLECTIONS_DIR = ANSIBLE_DIR / ".collections" / "ansible_collections"
+REQUIRED_COLLECTIONS = (
+    "ansible/posix",
+    "community/docker",
+    "community/general",
+    "community/postgresql",
+    "community/sops",
+)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -59,11 +67,33 @@ def resolve_playbook(raw: str) -> Path:
     return candidate
 
 
+def check_collections() -> None:
+    """Fail before Ansible starts when the pinned collections are missing.
+
+    Without the collections, the community.sops vars plugin never loads
+    group_vars/*.sops.yaml, and playbooks fail later with misleading
+    undefined-variable errors.
+    """
+    missing = [
+        collection
+        for collection in REQUIRED_COLLECTIONS
+        if not (COLLECTIONS_DIR / collection).is_dir()
+    ]
+    if missing:
+        problem = (
+            "Ansible collections are not installed: "
+            f"{', '.join(missing)}. Run scripts/install/ansible.sh from the "
+            "repository root."
+        )
+        raise SystemExit(problem)
+
+
 # Not thread-safe — mutates the process environment and replaces the process.
 def main() -> None:
     """Hand the playbook to ansible-playbook with the chosen inventory."""
     args = parse_args(sys.argv[1:])
     playbook = resolve_playbook(args.playbook)
+    check_collections()
     inventory = INVENTORY_DIR / args.env
     print(f"==> {args.env}: {playbook} with {inventory}", file=sys.stderr)
     environment = os.environ | {
