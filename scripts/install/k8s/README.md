@@ -16,19 +16,18 @@ kube-prometheus-stack (Prometheus, Grafana, Alertmanager) from
 
 ## Public access (Cloudflare tunnels)
 
-Immich, Grafana, and Jellyfin are exposed through per-service Cloudflare
-tunnels. The tunnel, DNS record, and encrypted connector token are provisioned
-by a playbook:
+Most (all except Jenkins) cloudflare tunnels are provisioned through a playbook:
 
 ```bash
 uv run --directory ansible wywy-ansible --dev playbooks/cloudflare/tunnels.yaml
 ```
 
-| Service  | URL                             |
-| -------- | ------------------------------- |
-| Immich   | https://immich-dev.ericzhu.me   |
-| Grafana  | https://grafana-dev.ericzhu.me  |
-| Jellyfin | https://jellyfin-dev.ericzhu.me |
+| Service     | URL                                |
+| ----------- | ---------------------------------- |
+| Immich      | https://immich-dev.ericzhu.me      |
+| Grafana     | https://grafana-dev.ericzhu.me     |
+| Jellyfin    | https://jellyfin-dev.ericzhu.me    |
+| Vaultwarden | https://vaultwarden-dev.ericzhu.me |
 
 The generated `cloudflared-tunnel-token.sops.yaml` files live under
 `k8s/dev/cloudflared/<namespace>/secrets/` and are reconciled by the

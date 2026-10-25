@@ -24,3 +24,11 @@ storageClasses:
     volumeBindingMode: Immediate
     mountOptions:
       - nfsvers=4.1
+  - name: nfs-vaultwarden
+    parameters:
+      server: files.internal
+      share: /srv/nfs/vaultwarden
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+      - nfsvers=4.1

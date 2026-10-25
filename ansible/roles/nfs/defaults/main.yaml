@@ -33,3 +33,7 @@ nfs_services:
     uid: 3003
     gid: 3003
     quota: 32G
+  - name: vaultwarden
+    uid: 3004
+    gid: 3004
+    quota: 10G

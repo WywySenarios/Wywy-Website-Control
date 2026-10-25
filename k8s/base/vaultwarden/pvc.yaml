@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vaultwarden-data
+  labels:
+    app: vaultwarden
+spec:
+  storageClassName: nfs-vaultwarden
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

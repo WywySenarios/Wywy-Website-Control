@@ -21,6 +21,10 @@
         hostname: jellyfin-dev.ericzhu.me
         namespace: jellyfin
         service: http://jellyfin.jellyfin.svc.cluster.local:8096
+      - name: vaultwarden-dev
+        hostname: vaultwarden-dev.ericzhu.me
+        namespace: vaultwarden
+        service: http://vaultwarden.vaultwarden.svc.cluster.local:80
 
   tasks:
     - name: Require the dev inventory

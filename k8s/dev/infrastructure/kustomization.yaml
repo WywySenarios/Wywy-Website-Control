@@ -17,8 +17,10 @@ resources:
   - app-cloudflared-immich.yaml
   - app-cloudflared-jellyfin.yaml
   - app-cloudflared-observability.yaml
+  - app-cloudflared-vaultwarden.yaml
   - app-csi-driver-nfs.yaml
   - app-jenkins.yaml
   - app-jellyfin.yaml
+  - app-vaultwarden.yaml
   - app-metallb.yaml
   - app-argocd-tls.yaml
