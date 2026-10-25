@@ -1,5 +1,8 @@
 ---
 all:
+  hosts:
+    localhost:
+      ansible_connection: local
   children:
     # Physical Proxmox node pool. X nodes, independent of the number of roles.
     proxmox:

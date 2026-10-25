@@ -1,0 +1,4 @@
+---
+cloudflare_tunnel_api_base: https://api.cloudflare.com/client/v4
+cloudflare_tunnel_token_manifest_name: cloudflared-tunnel-token
+cloudflare_tunnel_token_key: TUNNEL_TOKEN

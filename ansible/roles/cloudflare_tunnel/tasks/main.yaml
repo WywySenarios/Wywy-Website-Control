@@ -1,0 +1,220 @@
+---
+- name: Validate the Cloudflare tunnel inputs
+  ansible.builtin.assert:
+    that:
+      - cloudflare_api_token is defined
+      - cloudflare_api_token | length > 0
+      - cloudflare_account_id is defined
+      - cloudflare_account_id | length > 0
+      - cloudflare_zone_id is defined
+      - cloudflare_zone_id | length > 0
+      - cloudflare_tunnel_name is defined
+      - cloudflare_tunnel_name | length > 0
+      - cloudflare_tunnel_hostname is defined
+      - cloudflare_tunnel_hostname is match('^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$')
+      - cloudflare_tunnel_namespace is defined
+      - cloudflare_tunnel_namespace | length > 0
+      - cloudflare_tunnel_service is defined
+      - cloudflare_tunnel_service is match('^https?://[^ ]+$')
+      - cloudflare_tunnel_token_secret_dir is defined
+    fail_msg: >-
+      Cloudflare tunnel inputs are incomplete. Check the playbook vars and
+      inventory/<env>/group_vars/all.sops.yaml.
+    quiet: true
+  no_log: true
+
+- name: Build the Cloudflare API headers
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: application/json
+  no_log: true
+
+- name: Look up the tunnel
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ cloudflare_tunnel_name }}&is_deleted=false"
+    method: GET
+    headers: "{{ cloudflare_tunnel_headers }}"
+    status_code: 200
+  register: cloudflare_tunnel_list
+  changed_when: false
+  no_log: true
+
+- name: Select the existing tunnel
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_id: >-
+      {{ ((cloudflare_tunnel_list.json.result | default([]))
+      | selectattr('name', 'equalto', cloudflare_tunnel_name)
+      | list | first | default({})).id | default('') }}
+  no_log: true
+
+- name: Determine whether the tunnel exists
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_created: "{{ cloudflare_tunnel_id | length == 0 }}"
+
+- name: Create the tunnel
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel"
+    method: POST
+    headers: "{{ cloudflare_tunnel_headers }}"
+    body_format: json
+    body:
+      name: "{{ cloudflare_tunnel_name }}"
+      config_src: cloudflare
+    status_code:
+      - 200
+      - 201
+  register: cloudflare_tunnel_create
+  when: cloudflare_tunnel_created | bool
+  no_log: true
+
+- name: Record the created tunnel
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_id: "{{ cloudflare_tunnel_create.json.result.id }}"
+  when: cloudflare_tunnel_created | bool
+  no_log: true
+
+- name: Build the tunnel configuration
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_config:
+      config:
+        ingress:
+          - hostname: "{{ cloudflare_tunnel_hostname }}"
+            service: "{{ cloudflare_tunnel_service }}"
+          - service: http_status:404
+
+- name: Apply the tunnel ingress
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/configurations"
+    method: PUT
+    headers: "{{ cloudflare_tunnel_headers }}"
+    body_format: json
+    body: "{{ cloudflare_tunnel_config }}"
+    status_code: 200
+  no_log: true
+
+- name: Look up the DNS record
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records?type=CNAME&name={{ cloudflare_tunnel_hostname }}"
+    method: GET
+    headers: "{{ cloudflare_tunnel_headers }}"
+    status_code: 200
+  register: cloudflare_tunnel_dns
+  changed_when: false
+  no_log: true
+
+- name: Create the DNS record
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records"
+    method: POST
+    headers: "{{ cloudflare_tunnel_headers }}"
+    body_format: json
+    body:
+      type: CNAME
+      name: "{{ cloudflare_tunnel_hostname }}"
+      content: "{{ cloudflare_tunnel_id }}.cfargotunnel.com"
+      proxied: true
+    status_code:
+      - 200
+      - 201
+  when: (cloudflare_tunnel_dns.json.result | default([])) | length == 0
+  no_log: true
+
+- name: Update the DNS record
+  ansible.builtin.uri:
+    url: "{{ cloudflare_tunnel_api_base }}/zones/{{ cloudflare_zone_id }}/dns_records/{{ item.id }}"
+    method: PATCH
+    headers: "{{ cloudflare_tunnel_headers }}"
+    body_format: json
+    body:
+      content: "{{ cloudflare_tunnel_id }}.cfargotunnel.com"
+      proxied: true
+    status_code: 200
+  loop: "{{ cloudflare_tunnel_dns.json.result | default([]) }}"
+  when: >-
+    item.content != cloudflare_tunnel_id ~ '.cfargotunnel.com'
+    or not item.proxied
+  no_log: true
+
+- name: Ensure the token secret directory exists
+  ansible.builtin.file:
+    path: "{{ cloudflare_tunnel_token_secret_dir }}"
+    state: directory
+    mode: "0775"
+
+- name: Check the tunnel token secret
+  ansible.builtin.stat:
+    path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+  register: cloudflare_tunnel_token_stat
+  changed_when: false
+
+- name: Determine whether the tunnel token must be written
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_token_write: >-
+      {{ cloudflare_tunnel_created | bool
+         or not cloudflare_tunnel_token_stat.stat.exists }}
+
+- name: Manage the tunnel token
+  when: cloudflare_tunnel_token_write | bool
+  block:
+    - name: Create a temporary work directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: wywy-cloudflare-tunnel-
+        suffix: ""
+      register: cloudflare_tunnel_tmp
+
+    - name: Restrict the temporary work directory
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_tmp.path }}"
+        state: directory
+        mode: "0700"
+
+    - name: Retrieve the tunnel token
+      ansible.builtin.uri:
+        url: "{{ cloudflare_tunnel_api_base }}/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflare_tunnel_id }}/token"
+        method: GET
+        headers: "{{ cloudflare_tunnel_headers }}"
+        status_code: 200
+      register: cloudflare_tunnel_token_current
+      no_log: true
+
+    - name: Write the tunnel token manifest
+      ansible.builtin.copy:
+        content: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ cloudflare_tunnel_token_manifest_name }}
+            namespace: {{ cloudflare_tunnel_namespace }}
+          type: Opaque
+          stringData:
+            {{ cloudflare_tunnel_token_key }}: {{ cloudflare_tunnel_token_current.json.result | to_json }}
+        dest: "{{ cloudflare_tunnel_tmp.path }}/cloudflared-tunnel-token.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Encrypt the tunnel token secret
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          sops -e --filename-override "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml" \
+            "{{ cloudflare_tunnel_tmp.path }}/cloudflared-tunnel-token.yaml" \
+            > "{{ cloudflare_tunnel_tmp.path }}/cloudflared-tunnel-token.enc.yaml"
+          mv "{{ cloudflare_tunnel_tmp.path }}/cloudflared-tunnel-token.enc.yaml" \
+            "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+        executable: /bin/bash
+      changed_when: true
+      no_log: true
+
+    - name: Set the encrypted token secret permissions
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+        mode: "0664"
+
+  always:
+    - name: Remove the temporary work directory
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_tmp.path }}"
+        state: absent
+      when: cloudflare_tunnel_tmp is defined

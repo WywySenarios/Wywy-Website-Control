@@ -14,22 +14,24 @@ join. Workloads are deployed by ArgoCD, not by these scripts — including
 kube-prometheus-stack (Prometheus, Grafana, Alertmanager) from
 `k8s/dev/infrastructure/app-observability.yaml`.
 
-## Port forwarding
+## Public access (Cloudflare tunnels)
 
-`systemd/install.sh` pushes the port-forward services to systemd:
+Immich, Grafana, and Jellyfin are exposed through per-service Cloudflare
+tunnels. The tunnel, DNS record, and encrypted connector token are provisioned
+by a playbook:
 
-| Service  | Port | URL                   |
-| -------- | ---- | --------------------- |
-| Grafana  | 8081 | http://localhost:8081 |
-| Jellyfin | 8082 | http://localhost:8082 |
-| Jenkins  | 8084 | http://localhost:8084 |
-| Immich   | 8085 | http://localhost:8085 |
+```bash
+uv run --directory ansible wywy-ansible --dev playbooks/cloudflare/tunnels.yaml
+```
 
-No component script installs a unit automatically. Grafana has no component
-script (it is deployed by ArgoCD) and Jellyfin has none at all, so install the
-units you need with `systemd/install.sh grafana-pf.service` and
-`systemd/install.sh jellyfin-pf.service` (or run the installer bare for all
-units).
+| Service  | URL                             |
+| -------- | ------------------------------- |
+| Immich   | https://immich-dev.ericzhu.me   |
+| Grafana  | https://grafana-dev.ericzhu.me  |
+| Jellyfin | https://jellyfin-dev.ericzhu.me |
 
-ArgoCD has no port-forward: it is served directly on the LAN by MetalLB at
-`https://192.168.18.150`.
+The generated `cloudflared-tunnel-token.sops.yaml` files live under
+`k8s/dev/cloudflared/<namespace>/secrets/` and are reconciled by the
+`dev-cloudflared-*` ArgoCD Applications. Run the playbook before pushing the
+manifests: the Applications cannot render until the encrypted token files
+exist.

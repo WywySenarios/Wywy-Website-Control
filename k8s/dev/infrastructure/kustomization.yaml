@@ -14,6 +14,9 @@ resources:
   - app-observability.yaml
   - app-immich-secrets.yaml
   - app-immich.yaml
+  - app-cloudflared-immich.yaml
+  - app-cloudflared-jellyfin.yaml
+  - app-cloudflared-observability.yaml
   - app-csi-driver-nfs.yaml
   - app-jenkins.yaml
   - app-jellyfin.yaml

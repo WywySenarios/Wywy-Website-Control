@@ -1,0 +1,46 @@
+---
+- name: Provision public Cloudflare tunnels
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    control_dir: "{{ ansible_config_file | dirname | dirname }}"
+    wywy_env: "{{ ansible_inventory_sources | first | basename }}"
+    cloudflare_public_hosts:
+      - name: immich-dev
+        hostname: immich-dev.ericzhu.me
+        namespace: immich
+        service: http://immich-server.immich.svc.cluster.local:2283
+      - name: grafana-dev
+        hostname: grafana-dev.ericzhu.me
+        namespace: observability
+        service: http://prometheus-stack-grafana.observability.svc.cluster.local:80
+      - name: jellyfin-dev
+        hostname: jellyfin-dev.ericzhu.me
+        namespace: jellyfin
+        service: http://jellyfin.jellyfin.svc.cluster.local:8096
+
+  tasks:
+    - name: Require the dev inventory
+      ansible.builtin.assert:
+        that:
+          - wywy_env == 'dev'
+        fail_msg: >-
+          Public service tunnels are only defined for dev (got '{{ wywy_env }}').
+        quiet: true
+
+    - name: Provision each public tunnel
+      ansible.builtin.include_role:
+        name: cloudflare_tunnel
+      vars:
+        cloudflare_tunnel_name: "{{ item.name }}"
+        cloudflare_tunnel_hostname: "{{ item.hostname }}"
+        cloudflare_tunnel_namespace: "{{ item.namespace }}"
+        cloudflare_tunnel_service: "{{ item.service }}"
+        cloudflare_tunnel_token_secret_dir: >-
+          {{ control_dir }}/k8s/{{ wywy_env }}/cloudflared/{{ item.namespace }}/secrets
+      loop: "{{ cloudflare_public_hosts }}"
+      loop_control:
+        label: "{{ item.hostname }}"
