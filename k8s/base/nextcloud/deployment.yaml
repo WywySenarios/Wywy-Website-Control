@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  labels:
+    app: nextcloud
+spec:
+  replicas: 1
+  # Nextcloud must not have two pods writing the same data directory.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 3005
+        runAsGroup: 3005
+        fsGroup: 3005
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: nextcloud
+          image: nextcloud:33.0.10-apache
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: POSTGRES_HOST
+              value: db.internal
+            - name: POSTGRES_DB
+              value: nextcloud
+            - name: POSTGRES_USER
+              value: nextcloud
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-db-password
+                  key: password
+            - name: NEXTCLOUD_ADMIN_USER
+              value: admin
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin-password
+                  key: password
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              value: nextcloud-dev.ericzhu.me
+            - name: NEXTCLOUD_INIT_HTACCESS
+              value: "true"
+            - name: OVERWRITEHOST
+              value: nextcloud-dev.ericzhu.me
+            - name: OVERWRITEPROTOCOL
+              value: https
+            - name: OVERWRITECLIURL
+              value: https://nextcloud-dev.ericzhu.me
+            - name: TRUSTED_PROXIES
+              value: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+            # Apache runs as the pod uid/gid, not www-data (33), because the
+            # NFS export squashes all writes to 3005.
+            - name: APACHE_RUN_USER
+              value: "#3005"
+            - name: APACHE_RUN_GROUP
+              value: "#3005"
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+            - name: tmp
+              mountPath: /tmp
+            - name: apache-run
+              mountPath: /var/run/apache2
+            - name: apache-lock
+              mountPath: /var/lock/apache2
+          # First boot rsyncs the image's Nextcloud tree onto the NFS volume and
+          # runs the installer, which can take several minutes.
+          startupProbe:
+            httpGet:
+              path: /status.php
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 120
+          readinessProbe:
+            httpGet:
+              path: /status.php
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /status.php
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nextcloud-data
+        - name: tmp
+          emptyDir: {}
+        - name: apache-run
+          emptyDir: {}
+        - name: apache-lock
+          emptyDir: {}

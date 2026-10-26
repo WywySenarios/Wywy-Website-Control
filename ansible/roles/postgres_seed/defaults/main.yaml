@@ -4,12 +4,14 @@ postgres_seed_secrets:
   master_db_app: "{{ control_dir }}/k8s/{{ wywy_env }}/master-database/secrets/app-password.sops.yaml"
   immich: "{{ control_dir }}/k8s/{{ wywy_env }}/immich/secrets/immich-db-password.sops.yaml"
   vaultwarden: "{{ control_dir }}/k8s/{{ wywy_env }}/vaultwarden/secrets/vaultwarden-db-password.sops.yaml"
+  nextcloud: "{{ control_dir }}/k8s/{{ wywy_env }}/nextcloud/secrets/nextcloud-db-password.sops.yaml"
 
 postgres_seed_roles:
   - master_db_migrator
   - master_db_app
   - immich
   - vaultwarden
+  - nextcloud
 
 postgres_seed_databases:
   - name: wywywebsite
@@ -20,6 +22,8 @@ postgres_seed_databases:
     owner: immich
   - name: vaultwarden
     owner: vaultwarden
+  - name: nextcloud
+    owner: nextcloud
 
 postgres_seed_extensions:
   - db: wywywebsite

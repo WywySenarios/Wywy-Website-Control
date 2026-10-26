@@ -32,3 +32,11 @@ storageClasses:
     volumeBindingMode: Immediate
     mountOptions:
       - nfsvers=4.1
+  - name: nfs-nextcloud
+    parameters:
+      server: files.internal
+      share: /srv/nfs/nextcloud
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+      - nfsvers=4.1

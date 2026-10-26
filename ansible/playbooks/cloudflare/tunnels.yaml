@@ -21,6 +21,10 @@
         hostname: jellyfin-dev.ericzhu.me
         namespace: jellyfin
         service: http://jellyfin.jellyfin.svc.cluster.local:8096
+      - name: nextcloud-dev
+        hostname: nextcloud-dev.ericzhu.me
+        namespace: nextcloud
+        service: http://nextcloud.nextcloud.svc.cluster.local:80
       - name: vaultwarden-dev
         hostname: vaultwarden-dev.ericzhu.me
         namespace: vaultwarden

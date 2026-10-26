@@ -27,6 +27,7 @@ uv run --directory ansible wywy-ansible --dev playbooks/cloudflare/tunnels.yaml
 | Immich      | https://immich-dev.ericzhu.me      |
 | Grafana     | https://grafana-dev.ericzhu.me     |
 | Jellyfin    | https://jellyfin-dev.ericzhu.me    |
+| Nextcloud   | https://nextcloud-dev.ericzhu.me   |
 | Vaultwarden | https://vaultwarden-dev.ericzhu.me |
 
 The generated `cloudflared-tunnel-token.sops.yaml` files live under

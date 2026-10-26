@@ -37,3 +37,7 @@ nfs_services:
     uid: 3004
     gid: 3004
     quota: 10G
+  - name: nextcloud
+    uid: 3005
+    gid: 3005
+    quota: 32G
