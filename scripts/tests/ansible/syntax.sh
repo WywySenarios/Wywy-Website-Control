@@ -7,6 +7,7 @@ cd "$REPO_ROOT"
 export ANSIBLE_CONFIG="ansible/ansible.cfg"
 export ANSIBLE_COLLECTIONS_PATH="ansible/.collections"
 export ANSIBLE_INVENTORY=/dev/null
+export SOPS_ANSIBLE_AWX_DISABLE_VARS_PLUGIN_TEMPORARILY=true
 
 echo "==> ansible-playbook --syntax-check" >&2
 shopt -s nullglob globstar
