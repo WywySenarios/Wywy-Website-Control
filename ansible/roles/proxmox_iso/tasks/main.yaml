@@ -1,0 +1,195 @@
+---
+# Build one automated-install ISO per physical node in groups['proxmox'].
+
+- name: Require the playbook context
+  ansible.builtin.assert:
+    that:
+      - control_dir is defined
+      - wywy_env in ['dev', 'prod']
+      - proxmox_iso_hosts | length > 0
+    fail_msg: >-
+      run this role from playbooks/proxmox/iso.yaml with a dev or prod
+      inventory that defines a non-empty proxmox group.
+    quiet: true
+
+- name: Load the pinned PVE ISO
+  ansible.builtin.include_vars:
+    file: "{{ proxmox_iso_pin_file }}"
+    name: proxmox_iso_pin
+
+- name: Validate the ISO pin
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_pin.url is match('^https://')
+      - proxmox_iso_pin.sha256 is match('^[0-9a-f]{64}$')
+      - proxmox_iso_pin.version is match('^[0-9]+\.[0-9]+-[0-9]+$')
+    fail_msg: >-
+      config/proxmox/pve-iso.yaml must pin an https URL, a lowercase SHA256,
+      and a version such as 9.2-1.
+    quiet: true
+
+- name: Check the automated-install assistant
+  ansible.builtin.command:
+    argv: [proxmox-auto-install-assistant, --version]
+  register: proxmox_iso_assistant_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check xorriso
+  ansible.builtin.command:
+    argv: [xorriso, -version]
+  register: proxmox_iso_xorriso_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check curl
+  ansible.builtin.command:
+    argv: [curl, --version]
+  register: proxmox_iso_curl_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check openssl
+  ansible.builtin.command:
+    argv: [openssl, version]
+  register: proxmox_iso_openssl_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Require the ISO and password-hash tools
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_assistant_version.rc == 0
+      - proxmox_iso_xorriso_version.rc == 0
+      - proxmox_iso_curl_version.rc == 0
+      - proxmox_iso_openssl_version.rc == 0
+    fail_msg: >-
+      proxmox-auto-install-assistant and xorriso must be installed on the
+      operator machine; curl and openssl are required for the download and root
+      password hash. See ansible/playbooks/proxmox/README.md.
+    quiet: true
+
+- name: Create the ISO build directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0700"
+  loop:
+    - "{{ control_dir }}/build/proxmox"
+    - "{{ proxmox_iso_build_dir }}"
+    - "{{ proxmox_iso_cache_dir }}"
+    - "{{ proxmox_iso_answer_dir }}"
+    - "{{ proxmox_iso_iso_dir }}"
+    - "{{ proxmox_iso_manifest_dir }}"
+
+- name: Record the cached source ISO path
+  ansible.builtin.set_fact:
+    proxmox_iso_source_iso: "{{ proxmox_iso_cache_dir }}/{{ proxmox_iso_pin.url | basename }}"
+
+- name: Read the cached source ISO checksum
+  ansible.builtin.stat:
+    path: "{{ proxmox_iso_source_iso }}"
+    checksum_algorithm: sha256
+    get_checksum: true
+  register: proxmox_iso_cached_stat
+
+- name: Download PVE ISO
+  ansible.builtin.command:
+    argv:
+      - curl
+      - --fail
+      - --location
+      - --retry
+      - "3"
+      - --retry-delay
+      - "2"
+      - --progress-bar
+      - --output
+      - "{{ proxmox_iso_source_iso }}"
+      - "{{ proxmox_iso_pin.url }}"
+  when: >-
+    (not proxmox_iso_cached_stat.stat.exists)
+    or (proxmox_iso_cached_stat.stat.checksum | default('') != proxmox_iso_pin.sha256)
+  changed_when: true
+
+- name: Verify the cached source ISO checksum
+  ansible.builtin.stat:
+    path: "{{ proxmox_iso_source_iso }}"
+    checksum_algorithm: sha256
+    get_checksum: true
+  register: proxmox_iso_source_stat
+
+- name: Require the cached source ISO to match the pin
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_source_stat.stat.exists
+      - proxmox_iso_source_stat.stat.checksum == proxmox_iso_pin.sha256
+    fail_msg: >-
+      the cached source ISO does not match the pinned SHA256; delete
+      build/proxmox/cache and re-run.
+    quiet: true
+
+# Read the one-way-door password store explicitly. A missing or undecryptable
+# file fails here; there is no preflight and no empty fallback.
+- name: Read the root-password store
+  ansible.builtin.command:
+    argv:
+      - sops
+      - --decrypt
+      - --output-type
+      - yaml
+      - "{{ proxmox_iso_root_secret }}"
+  register: proxmox_iso_root_read
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Parse the root-password store
+  ansible.builtin.set_fact:
+    proxmox_iso_passwords: "{{ proxmox_iso_root_read.stdout | from_yaml }}"
+  no_log: true
+
+- name: Require a password for every selected PVE node
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_passwords is mapping
+      - proxmox_iso_hosts | difference(proxmox_iso_passwords.keys() | list) | length == 0
+      - proxmox_iso_passwords.values() | select('string') | list | length == proxmox_iso_passwords.keys() | list | length
+      - proxmox_iso_passwords.values() | select('equalto', '') | list | length == 0
+    fail_msg: >-
+      {{ proxmox_iso_root_secret }} must contain a non-empty password for
+      every physical node in groups['proxmox'].
+    quiet: true
+  no_log: true
+
+- name: Read the tracked public keys
+  ansible.builtin.set_fact:
+    proxmox_iso_public_keys: >-
+      {{ lookup('file', proxmox_iso_authorized_keys).splitlines()
+         | map('trim') | reject('equalto', '') | reject('match', '^#') | list }}
+
+- name: Require valid public keys
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_public_keys | length > 0
+      - >-
+        proxmox_iso_public_keys
+        | select('match', '^(ssh|ecdsa|sk-ssh|sk-ecdsa)-[A-Za-z0-9@.-]+ [A-Za-z0-9+/=]+$')
+        | list | length
+        == proxmox_iso_public_keys | length
+      - proxmox_iso_public_keys | select('search', 'PRIVATE KEY') | list | length == 0
+    fail_msg: >-
+      config/proxmox/authorized_keys must contain one or more public keys,
+      one per line, with no comments or options.
+    quiet: true
+
+- name: Build each node's ISO
+  ansible.builtin.include_tasks: host.yaml
+  loop: "{{ proxmox_iso_hosts }}"
+  loop_control:
+    loop_var: proxmox_iso_host
+    label: "{{ proxmox_iso_host }}"

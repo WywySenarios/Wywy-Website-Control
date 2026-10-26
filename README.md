@@ -14,6 +14,8 @@ For the operator machine (the machine you will call scripts from):
 - Astral's `uv`
 - `sops`
 - Docker
+- `openssl`
+- `proxmox-auto-install-assistant`
 
 For your homelab setup:
 

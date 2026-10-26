@@ -1,0 +1,15 @@
+---
+# Build a per-node PVE 9.2-1 installer ISO with an embedded answer file.
+- name: Build per-node PVE 9.2-1 answer ISOs
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    control_dir: "{{ ansible_config_file | dirname | dirname }}"
+    wywy_env: "{{ ansible_inventory_sources | first | basename }}"
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
+  roles:
+    - role: proxmox_iso

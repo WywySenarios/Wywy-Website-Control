@@ -13,3 +13,6 @@ ansible/verify/
 # Python bytecode and lint cache.
 __pycache__/
 .ruff_cache/
+
+# Proxmox ISO build artifacts
+/build/proxmox/

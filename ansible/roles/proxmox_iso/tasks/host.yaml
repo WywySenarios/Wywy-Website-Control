@@ -1,0 +1,292 @@
+---
+# Per-node answer rendering and ISO preparation. Included in a loop with proxmox_iso_host set to the current physical node name.
+
+- name: Bind install data for {{ proxmox_iso_host }}
+  ansible.builtin.set_fact:
+    proxmox_iso_fqdn: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_fqdn | default(proxmox_iso_host) }}
+    proxmox_iso_nic: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_nic | default('') }}
+    proxmox_iso_disk_filter_key: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_disk_filter_key | default('ID_WWN') }}
+    proxmox_iso_disk_filter_value: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_disk_filter_value | default('') }}
+    proxmox_iso_keyboard: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_keyboard | default('en-us') }}
+    proxmox_iso_country: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_country | default('us') }}
+    proxmox_iso_timezone: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_timezone | default('UTC') }}
+    proxmox_iso_address: >-
+      {{ hostvars[proxmox_iso_host].ansible_host }}
+    proxmox_iso_prefix: >-
+      {{ hostvars[proxmox_iso_host].proxmox_ipv4_prefix | default(24) }}
+    proxmox_iso_gateway: >-
+      {{ hostvars[proxmox_iso_host].wywy_gateway }}
+    proxmox_iso_dns: >-
+      {{ hostvars[proxmox_iso_host].wywy_nameserver }}
+    proxmox_iso_mailto: >-
+      {{ hostvars[proxmox_iso_host].proxmox_install_mailto
+         | default('root@' ~ (hostvars[proxmox_iso_host].proxmox_install_fqdn | default(proxmox_iso_host))) }}
+    proxmox_iso_password: >-
+      {{ proxmox_iso_passwords[proxmox_iso_host] | default('') }}
+  no_log: true
+
+- name: Require per-node install data for {{ proxmox_iso_host }}
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_nic | length > 0
+      - proxmox_iso_disk_filter_key in proxmox_iso_disk_filter_keys
+      - proxmox_iso_disk_filter_value | length > 0
+      - proxmox_iso_password | length > 0
+      - proxmox_iso_fqdn is match(proxmox_iso_fqdn_regex)
+      - "'.' in proxmox_iso_fqdn"
+      - proxmox_iso_address is match(proxmox_iso_ipv4_regex)
+      - proxmox_iso_gateway is match(proxmox_iso_ipv4_regex)
+      - proxmox_iso_dns is match(proxmox_iso_ipv4_regex)
+      - proxmox_iso_prefix | int >= 0
+      - proxmox_iso_prefix | int <= 32
+    fail_msg: >-
+      {{ proxmox_iso_host }} is missing PVE 9 install data. Set its `nic` and
+      `disk_filter.value` in the encrypted node map:
+      `sops edit ansible/inventory/{{ wywy_env }}/group_vars/proxmox.sops.yaml`.
+      Use `proxmox-auto-install-assistant device-info -t disk` and `-t network`
+      on the running physical node. The disk filter must already match exactly
+      one disk.
+    quiet: true
+  no_log: true
+
+- name: Set the per-node artifact paths
+  ansible.builtin.set_fact:
+    proxmox_iso_answer_path: "{{ proxmox_iso_answer_dir }}/{{ proxmox_iso_host }}.toml"
+    proxmox_iso_iso_path: "{{ proxmox_iso_iso_dir }}/{{ proxmox_iso_host }}.iso"
+    proxmox_iso_manifest_path: "{{ proxmox_iso_manifest_dir }}/{{ proxmox_iso_host }}.json"
+
+- name: Derive the stable per-node hash salt
+  ansible.builtin.set_fact:
+    proxmox_iso_salt: "{{ ((proxmox_iso_host ~ '|' ~ proxmox_iso_pin.version ~ '|proxmox-root') | hash('sha256'))[:16] }}"
+
+- name: Derive the root password hash with SHA-512 crypt
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - passwd
+      - -6
+      - -salt
+      - "{{ proxmox_iso_salt }}"
+      - -stdin
+    stdin: "{{ proxmox_iso_password }}"
+    stdin_add_newline: false
+  register: proxmox_iso_hash_sha512
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Select the root password hash
+  ansible.builtin.set_fact:
+    proxmox_iso_root_hash: "{{ proxmox_iso_hash_sha512.stdout | trim }}"
+  no_log: true
+
+- name: Require a usable root password hash
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_root_hash | length > 0
+      - proxmox_iso_root_hash is match('^\$6\$')
+    fail_msg: >-
+      could not derive a SHA-512 crypt hash for {{ proxmox_iso_host }}.
+    quiet: true
+  no_log: true
+
+- name: Render the answer file for {{ proxmox_iso_host }}
+  ansible.builtin.template:
+    src: answer.toml.j2
+    dest: "{{ proxmox_iso_answer_path }}"
+    mode: "0600"
+  no_log: true
+
+- name: Read the rendered answer file
+  ansible.builtin.slurp:
+    src: "{{ proxmox_iso_answer_path }}"
+  register: proxmox_iso_answer_slurp
+  no_log: true
+
+- name: Record the rendered answer content and checksum
+  ansible.builtin.set_fact:
+    proxmox_iso_answer_content: "{{ proxmox_iso_answer_slurp.content | b64decode }}"
+    proxmox_iso_answer_sha256: "{{ (proxmox_iso_answer_slurp.content | b64decode) | hash('sha256') }}"
+  no_log: true
+
+- name: Reject a plaintext root password in the answer file
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_password not in proxmox_iso_answer_content
+      - not (proxmox_iso_answer_content is search('(?m)^root-password\s*='))
+    fail_msg: >-
+      the rendered answer file for {{ proxmox_iso_host }} contains a plaintext
+      root password or a root-password key; refusing to build.
+    quiet: true
+  no_log: true
+
+- name: Validate the answer file for {{ proxmox_iso_host }}
+  ansible.builtin.command:
+    argv:
+      - proxmox-auto-install-assistant
+      - validate-answer
+      - "{{ proxmox_iso_answer_path }}"
+  register: proxmox_iso_validate
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  no_log: true
+
+- name: Require the answer file to pass the official validator
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_validate.rc == 0
+    fail_msg: >-
+      the answer file for {{ proxmox_iso_host }} failed
+      proxmox-auto-install-assistant validate-answer; re-run the command
+      manually against {{ proxmox_iso_answer_path }} to see the parser error.
+    quiet: true
+  no_log: true
+
+- name: Read the existing ISO checksum
+  ansible.builtin.stat:
+    path: "{{ proxmox_iso_iso_path }}"
+    checksum_algorithm: sha256
+    get_checksum: true
+  register: proxmox_iso_output_stat
+
+- name: Check for an existing build manifest
+  ansible.builtin.stat:
+    path: "{{ proxmox_iso_manifest_path }}"
+  register: proxmox_iso_manifest_stat
+
+- name: Read the existing build manifest
+  ansible.builtin.slurp:
+    src: "{{ proxmox_iso_manifest_path }}"
+  register: proxmox_iso_manifest_slurp
+  when: proxmox_iso_manifest_stat.stat.exists
+
+- name: Parse the existing build manifest
+  ansible.builtin.set_fact:
+    proxmox_iso_manifest: >-
+      {{ (proxmox_iso_manifest_slurp.content | b64decode | from_json)
+         if proxmox_iso_manifest_stat.stat.exists else {} }}
+
+- name: Decide whether the ISO must be rebuilt
+  ansible.builtin.set_fact:
+    proxmox_iso_needs_build: >-
+      {{ (proxmox_iso_force_rebuild | bool)
+         or (not proxmox_iso_output_stat.stat.exists)
+         or (not proxmox_iso_manifest_stat.stat.exists)
+         or (proxmox_iso_manifest.get('answer', {}).get('sha256', '') != proxmox_iso_answer_sha256)
+         or (proxmox_iso_manifest.get('iso', {}).get('sha256', '') != (proxmox_iso_output_stat.stat.checksum | default(''))) }}
+
+- name: Build the automated-install ISO for {{ proxmox_iso_host }}
+  when: proxmox_iso_needs_build | bool
+  block:
+    - name: Prepare the ISO
+      ansible.builtin.command:
+        argv:
+          - proxmox-auto-install-assistant
+          - prepare-iso
+          - "{{ proxmox_iso_source_iso }}"
+          - --fetch-from
+          - iso
+          - --answer-file
+          - "{{ proxmox_iso_answer_path }}"
+          - --output
+          - "{{ proxmox_iso_iso_path }}"
+      changed_when: true
+
+    - name: Restrict the prepared ISO
+      ansible.builtin.file:
+        path: "{{ proxmox_iso_iso_path }}"
+        mode: "0600"
+
+    - name: Read the prepared ISO checksum
+      ansible.builtin.stat:
+        path: "{{ proxmox_iso_iso_path }}"
+        checksum_algorithm: sha256
+        get_checksum: true
+      register: proxmox_iso_built_stat
+
+    - name: Inspect the prepared ISO
+      ansible.builtin.command:
+        argv:
+          - proxmox-auto-install-assistant
+          - inspect-iso
+          - "{{ proxmox_iso_iso_path }}"
+      register: proxmox_iso_inspect
+      changed_when: false
+      check_mode: false
+      no_log: true
+
+    - name: Require automated installation in the prepared ISO
+      ansible.builtin.assert:
+        that:
+          - proxmox_iso_inspect.stdout is search('Auto-install:\s+enabled')
+          - proxmox_iso_inspect.stdout is search('Fetch mode:\s+iso')
+          - proxmox_iso_inspect.stdout is search('filesystem\s*=\s*"ext4"')
+          - proxmox_iso_inspect.stdout is search(proxmox_iso_disk_filter_key ~ '\s*=\s*')
+          - proxmox_iso_inspect.stdout is search(proxmox_iso_disk_filter_value | regex_escape)
+          - "'disk-list' not in proxmox_iso_inspect.stdout"
+          - proxmox_iso_root_hash not in proxmox_iso_inspect.stdout
+        fail_msg: >-
+          inspect-iso did not report the expected ISO-fetch automated
+          installation for {{ proxmox_iso_host }}, did not show the ext4/WWN
+          disk selection, or exposed the root hash.
+        quiet: true
+      no_log: true
+
+    - name: Write the build manifest
+      ansible.builtin.copy:
+        content: >-
+          {{ {
+            'schema': 1,
+            'host': proxmox_iso_host,
+            'fqdn': proxmox_iso_fqdn,
+            'pve_version': proxmox_iso_pin.version,
+            'source_iso': {
+              'url': proxmox_iso_pin.url,
+              'sha256': proxmox_iso_source_stat.stat.checksum
+            },
+            'answer': {
+              'path': 'answers/' ~ (proxmox_iso_answer_path | basename),
+              'sha256': proxmox_iso_answer_sha256
+            },
+            'disk_filter': {
+              'key': proxmox_iso_disk_filter_key,
+              'value': proxmox_iso_disk_filter_value
+            },
+            'nic_filter': {
+              'key': 'ID_NET_NAME',
+              'value': proxmox_iso_nic
+            },
+            'iso': {
+              'path': 'iso/' ~ (proxmox_iso_iso_path | basename),
+              'sha256': proxmox_iso_built_stat.stat.checksum
+            },
+            'validated': true,
+            'inspect': {
+              'auto_install': true,
+              'fetch_mode': 'iso'
+            },
+            'built_at': lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ')
+          } | to_nice_json(indent=2, sort_keys=true) }}
+        dest: "{{ proxmox_iso_manifest_path }}"
+        mode: "0600"
+
+    - name: Report the built ISO
+      ansible.builtin.debug:
+        msg: >-
+          built {{ proxmox_iso_iso_path }}
+          ({{ proxmox_iso_built_stat.stat.checksum }}).
+
+- name: Reuse the existing ISO for {{ proxmox_iso_host }}
+  ansible.builtin.debug:
+    msg: >-
+      reusing {{ proxmox_iso_iso_path }}
+      ({{ proxmox_iso_output_stat.stat.checksum }}); inputs are unchanged.
+  when: not (proxmox_iso_needs_build | bool)

@@ -1,0 +1,24 @@
+# PVE automated-install answer file.
+# Rendered by ansible/roles/proxmox_iso. The plaintext root password is never
+# written here; root-password-hashed is derived from the root-password store.
+[global]
+keyboard = {{ proxmox_iso_keyboard | to_json }}
+country = {{ proxmox_iso_country | to_json }}
+fqdn = {{ proxmox_iso_fqdn | to_json }}
+mailto = {{ proxmox_iso_mailto | to_json }}
+timezone = {{ proxmox_iso_timezone | to_json }}
+root-password-hashed = {{ proxmox_iso_root_hash | to_json }}
+root-ssh-keys = {{ proxmox_iso_public_keys | to_json }}
+reboot-mode = "power-off"
+reboot-on-error = false
+
+[network]
+source = "from-answer"
+cidr = {{ (proxmox_iso_address ~ '/' ~ (proxmox_iso_prefix | string)) | to_json }}
+gateway = {{ proxmox_iso_gateway | to_json }}
+dns = {{ proxmox_iso_dns | to_json }}
+filter.ID_NET_NAME = {{ proxmox_iso_nic | to_json }}
+
+[disk-setup]
+filesystem = "ext4"
+filter.{{ proxmox_iso_disk_filter_key }} = {{ proxmox_iso_disk_filter_value | to_json }}

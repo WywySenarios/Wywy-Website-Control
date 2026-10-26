@@ -1,9 +1,13 @@
 ---
 # Shared, non-secret defaults for the physical PVE node pool.
-#
-# Every node resolves its address from the encrypted proxmox-hosts file. Role
-# tags do not own node addresses.
-ansible_host: >-
-  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/proxmox-hosts.sops ' ~ inventory_hostname) }}
+ansible_host: "{{ proxmox_nodes[inventory_hostname].address }}"
+proxmox_install_nic: "{{ proxmox_nodes[inventory_hostname].nic }}"
+proxmox_install_disk_filter_key: "{{ proxmox_nodes[inventory_hostname].disk_filter.key }}"
+proxmox_install_disk_filter_value: "{{ proxmox_nodes[inventory_hostname].disk_filter.value }}"
+proxmox_install_fqdn: >-
+  {{ proxmox_nodes[inventory_hostname].fqdn | default(inventory_hostname) }}
 proxmox_ipv4_prefix: 24
+# --- PVE 9 answer-file global section ---
+proxmox_install_keyboard: en-us
+proxmox_install_country: us
+proxmox_install_timezone: UTC

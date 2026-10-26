@@ -1,0 +1,24 @@
+---
+proxmox_iso_pin_file: "{{ control_dir }}/config/proxmox/pve-iso.yaml"
+proxmox_iso_root_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/proxmox/root.sops.yaml"
+proxmox_iso_authorized_keys: "{{ control_dir }}/config/proxmox/authorized_keys"
+
+proxmox_iso_build_dir: "{{ control_dir }}/build/proxmox/{{ wywy_env }}"
+proxmox_iso_cache_dir: "{{ control_dir }}/build/proxmox/cache"
+proxmox_iso_answer_dir: "{{ proxmox_iso_build_dir }}/answers"
+proxmox_iso_iso_dir: "{{ proxmox_iso_build_dir }}/iso"
+proxmox_iso_manifest_dir: "{{ proxmox_iso_build_dir }}/manifests"
+
+# Set proxmox_iso_force_rebuild=true to rebuild despite an unchanged manifest.
+proxmox_iso_force_rebuild: false
+# groups['proxmox'] is the physical node pool, independent of role tags.
+proxmox_iso_hosts: "{{ groups['proxmox'] | default([]) | sort }}"
+
+# The install disk must be selected by hardware identity, never by device name.
+proxmox_iso_disk_filter_keys:
+  - ID_WWN
+  - ID_SERIAL
+  - ID_SERIAL_SHORT
+
+proxmox_iso_ipv4_regex: '^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$'
+proxmox_iso_fqdn_regex: "^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$"
