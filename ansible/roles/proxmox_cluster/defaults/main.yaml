@@ -1,0 +1,2 @@
+---
+proxmox_cluster_name: "wywy-{{ wywy_env }}"

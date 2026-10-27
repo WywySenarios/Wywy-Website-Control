@@ -11,3 +11,6 @@ proxmox_ipv4_prefix: 24
 proxmox_install_keyboard: en-us
 proxmox_install_country: us
 proxmox_install_timezone: UTC
+
+proxmox_cluster_name: "wywy-{{ wywy_env }}"
+proxmox_cluster_leader: "{{ groups['proxmox_cluster_leader'] | first }}"

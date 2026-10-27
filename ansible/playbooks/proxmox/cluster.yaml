@@ -1,0 +1,59 @@
+---
+- name: Create the PVE cluster on the leader
+  hosts: proxmox_cluster_leader
+  gather_facts: true
+
+  roles:
+    - proxmox_cluster
+
+- name: Join the remaining PVE nodes
+  hosts: proxmox:!proxmox_cluster_leader
+  gather_facts: true
+  serial: 1
+  any_errors_fatal: true
+
+  vars:
+    proxmox_cluster_leader_password: >-
+      {{ lookup('community.sops.sops',
+                control_dir ~ '/secrets/' ~ wywy_env ~ '/proxmox/root.sops.yaml',
+                extract='["' ~ proxmox_cluster_leader ~ '"]') }}
+
+  roles:
+    - proxmox_cluster
+
+- name: Harden root SSH on PVE nodes
+  hosts: proxmox
+  gather_facts: true
+  become: false
+
+  roles:
+    - proxmox_ssh
+
+- name: Verify the PVE cluster
+  hosts: proxmox_cluster_leader
+  gather_facts: false
+
+  tasks:
+    - name: Read the cluster status
+      ansible.builtin.command:
+        argv:
+          - pvecm
+          - status
+      register: proxmox_cluster_final
+      changed_when: false
+      until:
+        - proxmox_cluster_final.stdout is search('(?m)^Nodes:\s+' ~ (groups['proxmox'] | length) ~ '\s*$')
+        - proxmox_cluster_final.stdout is search('(?m)^Quorate:\s+Yes\s*$')
+      retries: 60
+      delay: 2
+
+    - name: Require the expected cluster name, node count, and quorum
+      ansible.builtin.assert:
+        that:
+          - proxmox_cluster_name in proxmox_cluster_final.stdout
+          - proxmox_cluster_final.stdout is search('(?m)^Nodes:\s+' ~ (groups['proxmox'] | length) ~ '\s*$')
+          - proxmox_cluster_final.stdout is search('(?m)^Quorate:\s+Yes\s*$')
+        fail_msg: >-
+          the cluster is not the expected {{ proxmox_cluster_name }} cluster
+          with {{ groups['proxmox'] | length }} nodes and quorum.
+        quiet: true

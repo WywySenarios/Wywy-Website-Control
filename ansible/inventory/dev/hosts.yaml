@@ -8,11 +8,14 @@ all:
     proxmox:
       hosts:
         proxmox-1.internal:
-          ansible_user: wywy
+          ansible_user: root
         proxmox-2.internal:
-          ansible_user: wywy
+          ansible_user: root
         proxmox-3.internal:
-          ansible_user: wywy
+          ansible_user: root
+    proxmox_cluster_leader:
+      hosts:
+        proxmox-1.internal:
     # Role tags. Each tag selects exactly one canonical node; tags may overlap.
     db_pve:
       hosts:

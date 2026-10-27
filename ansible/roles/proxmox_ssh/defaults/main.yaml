@@ -1,0 +1,4 @@
+---
+proxmox_ssh_service: ssh
+proxmox_ssh_dropin: /etc/ssh/sshd_config.d/00-wywy-hardening.conf
+proxmox_ssh_legacy_dropin: /etc/ssh/sshd_config.d/99-wywy-hardening.conf

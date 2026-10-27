@@ -1,0 +1,117 @@
+---
+- name: Require one cluster leader in the proxmox group
+  ansible.builtin.assert:
+    that:
+      - groups['proxmox_cluster_leader'] | length == 1
+      - proxmox_cluster_leader == groups['proxmox_cluster_leader'][0]
+      - proxmox_cluster_leader in groups['proxmox']
+    fail_msg: >-
+      define exactly one host in proxmox_cluster_leader and keep it in the
+      proxmox group.
+    quiet: true
+
+- name: Check for an existing cluster configuration
+  ansible.builtin.stat:
+    path: /etc/pve/corosync.conf
+  register: proxmox_cluster_conf
+
+- name: Read the existing cluster configuration
+  ansible.builtin.slurp:
+    src: /etc/pve/corosync.conf
+  register: proxmox_cluster_conf_data
+  when: proxmox_cluster_conf.stat.exists
+
+- name: Determine the existing cluster name
+  ansible.builtin.set_fact:
+    proxmox_cluster_existing_name: >-
+      {{ (proxmox_cluster_conf_data.content | b64decode
+          | regex_findall('(?m)^\s*cluster_name:\s*(\S+)')
+          | first | default('')) }}
+  when: proxmox_cluster_conf.stat.exists
+
+- name: Refuse to join a different cluster
+  ansible.builtin.assert:
+    that:
+      - proxmox_cluster_existing_name in ['', proxmox_cluster_name]
+    fail_msg: >-
+      {{ inventory_hostname }} already belongs to cluster
+      "{{ proxmox_cluster_existing_name }}", not "{{ proxmox_cluster_name }}".
+    quiet: true
+  when: proxmox_cluster_conf.stat.exists
+
+- name: Create the cluster on the leader
+  ansible.builtin.command:
+    argv:
+      - pvecm
+      - create
+      - "{{ proxmox_cluster_name }}"
+  when:
+    - inventory_hostname == proxmox_cluster_leader
+    - not proxmox_cluster_conf.stat.exists
+  changed_when: true
+
+# The API join verifies the leader's certificate fingerprint. A custom
+# pveproxy certificate takes precedence over the cluster-managed pve-ssl cert.
+- name: Read the leader certificate information
+  ansible.builtin.command:
+    argv:
+      - pvenode
+      - cert
+      - info
+      - --output-format
+      - json
+  register: proxmox_cluster_cert_info
+  changed_when: false
+  when: inventory_hostname == proxmox_cluster_leader
+
+- name: Select the leader API certificate fingerprint
+  ansible.builtin.set_fact:
+    proxmox_cluster_fingerprint: >-
+      {%- set certs = proxmox_cluster_cert_info.stdout | from_json -%}
+      {{ (
+           (certs | selectattr('filename', 'equalto', 'pveproxy-ssl.pem')
+                  | map(attribute='fingerprint') | first | default(''))
+           or
+           (certs | selectattr('filename', 'equalto', 'pve-ssl.pem')
+                  | map(attribute='fingerprint') | first | default(''))
+         ) | trim }}
+  when: inventory_hostname == proxmox_cluster_leader
+
+- name: Require the leader API certificate fingerprint
+  ansible.builtin.assert:
+    that:
+      - proxmox_cluster_fingerprint | length > 0
+    fail_msg: >-
+      could not determine the API certificate fingerprint on
+      {{ proxmox_cluster_leader }}.
+    quiet: true
+  when: inventory_hostname == proxmox_cluster_leader
+
+- name: Join the cluster on a new node
+  ansible.builtin.command:
+    argv:
+      - pvesh
+      - create
+      - /cluster/config/join
+      - --hostname
+      - "{{ hostvars[proxmox_cluster_leader].ansible_host }}"
+      - --password
+      - "{{ proxmox_cluster_leader_password }}"
+      - --fingerprint
+      - "{{ hostvars[proxmox_cluster_leader].proxmox_cluster_fingerprint }}"
+  when:
+    - inventory_hostname != proxmox_cluster_leader
+    - not proxmox_cluster_conf.stat.exists
+  changed_when: true
+  no_log: false
+
+- name: Wait for cluster quorum
+  ansible.builtin.command:
+    argv:
+      - pvecm
+      - status
+  register: proxmox_cluster_status
+  changed_when: false
+  until: proxmox_cluster_status.stdout is search('(?m)^Quorate:\s+Yes\s*$')
+  retries: 60
+  delay: 2

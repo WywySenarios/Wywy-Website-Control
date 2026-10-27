@@ -1,0 +1,105 @@
+---
+- name: Require a root SSH connection
+  ansible.builtin.assert:
+    that:
+      - ansible_user_id == 'root'
+    fail_msg: >-
+      this playbook must connect as root over SSH; got {{ ansible_user_id }}.
+    quiet: true
+
+- name: Check that sshd includes the drop-in directory
+  ansible.builtin.command:
+    argv:
+      - grep
+      - -Eq
+      - '^[[:space:]]*Include[[:space:]]+/etc/ssh/sshd_config\.d/\*\.conf'
+      - /etc/ssh/sshd_config
+  changed_when: false
+
+- name: Ensure the sshd drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ proxmox_ssh_dropin | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Check for root authorized keys
+  ansible.builtin.stat:
+    path: /root/.ssh/authorized_keys
+  register: proxmox_ssh_authorized_keys
+
+- name: Require root authorized keys before disabling password login
+  ansible.builtin.assert:
+    that:
+      - proxmox_ssh_authorized_keys.stat.exists
+      - proxmox_ssh_authorized_keys.stat.size > 0
+    fail_msg: >-
+      /root/.ssh/authorized_keys is missing or empty; refusing to disable
+      password authentication.
+    quiet: true
+
+- name: Remove the previous SSH hardening drop-in
+  ansible.builtin.file:
+    path: "{{ proxmox_ssh_legacy_dropin }}"
+    state: absent
+  notify: Reload sshd
+
+- name: Install and validate the SSH hardening drop-in
+  block:
+    - name: Install the SSH hardening drop-in
+      ansible.builtin.copy:
+        dest: "{{ proxmox_ssh_dropin }}"
+        content: |
+          PermitRootLogin prohibit-password
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          PubkeyAuthentication yes
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload sshd
+
+    - name: Validate the full sshd configuration
+      ansible.builtin.command:
+        argv:
+          - /usr/sbin/sshd
+          - -t
+      changed_when: false
+  rescue:
+    - name: Remove the invalid SSH hardening drop-in
+      ansible.builtin.file:
+        path: "{{ proxmox_ssh_dropin }}"
+        state: absent
+
+    - name: Revalidate the original sshd configuration
+      ansible.builtin.command:
+        argv:
+          - /usr/sbin/sshd
+          - -t
+      changed_when: false
+
+    - name: Fail after removing the invalid SSH hardening drop-in
+      ansible.builtin.fail:
+        msg: >-
+          the SSH hardening drop-in made sshd -t fail; it was removed and the
+          original configuration was restored.
+
+- name: Read the effective sshd configuration
+  ansible.builtin.command:
+    argv:
+      - /usr/sbin/sshd
+      - -T
+  changed_when: false
+  register: proxmox_ssh_effective
+
+- name: Require key-only root SSH
+  ansible.builtin.assert:
+    that:
+      - proxmox_ssh_effective.stdout is search('(?m)^permitrootlogin (prohibit-password|without-password)\s*$')
+      - proxmox_ssh_effective.stdout is search('(?m)^passwordauthentication no\s*$')
+      - proxmox_ssh_effective.stdout is search('(?m)^kbdinteractiveauthentication no\s*$')
+      - proxmox_ssh_effective.stdout is search('(?m)^pubkeyauthentication yes\s*$')
+    fail_msg: >-
+      effective sshd configuration is not key-only root SSH.
+    quiet: true
