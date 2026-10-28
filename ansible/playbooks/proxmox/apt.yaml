@@ -1,0 +1,8 @@
+---
+- name: Configure Proxmox apt repositories and packages
+  hosts: proxmox
+  gather_facts: true
+  become: false
+
+  roles:
+    - proxmox_apt

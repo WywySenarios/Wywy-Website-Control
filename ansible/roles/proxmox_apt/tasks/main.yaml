@@ -1,0 +1,97 @@
+---
+- name: Require Proxmox VE 9 on Debian 13
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == 'Debian'
+      - ansible_distribution_release == 'trixie'
+    fail_msg: >-
+      this role targets the Debian 13 Trixie base used by Proxmox VE 9.
+    quiet: true
+
+- name: Check for the Proxmox archive keyring
+  ansible.builtin.stat:
+    path: "{{ proxmox_apt_repo_keyring }}"
+  register: proxmox_apt_keyring_stat
+
+- name: Require the Proxmox archive keyring
+  ansible.builtin.assert:
+    that:
+      - proxmox_apt_keyring_stat.stat.exists
+    fail_msg: >-
+      {{ proxmox_apt_repo_keyring }} is missing; refusing to configure an
+      unsigned Proxmox repository.
+    quiet: true
+
+- name: Remove /etc/apt/sources.list
+  ansible.builtin.file:
+    path: /etc/apt/sources.list
+    state: absent
+
+- name: Remove the apt sources directory
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d
+    state: absent
+
+- name: Recreate the apt sources directory
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Add the Debian base repositories
+  ansible.builtin.copy:
+    dest: "{{ proxmox_apt_debian_sources }}"
+    content: |
+      Types: deb
+      URIs: http://deb.debian.org/debian/
+      Suites: {{ proxmox_apt_repo_suite }} {{ proxmox_apt_repo_suite }}-updates
+      Components: main contrib non-free-firmware
+      Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+      Types: deb
+      URIs: http://security.debian.org/debian-security/
+      Suites: {{ proxmox_apt_repo_suite }}-security
+      Components: main contrib non-free-firmware
+      Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add the Proxmox no-subscription repository
+  ansible.builtin.copy:
+    dest: "{{ proxmox_apt_repo_sources }}"
+    content: |
+      Types: deb
+      URIs: {{ proxmox_apt_repo_uri }}
+      Suites: {{ proxmox_apt_repo_suite }}
+      Components: {{ proxmox_apt_repo_component }}
+      Signed-By: {{ proxmox_apt_repo_keyring }}
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add the Ceph no-subscription repository
+  ansible.builtin.copy:
+    dest: "{{ proxmox_apt_ceph_sources }}"
+    content: |
+      Types: deb
+      URIs: {{ proxmox_apt_ceph_uri }}
+      Suites: {{ proxmox_apt_repo_suite }}
+      Components: {{ proxmox_apt_ceph_component }}
+      Signed-By: {{ proxmox_apt_repo_keyring }}
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Refresh the apt package lists
+  ansible.builtin.apt:
+    update_cache: true
+  changed_when: false
+
+- name: Remove os-prober
+  ansible.builtin.apt:
+    name: "{{ proxmox_apt_remove_packages }}"
+    state: absent
+    purge: true

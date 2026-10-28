@@ -2,13 +2,14 @@
 
 ## Playbooks
 
-Example playbooks for dev:
+Run these playbooks in order. You will need to flash the ISOs yourself after the iso playbook.
 
-| Playbook                                | Purpose                                                                                             |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `playbooks/proxmox/root-passwords.yaml` | Add missing root passwords to the encrypted store.                                                  |
-| `playbooks/proxmox/iso.yaml`            | Build the per-node installer ISOs.                                                                  |
-| `playbooks/proxmox/cluster.yaml`        | Create the PVE cluster, join nodes using the leader fingerprint and root password, then harden SSH. |
+| Playbook                                | Purpose                                                                                               |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `playbooks/proxmox/root-passwords.yaml` | Add missing root passwords to the encrypted store.                                                    |
+| `playbooks/proxmox/iso.yaml`            | Build the per-node installer ISOs.                                                                    |
+| `playbooks/proxmox/apt.yaml`            | Replace all apt sources with controlled Debian, Proxmox, and Ceph Tentacle sources; remove os-prober. |
+| `playbooks/proxmox/cluster.yaml`        | Create the PVE cluster, join nodes using the leader fingerprint and root password, then harden SSH.   |
 
 ## Bootstrap
 
@@ -43,6 +44,4 @@ sudo dd if=build/proxmox/dev/iso/<node>.iso of=/dev/sdX bs=4M status=progress of
 sync
 ```
 
-## Cluster Setup
-
-Once you have PVE on the nodes, run `cluster.yaml`.
+After this, things should be smooth sailing with Ansible!
