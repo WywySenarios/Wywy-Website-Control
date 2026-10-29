@@ -1,0 +1,70 @@
+---
+# shared group_vars for all k8s VMs.
+k8s_version: "1.36.2-2.1"
+containerd_version: "2.4.2-3~debian.13~trixie"
+kube_vip_version: "v1.3.1"
+helm_version: "v3.21.3"
+calico_version: "v3.29.2"
+local_path_version: "v0.0.36"
+argocd_chart_version: "10.3.3"
+kube_prometheus_stack_version: "92.8.0"
+jellyfin_chart_version: "3.2.0"
+csi_driver_nfs_chart_version: "4.13.5"
+ksops_image_version: "v4.5.1"
+metallb_version: "0.16.1"
+immich_chart_version: "0.13.4"
+
+wywy_k8s_api_ip: >-
+  {{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}
+
+k8s_control_plane_hosts: >-
+  {{ k8s_vm_definitions | dict2items
+     | selectattr('value.role', 'equalto', 'control-plane')
+     | map(attribute='value.vm_hostname') | list }}
+
+k8s_pod_cidr: "{{ hostvars['files.internal'].wywy_pod_cidr }}"
+
+k8s_vm_addresses: >-
+  {{ dict(k8s_vm_definitions.values() | map(attribute='vm_hostname')
+          | zip(k8s_vm_definitions.values() | map(attribute='vm_address'))) }}
+wywy_worker_ips: >-
+  {{ k8s_vm_definitions.values() | selectattr('role', 'equalto', 'worker')
+     | map(attribute='vm_address') | list }}
+wywy_control_plane_ips: >-
+  {{ k8s_vm_definitions.values() | selectattr('role', 'equalto', 'control-plane')
+     | map(attribute='vm_address') | list }}
+
+ansible_host: >-
+  {{ k8s_vm_addresses[inventory_hostname]
+     if inventory_hostname in k8s_vm_addresses
+     else lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
+
+k8s_vip_interface: "{{ ansible_default_ipv4.interface }}"
+k8s_control_plane_init_host: "{{ k8s_control_plane_hosts | first }}"
+k8s_node_labels: >-
+  {{ ['wywy.io/role=control-plane'] if 'k8s_control_plane' in group_names
+     else (['wywy.io/role=worker'] if 'k8s_workers' in group_names else []) }}
+
+proxmox_template_storage: local-lvm
+proxmox_vm_data_disk_storage: local-lvm
+proxmox_template_sshkeys: /root/.ssh/authorized_keys
+proxmox_template_memory: 4096
+proxmox_template_cores: 2
+
+# Per-VM values, derived from k8s_vm_definitions. A k8s VM has no entry and
+# gets empty values; the proxmox_* roles only target the PVE aliases.
+k8s_vm: >-
+  {{ k8s_vm_definitions[inventory_hostname]
+     if inventory_hostname in k8s_vm_definitions else {} }}
+proxmox_template_vmid: "{{ k8s_vm.proxmox_template_vmid | default('') }}"
+proxmox_template_name: "{{ k8s_vm.proxmox_template_name | default('') }}"
+proxmox_template_disk_size: "{{ k8s_vm.proxmox_template_disk_size | default('') }}"
+proxmox_vm_vmid: "{{ k8s_vm.proxmox_vm_vmid | default('') }}"
+proxmox_vm_name: "{{ k8s_vm.proxmox_vm_name | default('') }}"
+proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
+proxmox_vm_address: >-
+  {{ hostvars[k8s_vm.vm_hostname].ansible_host
+     if k8s_vm.vm_hostname is defined else '' }}
+proxmox_vm_gateway: "{{ wywy_gateway }}"
+proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+proxmox_vm_disk_size: "{{ k8s_vm.proxmox_vm_disk_size | default('') }}"

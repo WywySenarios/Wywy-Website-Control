@@ -1,0 +1,7 @@
+---
+- name: Build the Kubernetes control-plane cloud-init template
+  hosts: k8s_control_plane_pve
+  become: false
+  gather_facts: false
+  roles:
+    - proxmox_template

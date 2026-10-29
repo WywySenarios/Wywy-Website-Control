@@ -49,6 +49,17 @@
   changed_when: true
   when: proxmox_vm_cfg.rc != 0
 
+- name: Remove the stale SSH host key for a newly cloned VM
+  ansible.builtin.command:
+    argv:
+      - ssh-keygen
+      - -R
+      - "{{ proxmox_vm_address }}"
+  delegate_to: localhost
+  become: false
+  changed_when: "'updated' in (result.stdout | default(''))"
+  when: proxmox_vm_cfg.rc != 0
+
 # we have to guard the value because the key is already in the template
 - name: Point the guest at its address, gateway and nameserver
   ansible.builtin.command:
