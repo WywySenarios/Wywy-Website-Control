@@ -1,0 +1,28 @@
+---
+- name: Ensure Python is available on the control-plane VMs
+  hosts: k8s_control_plane
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install Python and python3-apt
+      ansible.builtin.raw: |
+        command -v python3 >/dev/null || (apt-get update && apt-get install -y python3)
+        python3 -c 'import apt' 2>/dev/null || (apt-get update && apt-get install -y python3-apt)
+      changed_when: false
+
+- name: Bootstrap the Kubernetes control plane
+  hosts: k8s_control_plane
+  become: true
+  gather_facts: true
+  serial: 1
+  tasks:
+    - name: Configure the Kubernetes node
+      ansible.builtin.include_role:
+        name: k8s_node
+
+    - name: Flush pending containerd restarts
+      ansible.builtin.meta: flush_handlers
+
+    - name: Bootstrap the control plane
+      ansible.builtin.include_role:
+        name: k8s_control_plane

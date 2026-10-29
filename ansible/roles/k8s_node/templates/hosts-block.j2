@@ -1,0 +1,4 @@
+{{ lookup('wywy_hosts', 'hosts.sops', whole=true) | trim }}
+{% for host in groups['k8s_control_plane'] | sort %}
+{{ hostvars[host].ansible_host }} {{ host }}
+{% endfor %}

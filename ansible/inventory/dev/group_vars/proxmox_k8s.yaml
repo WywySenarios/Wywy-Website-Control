@@ -1,0 +1,28 @@
+---
+# Proxmox hosts that own the Kubernetes VMs.
+ansible_user: root
+ansible_become: false
+ansible_host: >-
+  {{ lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
+
+proxmox_template_storage: local-lvm
+proxmox_vm_data_disk_storage: local-lvm
+proxmox_template_sshkeys: /root/.ssh/authorized_keys
+proxmox_template_memory: 4096
+proxmox_template_cores: 2
+
+k8s_vm: >-
+  {{ k8s_vm_definitions[inventory_hostname]
+     if inventory_hostname in k8s_vm_definitions else {} }}
+proxmox_template_vmid: "{{ k8s_vm.proxmox_template_vmid | default('') }}"
+proxmox_template_name: "{{ k8s_vm.proxmox_template_name | default('') }}"
+proxmox_template_disk_size: "{{ k8s_vm.proxmox_template_disk_size | default('') }}"
+proxmox_vm_vmid: "{{ k8s_vm.proxmox_vm_vmid | default('') }}"
+proxmox_vm_name: "{{ k8s_vm.proxmox_vm_name | default('') }}"
+proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
+proxmox_vm_address: >-
+  {{ hostvars[k8s_vm.vm_hostname].ansible_host
+     if k8s_vm.vm_hostname is defined else '' }}
+proxmox_vm_gateway: "{{ wywy_gateway }}"
+proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+proxmox_vm_disk_size: "{{ k8s_vm.proxmox_vm_disk_size | default('') }}"

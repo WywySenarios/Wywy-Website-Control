@@ -1,0 +1,10 @@
+---
+# Kubernetes VMs: control plane and workers.
+ansible_host: "{{ k8s_vm_addresses[inventory_hostname] }}"
+
+k8s_pod_cidr: "{{ hostvars['files.internal'].wywy_pod_cidr }}"
+k8s_vip_interface: "{{ ansible_default_ipv4.interface }}"
+k8s_control_plane_init_host: "{{ k8s_control_plane_hosts | first }}"
+k8s_node_labels: >-
+  {{ ['wywy.io/role=control-plane'] if 'k8s_control_plane' in group_names
+     else (['wywy.io/role=worker'] if 'k8s_workers' in group_names else []) }}

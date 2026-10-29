@@ -1,0 +1,8 @@
+---
+k8s_control_plane_endpoint: "k8s-api.internal:6443"
+k8s_control_plane_kubeconfig_new: "{{ lookup('env', 'HOME') }}/.kube/config.new"
+k8s_control_plane_kubeadm_cri_socket: unix:///run/containerd/containerd.sock
+k8s_control_plane_kube_vip_image: "ghcr.io/kube-vip/kube-vip:{{ kube_vip_version }}"
+k8s_control_plane_kube_vip_manifest_dir: /etc/kubernetes/manifests
+k8s_control_plane_kube_vip_manifest: "{{ k8s_control_plane_kube_vip_manifest_dir }}/kube-vip.yaml"
+k8s_control_plane_kube_vip_rbac: /etc/kubernetes/kube-vip-rbac.yaml

@@ -1,0 +1,27 @@
+---
+k8s_node_containerd_package: containerd.io
+k8s_node_containerd_config: /etc/containerd/config.toml
+k8s_node_containerd_certs_dir: /etc/containerd/certs.d
+k8s_node_cni_bin_dir: /usr/lib/cni
+k8s_node_kubelet_defaults: /etc/default/kubelet
+k8s_node_sysctl_file: /etc/sysctl.d/99-kubernetes.conf
+k8s_node_hosts_marker: "# {mark} ANSIBLE MANAGED BLOCK: wywy-k8s"
+k8s_node_containernetworking_package: containernetworking-plugins
+
+k8s_node_apt_architecture: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+k8s_node_docker_keyring: /etc/apt/keyrings/docker.asc
+k8s_node_docker_repo: >-
+  deb [arch={{ k8s_node_apt_architecture }} signed-by={{ k8s_node_docker_keyring }}]
+  https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+k8s_node_kubernetes_keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+k8s_node_kubernetes_minor: "{{ k8s_version.split('.')[:2] | join('.') }}"
+k8s_node_kubernetes_repo: >-
+  deb [signed-by={{ k8s_node_kubernetes_keyring }}]
+  https://pkgs.k8s.io/core:/stable:/v{{ k8s_node_kubernetes_minor }}/deb/ /
+k8s_node_kubernetes_packages:
+  - kubelet
+  - kubeadm
+  - kubectl
+
+k8s_node_registry_host: registry.internal
+k8s_node_registry_port: 5000

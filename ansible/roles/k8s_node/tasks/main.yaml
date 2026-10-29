@@ -1,0 +1,303 @@
+---
+- name: Assert the supported architecture
+  ansible.builtin.assert:
+    that:
+      - ansible_architecture in ['x86_64', 'aarch64']
+    fail_msg: "unsupported architecture: {{ ansible_architecture }}"
+
+- name: Assert the version pins are present
+  ansible.builtin.assert:
+    that:
+      - containerd_version is defined
+      - k8s_version is defined
+    fail_msg: containerd_version and k8s_version must be set in group vars
+
+- name: Install apt prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - apt-transport-https
+      - openssl
+    state: present
+    update_cache: true
+
+- name: Ensure the apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download the Docker apt key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: "{{ k8s_node_docker_keyring }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add the Docker apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ k8s_node_docker_repo }}"
+    filename: docker
+    state: present
+    update_cache: true
+
+- name: Install the pinned containerd.io package
+  ansible.builtin.apt:
+    name: "{{ k8s_node_containerd_package }}={{ containerd_version }}"
+    state: present
+    allow_downgrade: true
+    update_cache: true
+
+- name: Hold containerd.io
+  ansible.builtin.dpkg_selections:
+    name: "{{ k8s_node_containerd_package }}"
+    selection: hold
+
+- name: Ensure containerd is enabled and running
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: true
+    state: started
+
+- name: Ensure the containerd configuration directory exists
+  ansible.builtin.file:
+    path: "{{ k8s_node_containerd_config | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Check for the containerd configuration
+  ansible.builtin.stat:
+    path: "{{ k8s_node_containerd_config }}"
+  register: k8s_node_containerd_config_stat
+
+- name: Read the current containerd configuration
+  ansible.builtin.slurp:
+    src: "{{ k8s_node_containerd_config }}"
+  register: k8s_node_containerd_current
+  when: k8s_node_containerd_config_stat.stat.exists
+
+- name: Parse the current containerd configuration
+  ansible.builtin.set_fact:
+    k8s_node_containerd_current_text: >-
+      {{ (k8s_node_containerd_current.content | default('')) | b64decode }}
+
+- name: Determine whether the containerd configuration needs regeneration
+  ansible.builtin.set_fact:
+    k8s_node_containerd_needs_regeneration: >-
+      {{ not k8s_node_containerd_config_stat.stat.exists
+         or 'SystemdCgroup = true' not in k8s_node_containerd_current_text
+         or ("bin_dirs = ['" ~ k8s_node_cni_bin_dir ~ "']")
+            not in k8s_node_containerd_current_text
+         or ("config_path = '" ~ k8s_node_containerd_certs_dir ~ "'")
+            not in k8s_node_containerd_current_text }}
+
+- name: Generate the default containerd configuration
+  ansible.builtin.command:
+    argv:
+      - containerd
+      - config
+      - default
+  register: k8s_node_containerd_default
+  changed_when: false
+  when: k8s_node_containerd_needs_regeneration | bool
+
+- name: Write the default containerd configuration
+  ansible.builtin.copy:
+    content: "{{ k8s_node_containerd_default.stdout }}"
+    dest: "{{ k8s_node_containerd_config }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when: k8s_node_containerd_needs_regeneration | bool
+  notify: Restart containerd
+
+- name: Enable the containerd systemd cgroup
+  ansible.builtin.replace:
+    path: "{{ k8s_node_containerd_config }}"
+    regexp: '(?m)^(\s*SystemdCgroup\s*=\s*)false$'
+    replace: '\1true'
+  notify: Restart containerd
+
+- name: Set the containerd registry config path
+  ansible.builtin.replace:
+    path: "{{ k8s_node_containerd_config }}"
+    regexp: |-
+      (?s)(\[plugins\.'io\.containerd\.cri\.v1\.images'\.registry\]\s*\n\s*config_path = )'[^']*'
+    replace: "\\1'{{ k8s_node_containerd_certs_dir }}'"
+  notify: Restart containerd
+
+- name: Set the containerd CNI bin directory
+  ansible.builtin.replace:
+    path: "{{ k8s_node_containerd_config }}"
+    regexp: |-
+      (?m)^(\s*)bin_dirs = \['/opt/cni/bin'\]$
+    replace: "\\1bin_dirs = ['{{ k8s_node_cni_bin_dir }}']"
+  notify: Restart containerd
+
+- name: Read the containerd configuration
+  ansible.builtin.slurp:
+    src: "{{ k8s_node_containerd_config }}"
+  register: k8s_node_containerd_config_content
+
+- name: Assert the containerd configuration values
+  ansible.builtin.assert:
+    that:
+      - "'SystemdCgroup = true' in (k8s_node_containerd_config_content.content | b64decode)"
+      - >-
+        ("config_path = '{{ k8s_node_containerd_certs_dir }}'")
+        in (k8s_node_containerd_config_content.content | b64decode)
+      - >-
+        ("bin_dirs = ['{{ k8s_node_cni_bin_dir }}']")
+        in (k8s_node_containerd_config_content.content | b64decode)
+    fail_msg: the containerd configuration did not reach the wanted shape
+
+- name: Install the CNI plugins
+  ansible.builtin.apt:
+    name: "{{ k8s_node_containernetworking_package }}"
+    state: present
+
+- name: Check for the portmap CNI plugin
+  ansible.builtin.stat:
+    path: "{{ k8s_node_cni_bin_dir }}/portmap"
+  register: k8s_node_cni_portmap
+
+- name: Check for the bandwidth CNI plugin
+  ansible.builtin.stat:
+    path: "{{ k8s_node_cni_bin_dir }}/bandwidth"
+  register: k8s_node_cni_bandwidth
+
+- name: Assert the CNI plugins exist
+  ansible.builtin.assert:
+    that:
+      - k8s_node_cni_portmap.stat.exists
+      - k8s_node_cni_bandwidth.stat.exists
+    fail_msg: "the portmap and bandwidth CNI plugins are missing from {{ k8s_node_cni_bin_dir }}"
+
+- name: Download the Kubernetes apt key
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_node_kubernetes_minor }}/deb/Release.key"
+    dest: /tmp/kubernetes-release.key
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Dearmor the Kubernetes apt key
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --dearmor
+      - --yes
+      - --output
+      - "{{ k8s_node_kubernetes_keyring }}"
+      - /tmp/kubernetes-release.key
+  args:
+    creates: "{{ k8s_node_kubernetes_keyring }}"
+
+- name: Remove the downloaded Kubernetes apt key
+  ansible.builtin.file:
+    path: /tmp/kubernetes-release.key
+    state: absent
+
+- name: Add the Kubernetes apt repository
+  ansible.builtin.copy:
+    content: "{{ k8s_node_kubernetes_repo }}\n"
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Update the apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install the pinned Kubernetes packages
+  ansible.builtin.apt:
+    name:
+      - "kubelet={{ k8s_version }}"
+      - "kubeadm={{ k8s_version }}"
+      - "kubectl={{ k8s_version }}"
+    state: present
+    allow_downgrade: true
+
+- name: Hold the Kubernetes packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ k8s_node_kubernetes_packages }}"
+
+- name: Enable IP forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_file: "{{ k8s_node_sysctl_file }}"
+    state: present
+    reload: true
+
+- name: Configure kubelet node labels
+  ansible.builtin.copy:
+    content: "KUBELET_EXTRA_ARGS=\"--node-labels={{ k8s_node_labels | join(',') }}\"\n"
+    dest: "{{ k8s_node_kubelet_defaults }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Read the internal CA bundle
+  ansible.builtin.command:
+    argv:
+      - sops
+      - -d
+      - --output-type
+      - binary
+      - "{{ control_dir }}/secrets/{{ wywy_env }}/internal-ca.sops"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: k8s_node_internal_ca_bundle
+
+- name: Parse the internal CA and registry address
+  ansible.builtin.set_fact:
+    k8s_node_internal_ca_cert: "{{ (k8s_node_internal_ca_bundle.stdout | from_yaml).cert }}"
+    k8s_node_registry_ip: "{{ lookup('wywy_hosts', 'hosts.sops', 'registry.internal') }}"
+  no_log: true
+
+- name: Point registry.internal at the registry VM
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^[^#]*\bregistry\.internal\b'
+    line: "{{ k8s_node_registry_ip }} {{ k8s_node_registry_host }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ensure the containerd registry certificate directory exists
+  ansible.builtin.file:
+    path: "{{ k8s_node_containerd_certs_dir }}/{{ k8s_node_registry_host }}:{{ k8s_node_registry_port }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install the internal CA for containerd
+  ansible.builtin.copy:
+    content: "{{ k8s_node_internal_ca_cert }}"
+    dest: "{{ k8s_node_containerd_certs_dir }}/{{ k8s_node_registry_host }}:{{ k8s_node_registry_port }}/ca.crt"
+    owner: root
+    group: root
+    mode: "0644"
+  no_log: true
+  notify: Restart containerd
+
+- name: Write the managed hosts block
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "{{ k8s_node_hosts_marker }}"
+    block: "{{ lookup('template', 'hosts-block.j2') }}"

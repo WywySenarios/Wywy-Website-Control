@@ -1,0 +1,351 @@
+---
+- name: Assert the control-plane variables are present
+  ansible.builtin.assert:
+    that:
+      - k8s_control_plane_endpoint is defined
+      - k8s_control_plane_init_host is defined
+      - k8s_apiserver_extra_sans is defined
+      - k8s_vm_addresses is defined
+      - wywy_k8s_api_ip is defined
+    fail_msg: the control-plane group vars are incomplete
+
+- name: Check for the control-plane admin kubeconfig
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: k8s_control_plane_admin_conf
+
+- name: Check for the kubelet kubeconfig
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8s_control_plane_kubelet_conf
+
+- name: Initialize the first control plane
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - init
+      - --control-plane-endpoint
+      - "{{ k8s_control_plane_endpoint }}"
+      - --upload-certs
+      - --pod-network-cidr
+      - "{{ k8s_pod_cidr }}"
+      - --apiserver-advertise-address
+      - "{{ k8s_vm_addresses[inventory_hostname] }}"
+      - --apiserver-cert-extra-sans
+      - "{{ k8s_apiserver_extra_sans }}"
+      - --cri-socket
+      - "{{ k8s_control_plane_kubeadm_cri_socket }}"
+  when:
+    - inventory_hostname == k8s_control_plane_init_host
+    - not k8s_control_plane_admin_conf.stat.exists
+  changed_when: true
+  no_log: true
+  async: 600
+  poll: 5
+
+- name: Ensure the operator kube config directory exists
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/.kube"
+    state: directory
+    mode: "0700"
+  delegate_to: localhost
+  run_once: true
+  when: inventory_hostname == k8s_control_plane_init_host
+
+- name: Fetch the new kubeconfig
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ k8s_control_plane_kubeconfig_new }}"
+    flat: true
+  when: inventory_hostname == k8s_control_plane_init_host
+  become: true
+  no_log: true
+
+- name: Set the new kubeconfig permissions
+  ansible.builtin.file:
+    path: "{{ k8s_control_plane_kubeconfig_new }}"
+    mode: "0600"
+  delegate_to: localhost
+  run_once: true
+  when: inventory_hostname == k8s_control_plane_init_host
+
+- name: Create a fresh bootstrap token
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - token
+      - create
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_control_plane_join_token
+  changed_when: true
+  no_log: false
+  when:
+    - inventory_hostname != k8s_control_plane_init_host
+    - not k8s_control_plane_kubelet_conf.stat.exists
+
+- name: Upload fresh control-plane certificates
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - init
+      - phase
+      - upload-certs
+      - --upload-certs
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_control_plane_upload_certs
+  changed_when: true
+  no_log: true
+  when:
+    - inventory_hostname != k8s_control_plane_init_host
+    - not k8s_control_plane_kubelet_conf.stat.exists
+
+- name: Extract the certificate key
+  ansible.builtin.set_fact:
+    k8s_control_plane_certificate_key: >-
+      {{ (k8s_control_plane_upload_certs.stdout_lines
+          + k8s_control_plane_upload_certs.stderr_lines)
+         | select('match', '^[0-9a-f]{64}$') | first }}
+  no_log: true
+  when:
+    - inventory_hostname != k8s_control_plane_init_host
+    - not k8s_control_plane_kubelet_conf.stat.exists
+
+- name: Compute the CA certificate hash
+  ansible.builtin.shell: |
+    set -o pipefail
+    openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt -noout \
+      | openssl rsa -pubin -outform der 2>/dev/null \
+      | openssl dgst -sha256 -hex | sed 's/^.* //'
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_control_plane_ca_hash
+  changed_when: false
+  when:
+    - inventory_hostname != k8s_control_plane_init_host
+    - not k8s_control_plane_kubelet_conf.stat.exists
+
+- name: Join the control plane
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - join
+      - "{{ k8s_control_plane_endpoint }}"
+      - --token
+      - "{{ k8s_control_plane_join_token.stdout | trim }}"
+      - --discovery-token-ca-cert-hash
+      - "sha256:{{ k8s_control_plane_ca_hash.stdout | trim }}"
+      - --control-plane
+      - --certificate-key
+      - "{{ k8s_control_plane_certificate_key }}"
+      - --apiserver-advertise-address
+      - "{{ k8s_vm_addresses[inventory_hostname] }}"
+      - --cri-socket
+      - "{{ k8s_control_plane_kubeadm_cri_socket }}"
+  when:
+    - inventory_hostname != k8s_control_plane_init_host
+    - not k8s_control_plane_kubelet_conf.stat.exists
+  changed_when: true
+  no_log: true
+  async: 600
+  poll: 5
+
+- name: Clear the join credentials
+  ansible.builtin.set_fact:
+    k8s_control_plane_join_token: ""
+    k8s_control_plane_certificate_key: ""
+  no_log: true
+  when: inventory_hostname != k8s_control_plane_init_host
+
+- name: Ensure the static pod manifest directory exists
+  ansible.builtin.file:
+    path: "{{ k8s_control_plane_kube_vip_manifest_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Pull the kube-vip image
+  ansible.builtin.command:
+    argv:
+      - ctr
+      - -n
+      - k8s.io
+      - image
+      - pull
+      - "{{ k8s_control_plane_kube_vip_image }}"
+  changed_when: false
+
+- name: Remove a stale kube-vip manifest container
+  ansible.builtin.command:
+    argv:
+      - ctr
+      - -n
+      - k8s.io
+      - container
+      - rm
+      - kube-vip-manifest
+  failed_when: false
+  changed_when: false
+
+- name: Generate the kube-vip static pod manifest
+  ansible.builtin.command:
+    argv:
+      - ctr
+      - -n
+      - k8s.io
+      - run
+      - --rm
+      - --net-host
+      - "{{ k8s_control_plane_kube_vip_image }}"
+      - kube-vip-manifest
+      - /kube-vip
+      - manifest
+      - pod
+      - --interface
+      - "{{ k8s_vip_interface }}"
+      - --address
+      - "{{ wywy_k8s_api_ip }}"
+      - --controlplane
+      - --arp
+      - --leaderElection
+  register: k8s_control_plane_kube_vip_generated
+  changed_when: false
+
+- name: Assert kube-vip uses admin.conf
+  ansible.builtin.assert:
+    that:
+      - "'/etc/kubernetes/admin.conf' in k8s_control_plane_kube_vip_generated.stdout"
+    fail_msg: kube-vip generated a manifest without admin.conf
+
+- name: Install the kube-vip static pod manifest
+  ansible.builtin.copy:
+    content: "{{ k8s_control_plane_kube_vip_generated.stdout }}"
+    dest: "{{ k8s_control_plane_kube_vip_manifest }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install the kube-vip RBAC manifest
+  ansible.builtin.copy:
+    src: kube-vip-rbac.yaml
+    dest: "{{ k8s_control_plane_kube_vip_rbac }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Apply the kube-vip RBAC manifest
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - /etc/kubernetes/admin.conf
+      - apply
+      - -f
+      - "{{ k8s_control_plane_kube_vip_rbac }}"
+  register: k8s_control_plane_kube_vip_rbac_apply
+  changed_when: "'unchanged' not in k8s_control_plane_kube_vip_rbac_apply.stdout"
+
+- name: Wait for the API VIP
+  ansible.builtin.wait_for:
+    host: "{{ wywy_k8s_api_ip }}"
+    port: 6443
+    timeout: 300
+  delegate_to: localhost
+  run_once: true
+  when: inventory_hostname == k8s_control_plane_init_host
+
+- name: Read the apiserver certificate
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - /etc/kubernetes/pki/apiserver.crt
+      - -noout
+      - -text
+  register: k8s_control_plane_apiserver_cert
+  changed_when: false
+
+- name: Assert the VIP SANs
+  ansible.builtin.assert:
+    that:
+      - "'DNS:k8s-api.internal' in k8s_control_plane_apiserver_cert.stdout"
+      - "('IP Address:' ~ wywy_k8s_api_ip) in k8s_control_plane_apiserver_cert.stdout"
+
+- name: Assert the control-plane name SANs
+  ansible.builtin.assert:
+    that:
+      - "('DNS:' ~ item) in k8s_control_plane_apiserver_cert.stdout"
+  loop: "{{ k8s_control_plane_hosts }}"
+
+- name: Assert the control-plane IP SANs
+  ansible.builtin.assert:
+    that:
+      - "('IP Address:' ~ item) in k8s_control_plane_apiserver_cert.stdout"
+  loop: "{{ k8s_control_plane_ips }}"
+
+- name: Read the cluster node addresses
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - /etc/kubernetes/admin.conf
+      - get
+      - nodes
+      - -o
+      - 'jsonpath={range .items[*]}{.metadata.name}{" "}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'
+  register: k8s_control_plane_nodes
+  until: k8s_vm_addresses[inventory_hostname] in k8s_control_plane_nodes.stdout
+  retries: 30
+  delay: 5
+  changed_when: false
+
+- name: Derive this node's name
+  ansible.builtin.set_fact:
+    k8s_control_plane_node_name: >-
+      {{ (k8s_control_plane_nodes.stdout_lines
+          | select('search', k8s_vm_addresses[inventory_hostname])
+          | map('regex_replace', ' +.*$', '') | first) }}
+
+- name: Label the control-plane node
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - /etc/kubernetes/admin.conf
+      - label
+      - node
+      - --overwrite
+      - "{{ k8s_control_plane_node_name }}"
+      - wywy.io/role=control-plane
+  register: k8s_control_plane_label
+  changed_when: "'not labeled' not in k8s_control_plane_label.stdout"
+
+- name: Read the control-plane taint
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - /etc/kubernetes/admin.conf
+      - get
+      - node
+      - "{{ k8s_control_plane_node_name }}"
+      - -o
+      - 'jsonpath={.spec.taints[?(@.key=="node-role.kubernetes.io/control-plane")].effect}'
+  register: k8s_control_plane_taint
+  changed_when: false
+
+- name: Assert the control-plane taint
+  ansible.builtin.assert:
+    that:
+      - k8s_control_plane_taint.stdout == "NoSchedule"
