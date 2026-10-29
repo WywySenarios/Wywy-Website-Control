@@ -17,6 +17,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "ansible-lint==25.1.0",
+    "pytest==9.2.0",
     "ruff==0.17.1",
 ]
 
@@ -33,5 +34,15 @@ ignore = [
     "T201",   # the entrypoint announces the target environment on purpose
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "D103", # test names are the specification. Docstrings are not needed.
+    "S101", # tests need to `assert`
+]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
