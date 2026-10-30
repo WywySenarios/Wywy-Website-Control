@@ -1,11 +1,10 @@
 ---
-- name: Fail closed when no worker IPs are configured
+- name: Assert that worker IPs are configured
   ansible.builtin.assert:
     that:
       - wywy_worker_ips | length > 0
     fail_msg: >-
-      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) —
-      refusing to run a registry with no cluster access rules.
+      wywy_worker_ips is empty.
     quiet: true
 
 - name: Fail closed when no operator IP is configured
@@ -30,6 +29,36 @@
     fail_msg: >-
       {{ registry_data_device }} does not exist. Create the registry VM (its
       proxmox_vm data-disk step) before running the registry role.
+    quiet: true
+
+# Device node names are not stable across boots: the data disk (scsi1) can
+# enumerate as /dev/sda while the root disk (scsi0) becomes /dev/sdb. Refuse to
+# format a device unless its only mount point is the image store root, so a
+# wrong path fails closed instead of destroying the root filesystem.
+- name: Resolve the data disk to a kernel device path
+  ansible.builtin.command:
+    cmd: readlink -f {{ registry_data_device }}
+  register: registry_data_device_real
+  changed_when: false
+  check_mode: false
+
+- name: List mount points on the data disk and its partitions
+  ansible.builtin.command:
+    cmd: lsblk -nlo MOUNTPOINTS {{ registry_data_device_real.stdout }}
+  register: registry_data_mountpoints
+  changed_when: false
+  check_mode: false
+
+- name: Fail closed when the data disk is mounted outside the image store root
+  ansible.builtin.assert:
+    that:
+      - registry_data_mountpoints.stdout_lines | select | reject('equalto', registry_data_root) | list | length == 0
+    fail_msg: >-
+      {{ registry_data_device }} ({{ registry_data_device_real.stdout }}) is
+      mounted outside {{ registry_data_root }}
+      ({{ registry_data_mountpoints.stdout_lines | select | reject('equalto', registry_data_root) | join(', ') }});
+      refusing to format it. Correct registry_data_device before running the
+      registry role.
     quiet: true
 
 - name: Create the ext4 filesystem on the data disk

@@ -4,7 +4,7 @@ nfs_export_root: /srv/nfs
 
 # Dedicated XFS disk (scsi1 on the files VM) backing the tree. The mount below
 # adds pquota so the per-service XFS project quotas are enforced.
-nfs_data_device: /dev/sdb
+nfs_data_device: /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1
 
 # Shared export options.
 # anonuid/anongid are appended per service so an all_squash write lands on that service's uid/gid.
@@ -13,7 +13,7 @@ nfs_export_opts: rw,sync,no_subtree_check,all_squash
 nfs_port: 2049
 
 nfs_export_clients: >-
-  {{ (wywy_worker_ips + [wywy_control_plane_ip, wywy_pod_cidr]) | unique }}
+  {{ (wywy_worker_ips + wywy_control_plane_ips + [wywy_pod_cidr]) | unique }}
 nfs_packages:
   - nfs-kernel-server
   - xfsprogs

@@ -15,13 +15,12 @@
   become: true
   notify: Restart postgresql
 
-- name: Fail closed when no worker IPs are configured
+- name: Assert that worker IPs are configured
   ansible.builtin.assert:
     that:
       - wywy_worker_ips | length > 0
     fail_msg: >-
-      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) — refusing
-      to write a pg_hba.conf with no cluster access rules.
+      wywy_worker_ips is empty.
     quiet: true
 
 # pg_hba.conf is generated from the repo file: the <K8S_WORKER_IPS> rule-line

@@ -1,5 +1,5 @@
 ---
-registry_data_device: /dev/sdb
+registry_data_device: /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1
 registry_data_root: /srv/registry
 
 registry_user: admin

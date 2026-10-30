@@ -8,23 +8,20 @@
       exports.
     quiet: true
 
-- name: Fail closed when no worker IPs are configured
+- name: Assert that worker IPs are configured
   ansible.builtin.assert:
     that:
       - wywy_worker_ips | length > 0
     fail_msg: >-
-      wywy_worker_ips is empty (secrets/<env>/k8s-workers-hosts.sops) —
-      refusing to export shares with no cluster access rules.
+      wywy_worker_ips is empty.
     quiet: true
 
-- name: Fail closed when the control-plane IP is not configured
+- name: Assert that some control-plane IPs are configured
   ansible.builtin.assert:
     that:
-      - wywy_control_plane_ip | length > 0
+      - wywy_control_plane_ips | length > 0
     fail_msg: >-
-      wywy_control_plane_ip is empty (secrets/<env>/hosts.sops
-      control-plane.internal) — the CSI controller mounts from the control-plane
-      node, so exports would time out.
+      wywy_control_plane_ips is empty.
     quiet: true
 
 - name: Fail closed when the pod CIDR is not configured
@@ -48,6 +45,35 @@
     fail_msg: >-
       {{ nfs_data_device }} does not exist. Create the files VM (its proxmox_vm
       data-disk step) before running the nfs role.
+    quiet: true
+
+# Device node names are not stable across boots: the data disk (scsi1) has
+# enumerated as /dev/sda while the root disk (scsi0) became /dev/sdb. Refuse to
+# format a device unless its only mount point is the export root, so a wrong
+# path fails closed instead of destroying the root filesystem.
+- name: Resolve the data disk to a kernel device path
+  ansible.builtin.command:
+    cmd: readlink -f {{ nfs_data_device }}
+  register: nfs_data_device_real
+  changed_when: false
+  check_mode: false
+
+- name: List mount points on the data disk and its partitions
+  ansible.builtin.command:
+    cmd: lsblk -nlo MOUNTPOINTS {{ nfs_data_device_real.stdout }}
+  register: nfs_data_mountpoints
+  changed_when: false
+  check_mode: false
+
+- name: Fail closed when the data disk is mounted outside the export root
+  ansible.builtin.assert:
+    that:
+      - nfs_data_mountpoints.stdout_lines | select | reject('equalto', nfs_export_root) | list | length == 0
+    fail_msg: >-
+      {{ nfs_data_device }} ({{ nfs_data_device_real.stdout }}) is mounted
+      outside {{ nfs_export_root }}
+      ({{ nfs_data_mountpoints.stdout_lines | select | reject('equalto', nfs_export_root) | join(', ') }});
+      refusing to format it. Correct nfs_data_device before running the nfs role.
     quiet: true
 
 - name: Create the XFS filesystem on the data disk
