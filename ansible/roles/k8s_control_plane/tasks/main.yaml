@@ -81,7 +81,7 @@
   become: true
   register: k8s_control_plane_join_token
   changed_when: true
-  no_log: false
+  no_log: true
   when:
     - inventory_hostname != k8s_control_plane_init_host
     - not k8s_control_plane_kubelet_conf.stat.exists

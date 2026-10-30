@@ -103,7 +103,7 @@
     - inventory_hostname != proxmox_cluster_leader
     - not proxmox_cluster_conf.stat.exists
   changed_when: true
-  no_log: false
+  no_log: true
 
 - name: Wait for cluster quorum
   ansible.builtin.command:
