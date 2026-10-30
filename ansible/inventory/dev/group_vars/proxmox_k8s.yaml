@@ -5,9 +5,6 @@ ansible_become: false
 ansible_host: >-
   {{ lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
 
-proxmox_template_storage: local-lvm
-proxmox_vm_data_disk_storage: local-lvm
-proxmox_template_sshkeys: /root/.ssh/authorized_keys
 proxmox_template_memory: 4096
 proxmox_template_cores: 2
 

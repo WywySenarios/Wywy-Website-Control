@@ -12,7 +12,7 @@
 
 # --- hypervisor storage ---
 # The disk volume becomes <storage>:vm-<vmid>-disk-0.
-proxmox_template_storage: data
+proxmox_template_storage: local-lvm
 proxmox_template_bridge: vmbr0
 
 # --- VM shape ---
@@ -30,8 +30,8 @@ proxmox_template_image_checksum: "sha512:{{ proxmox_template_image.sha512 }}"
 # The image lands in the hypervisor's ISO store, where it is visible in the web UI and survives between runs.
 proxmox_template_image_dir: /var/lib/vz/template/iso
 
-# --- cloud-init defaults baked into the template ---
 proxmox_template_ciuser: wywy
-proxmox_template_sshkeys: "/home/{{ proxmox_template_ciuser }}/.ssh/authorized_keys"
+# this copies authorized_keys from the Proxmox host node.
+proxmox_template_sshkeys: /root/.ssh/authorized_keys
 proxmox_template_ipconfig: ip=dhcp
 proxmox_template_boot_order: scsi0

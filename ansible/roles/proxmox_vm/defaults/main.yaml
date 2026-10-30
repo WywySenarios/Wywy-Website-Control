@@ -9,4 +9,4 @@ proxmox_vm_data_disk_size_gib: >-
   {{ (((proxmox_vm_data_disk_size | human_to_bytes) / 1073741824) | int)
      if proxmox_vm_data_disk_size | length > 0 else "" }}
 # Storage pool for the data volume, which becomes <storage>:vm-<vmid>-disk-1.
-proxmox_vm_data_disk_storage: data
+proxmox_vm_data_disk_storage: local-lvm
