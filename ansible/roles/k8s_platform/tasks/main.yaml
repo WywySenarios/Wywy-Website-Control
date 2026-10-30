@@ -1,0 +1,9 @@
+---
+- name: Install Argo CD
+  ansible.builtin.import_tasks: argocd/install.yaml
+
+- name: Set the Argo CD admin password
+  ansible.builtin.import_tasks: argocd/admin.yaml
+
+- name: Create the Argo CD applications
+  ansible.builtin.import_tasks: argocd/applications.yaml

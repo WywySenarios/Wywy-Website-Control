@@ -1,0 +1,216 @@
+---
+- name: Install Argo CD
+  block:
+    - name: Check the Kubernetes client
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - version
+          - --client
+      changed_when: false
+      failed_when: false
+      register: k8s_platform_kubectl_version
+
+    - name: Check the Helm client
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_helm }}"
+          - version
+          - --short
+      changed_when: false
+      failed_when: false
+      register: k8s_platform_helm_version
+
+    - name: Require kubectl and Helm
+      ansible.builtin.assert:
+        that:
+          - k8s_platform_kubectl_version.rc == 0
+          - k8s_platform_helm_version.rc == 0
+        fail_msg: kubectl and helm must be installed on the operator
+
+    - name: Check the operator kubeconfig
+      ansible.builtin.stat:
+        path: "{{ k8s_platform_kubeconfig }}"
+      register: k8s_platform_kubeconfig_stat
+
+    - name: Require the operator kubeconfig
+      ansible.builtin.assert:
+        that:
+          - k8s_platform_kubeconfig_stat.stat.exists
+        fail_msg: "{{ k8s_platform_kubeconfig }} does not exist"
+
+    - name: Check the age key
+      ansible.builtin.command:
+        argv:
+          - sudo
+          - -n
+          - test
+          - -s
+          - "{{ k8s_platform_age_key_path }}"
+      changed_when: false
+      no_log: true
+
+    - name: Create a temporary kubeconfig
+      ansible.builtin.tempfile:
+        state: file
+        suffix: wywy-k8s-platform
+      register: k8s_platform_kubeconfig_tmp
+
+    - name: Copy the operator kubeconfig
+      ansible.builtin.copy:
+        src: "{{ k8s_platform_kubeconfig }}"
+        dest: "{{ k8s_platform_kubeconfig_tmp.path }}"
+        remote_src: true
+        mode: "0600"
+
+    - name: Point the temporary kubeconfig at the API VIP
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - config
+          - set-cluster
+          - "{{ k8s_platform_cluster_name }}"
+          - "--server={{ k8s_platform_api_server }}"
+      changed_when: false
+
+    - name: Verify the API endpoint
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - get
+          - --raw
+          - /healthz
+      changed_when: false
+
+    - name: Ensure the Argo CD namespace exists
+      ansible.builtin.shell: |
+        set -o pipefail
+        {{ k8s_platform_kubectl }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }} \
+          create namespace {{ k8s_platform_argocd_namespace }} \
+          --dry-run=client -o yaml \
+          | {{ k8s_platform_kubectl }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }} apply -f -
+      register: k8s_platform_argocd_namespace_apply
+      changed_when: "'created' in k8s_platform_argocd_namespace_apply.stdout"
+
+    - name: Create the Argo CD age key Secret
+      ansible.builtin.shell: |
+        set -o pipefail
+        sudo -n cat {{ k8s_platform_age_key_path }} \
+          | {{ k8s_platform_kubectl }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }} \
+              -n {{ k8s_platform_argocd_namespace }} create secret generic \
+              {{ k8s_platform_age_secret_name }} \
+              --from-file=keys.txt=/dev/stdin --dry-run=client -o yaml \
+          | {{ k8s_platform_kubectl }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }} apply -f -
+      register: k8s_platform_age_secret_apply
+      changed_when: "'created' in k8s_platform_age_secret_apply.stdout"
+      no_log: true
+
+    - name: Add the argo-helm repository
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_helm }}"
+          - repo
+          - add
+          - "{{ k8s_platform_helm_repo_name }}"
+          - "{{ k8s_platform_helm_repo_url }}"
+          - --force-update
+      register: k8s_platform_helm_repo_add
+      changed_when: >-
+        'has been added' in k8s_platform_helm_repo_add.stdout
+        or 'has been updated' in k8s_platform_helm_repo_add.stdout
+
+    - name: Update the Helm repositories
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_helm }}"
+          - repo
+          - update
+      changed_when: false
+
+    - name: Read the current Argo CD server Service type
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - -n
+          - "{{ k8s_platform_argocd_namespace }}"
+          - get
+          - svc
+          - "{{ k8s_platform_argocd_release }}-server"
+          - -o
+          - "jsonpath={.spec.type}"
+      changed_when: false
+      failed_when: false
+      register: k8s_platform_argocd_service_current
+
+    - name: Preserve an exposed Argo CD Service
+      ansible.builtin.set_fact:
+        k8s_platform_argocd_service_type: >-
+          {{ 'LoadBalancer'
+             if k8s_platform_argocd_service_current.stdout == 'LoadBalancer'
+             else 'ClusterIP' }}
+
+    - name: Install or upgrade Argo CD
+      ansible.builtin.command: >-
+        {{ k8s_platform_helm }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }}
+        upgrade --install {{ k8s_platform_argocd_release }}
+        {{ k8s_platform_helm_repo_name }}/argo-cd
+        --namespace {{ k8s_platform_argocd_namespace }}
+        --version {{ k8s_platform_argocd_chart_version }}
+        --values {{ k8s_platform_argocd_values }}
+        --set server.service.type={{ k8s_platform_argocd_service_type }}
+        --atomic --wait --timeout {{ k8s_platform_helm_timeout }}
+      register: k8s_platform_argocd_install
+      changed_when: "'STATUS: deployed' in k8s_platform_argocd_install.stdout"
+
+    - name: Wait for the Argo CD server
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - rollout
+          - status
+          - deployment/argocd-server
+          - -n
+          - "{{ k8s_platform_argocd_namespace }}"
+          - --timeout=300s
+      changed_when: false
+
+    - name: Wait for the Argo CD repo server
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - rollout
+          - status
+          - deployment/argocd-repo-server
+          - -n
+          - "{{ k8s_platform_argocd_namespace }}"
+          - --timeout=300s
+      changed_when: false
+
+    - name: Verify the Argo CD age key Secret
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_platform_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_platform_kubeconfig_tmp.path }}"
+          - get
+          - secret
+          - "{{ k8s_platform_age_secret_name }}"
+          - -n
+          - "{{ k8s_platform_argocd_namespace }}"
+      changed_when: false
+  always:
+    - name: Remove the temporary kubeconfig
+      ansible.builtin.file:
+        path: "{{ k8s_platform_kubeconfig_tmp.path }}"
+        state: absent
+      when: k8s_platform_kubeconfig_tmp is defined

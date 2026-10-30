@@ -1,0 +1,33 @@
+---
+k8s_platform_kubectl: kubectl
+k8s_platform_helm: helm
+
+k8s_platform_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+k8s_platform_cluster_name: kubernetes
+k8s_platform_api_ip: "{{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}"
+k8s_platform_api_server: "https://{{ k8s_platform_api_ip }}:6443"
+
+k8s_platform_argocd_namespace: argocd
+k8s_platform_argocd_release: argocd
+k8s_platform_argocd_chart_version: "10.3.3"
+k8s_platform_argocd_values: "{{ role_path }}/files/argocd-values.yaml"
+k8s_platform_helm_repo_name: argo-helm
+k8s_platform_helm_repo_url: https://argoproj.github.io/argo-helm
+k8s_platform_helm_timeout: 10m
+
+k8s_platform_age_key_path: /root/.config/sops/age/keys.txt
+k8s_platform_age_secret_name: argocd-age-key
+k8s_platform_metallb_crd: ipaddresspools.metallb.io
+k8s_platform_argocd_load_balancer_ip: 192.168.18.150
+
+k8s_platform_control_dir: "{{ playbook_dir | dirname | dirname | dirname }}"
+k8s_platform_env: "{{ ansible_inventory_sources | first | basename }}"
+k8s_platform_argocd_admin_secret: >-
+  {{ k8s_platform_control_dir }}/secrets/{{ k8s_platform_env }}/argocd-admin.sops
+k8s_platform_argocd_appproject_file: >-
+  {{ k8s_platform_control_dir }}/k8s/dev/infrastructure/appproject.yaml
+k8s_platform_argocd_root_application_file: >-
+  {{ k8s_platform_control_dir }}/k8s/dev/infrastructure/app-of-apps.yaml
+k8s_platform_argocd_root_application_name: dev-app-of-apps
+k8s_platform_argocd_wait_retries: 60
+k8s_platform_argocd_wait_delay: 10

@@ -1,0 +1,51 @@
+# Argo CD Helm values
+
+configs:
+  cm:
+    # KSOPS needs this.
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+
+server:
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 192.168.18.150
+    loadBalancerSourceRanges:
+      - 192.168.18.0/24
+  livenessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+
+repoServer:
+  livenessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 6
+  volumes:
+    - name: argocd-age-key
+      secret:
+        secretName: argocd-age-key
+    - name: custom-tools
+      emptyDir: {}
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.5.1
+      command:
+        ["/usr/local/bin/ksops", "install", "--with-kustomize", "/custom-tools"]
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+  volumeMounts:
+    - name: argocd-age-key
+      mountPath: /home/argocd/.config/sops/age
+      readOnly: true
+    - name: custom-tools
+      mountPath: /usr/local/bin/kustomize
+      subPath: kustomize
+    - name: custom-tools
+      mountPath: /usr/local/bin/ksops
+      subPath: ksops

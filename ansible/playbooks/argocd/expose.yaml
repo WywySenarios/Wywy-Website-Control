@@ -1,0 +1,11 @@
+---
+- name: Expose Argo CD (LAN)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Expose Argo CD (LAN)
+      ansible.builtin.include_role:
+        name: k8s_platform
+        tasks_from: argocd/expose

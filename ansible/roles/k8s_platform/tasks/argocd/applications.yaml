@@ -1,0 +1,69 @@
+---
+- name: Check for the Argo CD bootstrap manifests
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ k8s_platform_argocd_appproject_file }}"
+    - "{{ k8s_platform_argocd_root_application_file }}"
+  register: k8s_platform_argocd_bootstrap_files
+
+- name: Require the Argo CD bootstrap manifests
+  ansible.builtin.assert:
+    that:
+      - k8s_platform_argocd_bootstrap_files.results | selectattr('stat.exists') | list | length == 2
+    fail_msg: the Argo CD AppProject or root Application manifest is missing
+
+- name: Apply the Argo CD AppProject
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - apply
+      - -f
+      - "{{ k8s_platform_argocd_appproject_file }}"
+  register: k8s_platform_argocd_appproject
+  changed_when: >-
+    'created' in k8s_platform_argocd_appproject.stdout
+    or 'configured' in k8s_platform_argocd_appproject.stdout
+
+- name: Apply the Argo CD root Application
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - apply
+      - -f
+      - "{{ k8s_platform_argocd_root_application_file }}"
+  register: k8s_platform_argocd_root_application
+  changed_when: >-
+    'created' in k8s_platform_argocd_root_application.stdout
+    or 'configured' in k8s_platform_argocd_root_application.stdout
+
+- name: Wait for the Argo CD root Application
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - get
+      - application
+      - "{{ k8s_platform_argocd_root_application_name }}"
+      - -n
+      - "{{ k8s_platform_argocd_namespace }}"
+      - -o
+      - "jsonpath={.status.sync.status} {.status.health.status}"
+  register: k8s_platform_argocd_root_status
+  until: >-
+    'Synced' in k8s_platform_argocd_root_status.stdout
+    and 'Healthy' in k8s_platform_argocd_root_status.stdout
+  retries: "{{ k8s_platform_argocd_wait_retries }}"
+  delay: "{{ k8s_platform_argocd_wait_delay }}"
+  changed_when: false

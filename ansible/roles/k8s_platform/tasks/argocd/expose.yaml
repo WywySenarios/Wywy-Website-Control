@@ -1,0 +1,65 @@
+---
+- name: Check for MetalLB
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - get
+      - crd
+      - "{{ k8s_platform_metallb_crd }}"
+  changed_when: false
+  register: k8s_platform_argocd_metallb
+
+- name: Require MetalLB before exposing Argo CD
+  ansible.builtin.assert:
+    that:
+      - k8s_platform_argocd_metallb.rc == 0
+    fail_msg: MetalLB is not installed; sync dev-metallb before exposing Argo CD
+
+- name: Expose the Argo CD server
+  vars:
+    k8s_platform_argocd_service_patch:
+      spec:
+        type: LoadBalancer
+        loadBalancerIP: "{{ k8s_platform_argocd_load_balancer_ip }}"
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - -n
+      - "{{ k8s_platform_argocd_namespace }}"
+      - patch
+      - svc
+      - "{{ k8s_platform_argocd_release }}-server"
+      - --type=merge
+      - -p
+      - "{{ k8s_platform_argocd_service_patch | to_json }}"
+  register: k8s_platform_argocd_expose
+  changed_when: "'patched' in k8s_platform_argocd_expose.stdout"
+
+- name: Wait for the Argo CD LoadBalancer address
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_platform_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_platform_kubeconfig }}"
+      - --server
+      - "{{ k8s_platform_api_server }}"
+      - -n
+      - "{{ k8s_platform_argocd_namespace }}"
+      - get
+      - svc
+      - "{{ k8s_platform_argocd_release }}-server"
+      - -o
+      - "jsonpath={.status.loadBalancer.ingress[0].ip}"
+  register: k8s_platform_argocd_load_balancer
+  until: k8s_platform_argocd_load_balancer.stdout == k8s_platform_argocd_load_balancer_ip
+  retries: 60
+  delay: 5
+  changed_when: false

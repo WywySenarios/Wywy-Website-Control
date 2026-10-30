@@ -1,0 +1,11 @@
+---
+- name: Issue the Argo CD TLS certificate
+  import_playbook: tls.yaml
+
+- name: Install Argo CD
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  roles:
+    - k8s_platform
