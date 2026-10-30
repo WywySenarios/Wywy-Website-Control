@@ -1,9 +1,6 @@
 ---
 ansible_host: >-
-  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops ' ~ inventory_hostname) }}
-wywy_worker_ips: >-
-  {{ (lookup('pipe', "sops -d --output-type binary " ~ control_dir ~ "/secrets/" ~ wywy_env ~ "/k8s-workers-hosts.sops | grep -oE ^[0-9.]+")).split() }}
+  {{ lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
+wywy_worker_ips: "{{ hostvars[groups['k8s_workers'][0]].wywy_worker_ips }}"
 wywy_operator_ip: >-
-  {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-  control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops operator.internal') }}
+  {{ lookup('wywy_hosts', 'hosts.sops', 'operator.internal') }}

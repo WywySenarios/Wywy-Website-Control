@@ -13,8 +13,7 @@
     registry_endpoint_check: false
 
     registry_ip: >-
-      {{ lookup('pipe', control_dir ~ '/scripts/lib/hosts-lookup.sh ' ~
-      control_dir ~ '/secrets/' ~ wywy_env ~ '/hosts.sops registry.internal') | trim }}
+      {{ lookup('wywy_hosts', 'hosts.sops', 'registry.internal') }}
 
   tasks:
     - name: Validate the registry endpoint
