@@ -6,8 +6,11 @@
 | `control-plane/proxmox-vm.yaml`       | Clone the control-plane VMs.                                              |
 | `control-plane/bootstrap.yaml`        | Install Kubernetes and bootstrap the control-plane nodes.                 |
 | `cni.yaml`                            | Install Calico CNI.                                                       |
+| `coredns.yaml`                        | Render the `*.internal` names into the CoreDNS hosts block.               |
 | `storage.yaml`                        | Install local-path after the workers exist.                               |
-| `workers/workers.yaml`                | Temporary: wire registry DNS and CA trust on existing workers.            |
+| `workers/proxmox-template.yaml`       | Build the worker VM template on each `k8s_workers_pve` host.              |
+| `workers/proxmox-vm.yaml`             | Clone the worker VMs.                                                     |
+| `workers/workers.yaml`                | Install Kubernetes and join the worker nodes.                             |
 | `registry-endpoint.yaml`              | Refresh the registry-endpoint ConfigMap from `hosts.sops`.                |
 
 The `proxmox_vm` role removes the stale SSH host key when it clones a VM, so
