@@ -29,6 +29,10 @@
         hostname: vaultwarden-dev.ericzhu.me
         namespace: vaultwarden
         service: http://vaultwarden.vaultwarden.svc.cluster.local:80
+      - name: jenkins
+        hostname: jenkins.ericzhu.me
+        namespace: jenkins
+        service: http://jenkins.jenkins.svc.cluster.local:8080
 
   tasks:
     - name: Require the dev inventory

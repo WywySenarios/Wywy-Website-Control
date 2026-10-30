@@ -20,6 +20,7 @@ resources:
   - app-cloudflared-nextcloud.yaml
   - app-cloudflared-observability.yaml
   - app-cloudflared-vaultwarden.yaml
+  - app-cloudflared-jenkins.yaml
   - app-csi-driver-nfs.yaml
   - app-jenkins.yaml
   - app-jellyfin.yaml

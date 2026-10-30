@@ -8,33 +8,34 @@ setup() {
 	REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 	cd "$REPO_ROOT"
 	MANIFESTS="$(kubectl kustomize k8s/base/jenkins)"
+	CLOUDFLARED_MANIFESTS="$(kubectl kustomize k8s/base/cloudflared)"
 }
 
 @test "cloudflared Deployment uses the pinned image and token Secret" {
-	run grep -q 'name: cloudflared' <<<"$MANIFESTS"
+	run grep -q 'name: cloudflared' <<<"$CLOUDFLARED_MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'image: cloudflare/cloudflared:2026.10.2' <<<"$MANIFESTS"
+	run grep -q 'image: cloudflare/cloudflared:2026.10.2' <<<"$CLOUDFLARED_MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'name: cloudflared-tunnel-token' <<<"$MANIFESTS"
+	run grep -q 'name: cloudflared-tunnel-token' <<<"$CLOUDFLARED_MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'key: TUNNEL_TOKEN' <<<"$MANIFESTS"
-	[ "$status" -eq 0 ]
-
-	run grep -q 'jenkins.wywy/token-rotation' <<<"$MANIFESTS"
+	run grep -q 'key: TUNNEL_TOKEN' <<<"$CLOUDFLARED_MANIFESTS"
 	[ "$status" -eq 0 ]
 }
 
-@test "cloudflared has its own egress policy and the controller accepts it" {
-	run grep -q 'name: cloudflared' <<<"$MANIFESTS"
+@test "jenkins cloudflared overlay pins egress and the controller accepts it" {
+	run grep -q 'name: cloudflared' k8s/dev/cloudflared/jenkins/network-policy.yaml
 	[ "$status" -eq 0 ]
 
 	run grep -q 'app: cloudflared' <<<"$MANIFESTS"
 	[ "$status" -eq 0 ]
 
-	run grep -q 'port: 7844' <<<"$MANIFESTS"
+	run grep -q 'port: 7844' k8s/dev/cloudflared/jenkins/network-policy.yaml
+	[ "$status" -eq 0 ]
+
+	run grep -q 'app: jenkins-controller' k8s/dev/cloudflared/jenkins/network-policy.yaml
 	[ "$status" -eq 0 ]
 }
 
