@@ -1,0 +1,7 @@
+---
+- name: Install Calico
+  ansible.builtin.import_tasks: calico.yaml
+
+- name: Install local-path
+  ansible.builtin.import_tasks: local-path.yaml
+  when: k8s_network_install_local_path | bool

@@ -1,0 +1,11 @@
+---
+- name: Install the default StorageClass
+  hosts: k8s_control_plane
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install local-path
+      ansible.builtin.include_role:
+        name: k8s_network
+        tasks_from: local-path
+      when: inventory_hostname == k8s_control_plane_init_host

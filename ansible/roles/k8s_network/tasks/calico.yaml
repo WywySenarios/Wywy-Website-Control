@@ -1,0 +1,156 @@
+---
+- name: Assert the Calico variables are present
+  ansible.builtin.assert:
+    that:
+      - k8s_pod_cidr is defined
+      - calico_version is defined
+      - k8s_network_kubeconfig is defined
+    fail_msg: the Calico variables are incomplete
+
+- name: Create the kustomize work directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: wywy-k8s-calico
+  register: k8s_network_workdir
+
+- name: Install Calico
+  block:
+    - name: Download the pinned Calico manifest
+      ansible.builtin.get_url:
+        url: "{{ k8s_network_calico_manifest_url }}"
+        dest: "{{ k8s_network_workdir.path }}/calico.yaml"
+        mode: "0600"
+
+    - name: Render the Calico strategic-merge patch
+      ansible.builtin.template:
+        src: calico-node-patch.yaml.j2
+        dest: "{{ k8s_network_workdir.path }}/calico-node-patch.yaml"
+        mode: "0600"
+
+    - name: Write the kustomization
+      ansible.builtin.copy:
+        content: |
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          resources:
+            - calico.yaml
+          patches:
+            - path: calico-node-patch.yaml
+        dest: "{{ k8s_network_workdir.path }}/kustomization.yaml"
+        mode: "0600"
+
+    - name: Apply Calico
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - apply
+          - -k
+          - "{{ k8s_network_workdir.path }}"
+      register: k8s_network_calico_apply
+      changed_when: >-
+        'created' in k8s_network_calico_apply.stdout
+        or 'configured' in k8s_network_calico_apply.stdout
+
+    - name: Wait for the Calico DaemonSet
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - rollout
+          - status
+          - "daemonset/{{ k8s_network_calico_daemonset }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - --timeout=300s
+      changed_when: false
+
+    - name: Wait for the Calico controllers
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - rollout
+          - status
+          - "deployment/{{ k8s_network_calico_controllers }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - --timeout=300s
+      changed_when: false
+
+    - name: Read the install-cni runAsUser
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - get
+          - "daemonset/{{ k8s_network_calico_daemonset }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - -o
+          - 'jsonpath={.spec.template.spec.initContainers[?(@.name=="install-cni")].securityContext.runAsUser}'
+      register: k8s_network_calico_run_as_user
+      changed_when: false
+
+    - name: Read the install-cni privileged flag
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - get
+          - "daemonset/{{ k8s_network_calico_daemonset }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - -o
+          - 'jsonpath={.spec.template.spec.initContainers[?(@.name=="install-cni")].securityContext.privileged}'
+      register: k8s_network_calico_privileged
+      changed_when: false
+
+    - name: Read the CNI bin directory
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - get
+          - "daemonset/{{ k8s_network_calico_daemonset }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - -o
+          - 'jsonpath={.spec.template.spec.volumes[?(@.name=="cni-bin-dir")].hostPath.path}'
+      register: k8s_network_calico_cni_path
+      changed_when: false
+
+    - name: Read the Calico pod CIDR
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - get
+          - "daemonset/{{ k8s_network_calico_daemonset }}"
+          - -n
+          - "{{ k8s_network_calico_namespace }}"
+          - -o
+          - 'jsonpath={.spec.template.spec.containers[?(@.name=="calico-node")].env[?(@.name=="CALICO_IPV4POOL_CIDR")].value}'
+      register: k8s_network_calico_pool_cidr
+      changed_when: false
+
+    - name: Assert the Calico DaemonSet patch
+      ansible.builtin.assert:
+        that:
+          - k8s_network_calico_run_as_user.stdout == '0'
+          - k8s_network_calico_privileged.stdout == 'true'
+          - k8s_network_calico_cni_path.stdout == '/usr/lib/cni'
+          - k8s_network_calico_pool_cidr.stdout == k8s_pod_cidr
+        fail_msg: the Calico DaemonSet patch is incomplete
+  always:
+    - name: Remove the kustomize work directory
+      ansible.builtin.file:
+        path: "{{ k8s_network_workdir.path }}"
+        state: absent

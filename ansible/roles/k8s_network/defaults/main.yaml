@@ -1,0 +1,17 @@
+---
+k8s_network_kubectl: kubectl
+k8s_network_kubeconfig: /etc/kubernetes/admin.conf
+
+k8s_network_calico_manifest_url: >-
+  https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}/manifests/calico.yaml
+k8s_network_calico_namespace: kube-system
+k8s_network_calico_daemonset: calico-node
+k8s_network_calico_controllers: calico-kube-controllers
+
+k8s_network_local_path_manifest_url: >-
+  https://raw.githubusercontent.com/rancher/local-path-provisioner/{{ local_path_version }}/deploy/local-path-storage.yaml
+k8s_network_local_path_namespace: local-path-storage
+k8s_network_local_path_deployment: local-path-provisioner
+k8s_network_local_path_storage_class: local-path
+
+k8s_network_install_local_path: true

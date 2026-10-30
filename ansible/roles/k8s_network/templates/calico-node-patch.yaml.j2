@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: calico-node
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: install-cni
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: calico-node
+          env:
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ k8s_pod_cidr }}"
+      volumes:
+        - name: cni-bin-dir
+          hostPath:
+            path: /usr/lib/cni

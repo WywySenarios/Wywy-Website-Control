@@ -1,0 +1,63 @@
+---
+- name: Assert the local-path variables are present
+  ansible.builtin.assert:
+    that:
+      - local_path_version is defined
+      - k8s_network_kubeconfig is defined
+    fail_msg: the local-path variables are incomplete
+
+- name: Apply the pinned local-path manifest
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_network_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_network_kubeconfig }}"
+      - apply
+      - -f
+      - "{{ k8s_network_local_path_manifest_url }}"
+  register: k8s_network_local_path_apply
+  changed_when: >-
+    'created' in k8s_network_local_path_apply.stdout
+    or 'configured' in k8s_network_local_path_apply.stdout
+
+- name: Wait for the local-path provisioner
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_network_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_network_kubeconfig }}"
+      - rollout
+      - status
+      - "deployment/{{ k8s_network_local_path_deployment }}"
+      - -n
+      - "{{ k8s_network_local_path_namespace }}"
+      - --timeout=300s
+  changed_when: false
+
+- name: Read the local-path default annotation
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_network_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_network_kubeconfig }}"
+      - get
+      - storageclass
+      - "{{ k8s_network_local_path_storage_class }}"
+      - -o
+      - 'jsonpath={.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}'
+  register: k8s_network_local_path_default
+  changed_when: false
+
+- name: Annotate local-path as the default StorageClass
+  ansible.builtin.command:
+    argv:
+      - "{{ k8s_network_kubectl }}"
+      - --kubeconfig
+      - "{{ k8s_network_kubeconfig }}"
+      - annotate
+      - storageclass
+      - "{{ k8s_network_local_path_storage_class }}"
+      - storageclass.kubernetes.io/is-default-class=true
+      - --overwrite
+  when: k8s_network_local_path_default.stdout != 'true'
+  changed_when: true
