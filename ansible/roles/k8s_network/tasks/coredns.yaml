@@ -1,0 +1,66 @@
+---
+- name: Assert the CoreDNS variables are present
+  ansible.builtin.assert:
+    that:
+      - k8s_network_kubeconfig is defined
+      - control_dir is defined
+      - wywy_env is defined
+    fail_msg: the CoreDNS variables are incomplete
+
+- name: Fail closed when the hosts file is empty
+  ansible.builtin.assert:
+    that:
+      - (query('wywy_hosts', k8s_network_coredns_hosts_file, whole=true) | first) | trim | length > 0
+    fail_msg: >-
+      {{ k8s_network_coredns_hosts_file }} is empty — refusing to render an
+      empty CoreDNS hosts block.
+    quiet: true
+
+- name: Build the host entries from the encrypted hosts file
+  ansible.builtin.set_fact:
+    k8s_network_coredns_hosts_lines: >-
+      {{ (query('wywy_hosts', k8s_network_coredns_hosts_file, whole=true) | first).splitlines()
+         | map('trim')
+         | reject('match', '^#')
+         | map('regex_replace', '#.*$', '')
+         | map('trim')
+         | reject('equalto', '')
+         | list }}
+
+- name: Create the work directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: wywy-k8s-coredns-
+    suffix: ""
+  register: k8s_network_coredns_workdir
+
+- name: Apply the repository CoreDNS configuration
+  block:
+    - name: Render the CoreDNS ConfigMap
+      ansible.builtin.template:
+        src: coredns-configmap.yaml.j2
+        dest: "{{ k8s_network_coredns_workdir.path }}/coredns.yaml"
+        mode: "0600"
+
+    - name: Apply the CoreDNS ConfigMap
+      ansible.builtin.command:
+        argv:
+          - "{{ k8s_network_kubectl }}"
+          - --kubeconfig
+          - "{{ k8s_network_kubeconfig }}"
+          - apply
+          - -f
+          - "{{ k8s_network_coredns_workdir.path }}/coredns.yaml"
+      register: k8s_network_coredns_apply
+      changed_when: >-
+        'created' in k8s_network_coredns_apply.stdout
+        or 'configured' in k8s_network_coredns_apply.stdout
+      notify:
+        - Restart CoreDNS
+        - Wait for CoreDNS to parse the configuration
+
+  always:
+    - name: Remove the work directory
+      ansible.builtin.file:
+        path: "{{ k8s_network_coredns_workdir.path }}"
+        state: absent

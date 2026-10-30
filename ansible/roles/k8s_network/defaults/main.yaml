@@ -15,3 +15,8 @@ k8s_network_local_path_deployment: local-path-provisioner
 k8s_network_local_path_storage_class: local-path
 
 k8s_network_install_local_path: true
+
+k8s_network_coredns_namespace: kube-system
+k8s_network_coredns_configmap: coredns
+k8s_network_coredns_deployment: coredns
+k8s_network_coredns_hosts_file: hosts.sops
