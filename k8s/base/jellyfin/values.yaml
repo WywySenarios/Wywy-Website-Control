@@ -6,5 +6,7 @@ service:
   type: ClusterIP
 
 persistence:
+  config:
+    storageClass: nfs-jellyfin-config
   media:
     storageClass: nfs-jellyfin

@@ -24,6 +24,15 @@ storageClasses:
     volumeBindingMode: Immediate
     mountOptions:
       - nfsvers=4.1
+  - name: nfs-jellyfin-config
+    parameters:
+      server: files.internal
+      share: /srv/nfs/jellyfin
+      subDir: config
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+      - nfsvers=4.1
   - name: nfs-vaultwarden
     parameters:
       server: files.internal
@@ -36,7 +45,3 @@ storageClasses:
     parameters:
       server: files.internal
       share: /srv/nfs/nextcloud
-    reclaimPolicy: Retain
-    volumeBindingMode: Immediate
-    mountOptions:
-      - nfsvers=4.1
