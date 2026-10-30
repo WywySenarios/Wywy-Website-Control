@@ -1,0 +1,16 @@
+---
+- name: Create the Kubernetes worker VMs from their templates
+  hosts: k8s_workers_pve
+  become: false
+  gather_facts: false
+  roles:
+    - proxmox_vm
+
+- name: Wait for the worker VMs to accept SSH
+  hosts: k8s_workers
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH on the clone
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 300

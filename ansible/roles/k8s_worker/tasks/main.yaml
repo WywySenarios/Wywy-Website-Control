@@ -1,0 +1,100 @@
+---
+- name: Check for the kubelet kubeconfig
+  ansible.builtin.stat:
+    path: "{{ k8s_worker_kubelet_conf }}"
+  register: k8s_worker_kubelet_conf_stat
+
+- name: Create a fresh worker join command
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - token
+      - create
+      - --print-join-command
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_worker_join_command
+  changed_when: true
+  no_log: true
+  when: not k8s_worker_kubelet_conf_stat.stat.exists
+
+- name: Join the worker
+  ansible.builtin.command: >-
+    {{ k8s_worker_join_command.stdout | trim }}
+    --cri-socket {{ k8s_worker_cri_socket }}
+  when: not k8s_worker_kubelet_conf_stat.stat.exists
+  changed_when: true
+  no_log: true
+  async: 600
+  poll: 5
+
+- name: Clear the worker join command
+  ansible.builtin.set_fact:
+    k8s_worker_join_command: {}
+  no_log: true
+  when: not k8s_worker_kubelet_conf_stat.stat.exists
+
+- name: Read the cluster node addresses
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - "{{ k8s_worker_kubeconfig }}"
+      - get
+      - nodes
+      - -o
+      - 'jsonpath={range .items[*]}{.metadata.name}{" "}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_worker_nodes
+  until: k8s_vm_addresses[inventory_hostname] in k8s_worker_nodes.stdout
+  retries: 30
+  delay: 5
+  changed_when: false
+
+- name: Derive this node's name
+  ansible.builtin.set_fact:
+    k8s_worker_node_name: >-
+      {{ (k8s_worker_nodes.stdout_lines
+          | select('search', k8s_vm_addresses[inventory_hostname])
+          | map('regex_replace', ' +.*$', '') | first) }}
+
+- name: Label the worker node
+  ansible.builtin.command: >-
+    kubectl --kubeconfig {{ k8s_worker_kubeconfig }}
+    label node --overwrite {{ k8s_worker_node_name }}
+    {{ k8s_node_labels | join(' ') }}
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_worker_label
+  changed_when: "'not labeled' not in k8s_worker_label.stdout"
+
+- name: Read the control-plane taint
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - --kubeconfig
+      - "{{ k8s_worker_kubeconfig }}"
+      - get
+      - node
+      - "{{ k8s_worker_node_name }}"
+      - -o
+      - 'jsonpath={.spec.taints[?(@.key=="node-role.kubernetes.io/control-plane")].effect}'
+  delegate_to: "{{ k8s_control_plane_init_host }}"
+  vars:
+    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+  become: true
+  register: k8s_worker_taint
+  changed_when: false
+
+- name: Assert the worker has no control-plane taint
+  ansible.builtin.assert:
+    that:
+      - k8s_worker_taint.stdout == ""
+    fail_msg: the worker still has a control-plane taint
