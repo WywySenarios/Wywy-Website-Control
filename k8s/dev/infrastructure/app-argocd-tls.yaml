@@ -9,7 +9,7 @@ spec:
   project: wywy-dev
   source:
     repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-    targetRevision: main
+    targetRevision: dev
     path: k8s/dev/argocd/tls
   destination:
     # The argocd namespace and the argocd-server Service come from argocd.sh, so this Application must not fight over them.

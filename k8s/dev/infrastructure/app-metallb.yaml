@@ -20,7 +20,7 @@ spec:
           crds:
             enabled: true
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       path: k8s/dev/metallb
   destination:
     server: https://kubernetes.default.svc
