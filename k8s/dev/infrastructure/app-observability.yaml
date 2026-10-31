@@ -17,10 +17,10 @@ spec:
           - $values/k8s/base/observability/values.yaml
           - $values/k8s/dev/observability/values.yaml
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       path: k8s/dev/observability/secrets
   destination:
     server: https://kubernetes.default.svc

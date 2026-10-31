@@ -16,7 +16,7 @@ spec:
         valueFiles:
           - $values/k8s/dev/csi-driver-nfs/values.yaml
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
   destination:
     server: https://kubernetes.default.svc

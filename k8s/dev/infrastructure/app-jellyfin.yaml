@@ -17,7 +17,7 @@ spec:
           - $values/k8s/base/jellyfin/values.yaml
           - $values/k8s/dev/jellyfin/values.yaml
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
   destination:
     server: https://kubernetes.default.svc

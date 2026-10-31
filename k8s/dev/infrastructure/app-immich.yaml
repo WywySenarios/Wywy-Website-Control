@@ -18,10 +18,10 @@ spec:
           - $values/k8s/base/immich/values.yaml
           - $values/k8s/dev/immich/values.yaml
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-      targetRevision: main
+      targetRevision: dev
       path: k8s/dev/immich/pvcs
   destination:
     server: https://kubernetes.default.svc

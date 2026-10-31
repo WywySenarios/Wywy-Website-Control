@@ -9,7 +9,7 @@ spec:
   project: wywy-dev
   source:
     repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-    targetRevision: main
+    targetRevision: dev
     path: k8s/dev/cloudflared/nextcloud
   destination:
     server: https://kubernetes.default.svc
