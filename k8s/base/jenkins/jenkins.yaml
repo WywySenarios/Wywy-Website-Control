@@ -304,7 +304,7 @@ jobs:
             scanCredentialsId('github-pat')
             repoOwner('WywySenarios')
             repository('Wywy-Website-Control')
-            includes('dev PR-*')
+            includes('dev main PR-*')
             buildOriginBranch(true)
             buildOriginBranchWithPR(true)
             buildOriginPRMerge(true)
