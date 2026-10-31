@@ -1,0 +1,15 @@
+---
+extends: default
+
+rules:
+  # The repo does not use a leading `---` in every document.
+  document-start: disable
+  # SOPS ciphertext and long image references legitimately exceed 80 columns.
+  line-length: disable
+  truthy:
+    allowed-values: ["true", "false"]
+
+ignore: |
+  k8s/**/*.sops.yaml
+  k8s/**/*.sops
+  k8s/**/values.yaml

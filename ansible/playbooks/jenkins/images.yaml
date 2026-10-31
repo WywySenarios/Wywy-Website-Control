@@ -18,6 +18,13 @@
     betterleaks_sha256: "f8b185a39ffcece2a1ca82bf3a4e7435cd81963ffd16b7a9128daf75f35f6de7"
     kind_version: "v0.33.0"
     kubectl_version: "v1.37.1"
+    kustomize_version: "5.8.3"
+    kustomize_sha256: "cb9e31198d3f63b44848bd0afc4c8efc56e6cfef9c93a4a39a211940e6decd61"
+    kubeconform_version: "0.8.0"
+    kubeconform_sha256: "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883"
+    kube_linter_version: "0.8.3"
+    kube_linter_sha256: "1a6d8419b11971372971fdbc22682b684ebfb7cf1c39591662d1b6ca736c41df"
+    yamllint_version: "1.38.0"
 
     registry: "registry.internal:5000"
     registry_user: admin
@@ -26,6 +33,7 @@
     agent_image: "{{ registry }}/jenkins-agent:{{ agent_version }}"
     betterleaks_image: "{{ registry }}/jenkins-agent-betterleaks:{{ agent_version }}"
     kind_image: "{{ registry }}/jenkins-agent-kind:{{ agent_version }}"
+    manifests_image: "{{ registry }}/jenkins-agent-manifests:{{ agent_version }}"
 
   tasks:
     - name: Build the Jenkins controller image
@@ -90,6 +98,32 @@
           - "{{ control_dir }}/docker/jenkins-agent-kind"
       changed_when: true
 
+    - name: Build the Jenkins manifests agent image
+      ansible.builtin.command:
+        argv:
+          - docker
+          - build
+          - --build-arg
+          - "AGENT_VERSION={{ agent_version }}"
+          - --build-arg
+          - "KUSTOMIZE_VERSION={{ kustomize_version }}"
+          - --build-arg
+          - "KUSTOMIZE_SHA256={{ kustomize_sha256 }}"
+          - --build-arg
+          - "KUBECONFORM_VERSION={{ kubeconform_version }}"
+          - --build-arg
+          - "KUBECONFORM_SHA256={{ kubeconform_sha256 }}"
+          - --build-arg
+          - "KUBE_LINTER_VERSION={{ kube_linter_version }}"
+          - --build-arg
+          - "KUBE_LINTER_SHA256={{ kube_linter_sha256 }}"
+          - --build-arg
+          - "YAMLLINT_VERSION={{ yamllint_version }}"
+          - -t
+          - "{{ manifests_image }}"
+          - "{{ control_dir }}/docker/jenkins-agent-manifests"
+      changed_when: true
+
     - name: Push the Jenkins images
       block:
         - name: Create a temporary Docker config on tmpfs
@@ -133,6 +167,7 @@
             - "{{ agent_image }}"
             - "{{ betterleaks_image }}"
             - "{{ kind_image }}"
+            - "{{ manifests_image }}"
           environment:
             DOCKER_CONFIG: "{{ docker_config_dir.stdout | trim }}"
           changed_when: true

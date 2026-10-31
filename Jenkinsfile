@@ -26,6 +26,18 @@ pipeline {
         }
       }
     }
+
+    stage('k8s-manifests') {
+      agent { label 'manifests' }
+      steps {
+        withChecks('k8s-manifests') {
+          sh 'scripts/tests/k8s-yaml.sh'
+          sh 'scripts/tests/k8s-schema.sh'
+          sh 'scripts/tests/k8s-sops.sh'
+          sh 'scripts/tests/k8s-policy.sh'
+        }
+      }
+    }
   }
 
   post {

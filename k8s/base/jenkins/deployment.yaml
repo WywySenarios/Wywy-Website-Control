@@ -4,6 +4,8 @@ metadata:
   name: jenkins
   labels:
     app: jenkins-controller
+  annotations:
+    ignore-check.kube-linter.io/no-read-only-root-fs: "Jenkins writes to its home PVC and plugin paths."
 spec:
   replicas: 1
   strategy:
