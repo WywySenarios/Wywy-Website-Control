@@ -6,12 +6,6 @@ kube_vip_version: "v1.3.1"
 helm_version: "v3.21.3"
 calico_version: "v3.29.2"
 local_path_version: "v0.0.36"
-kube_prometheus_stack_version: "92.8.0"
-jellyfin_chart_version: "3.2.0"
-csi_driver_nfs_chart_version: "4.13.5"
-ksops_image_version: "v4.5.1"
-metallb_version: "0.16.1"
-immich_chart_version: "0.13.4"
 
 wywy_k8s_api_ip: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}
