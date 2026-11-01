@@ -11,23 +11,6 @@
       failed_when: false
       register: k8s_platform_kubectl_version
 
-    - name: Check the Helm client
-      ansible.builtin.command:
-        argv:
-          - "{{ k8s_platform_helm }}"
-          - version
-          - --short
-      changed_when: false
-      failed_when: false
-      register: k8s_platform_helm_version
-
-    - name: Require kubectl and Helm
-      ansible.builtin.assert:
-        that:
-          - k8s_platform_kubectl_version.rc == 0
-          - k8s_platform_helm_version.rc == 0
-        fail_msg: kubectl and helm must be installed on the operator
-
     - name: Check the operator kubeconfig
       ansible.builtin.stat:
         path: "{{ k8s_platform_kubeconfig }}"
