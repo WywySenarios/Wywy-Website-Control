@@ -37,11 +37,19 @@ Identify the USB device and confirm it is the whole disk, not a partition:
 lsblk -o NAME,SIZE,MODEL,TRAN
 ```
 
-Then write the ISO to the whole device (replace `/dev/sdX` with the actual value):
+Then write the ISO to the whole device (replace `/dev/sdX` with the actual value).
+
+```bash
+cp build/proxmox/dev/iso/<node>.iso
+sync
+```
+
+[Further explaination can be found at Debian documentation/tutorials.](https://www.debian.org/releases/stable/amd64/ch04s03.en.html)
+
+A more legacy way of flashing it is:
 
 ```bash
 sudo dd if=build/proxmox/dev/iso/<node>.iso of=/dev/sdX bs=4M status=progress oflag=sync
-sync
 ```
 
 After this, things should be smooth sailing with Ansible!
