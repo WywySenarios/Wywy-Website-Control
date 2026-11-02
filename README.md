@@ -41,8 +41,6 @@ Some secrets are sops-encrypted under `secrets/<env>/` (currently `secrets/dev/`
 
 Ansible configuration lives in `ansible/inventory/<env>/group_vars/` as plain `*.yaml` and encrypted `*.sops.yaml` files.
 
-`config/.env.network` is deprecated.
-
 ## Status
 
 Unstable. Production with PVE & Kubernetes is not online.
