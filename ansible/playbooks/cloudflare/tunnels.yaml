@@ -30,7 +30,7 @@
         namespace: vaultwarden
         service: http://vaultwarden.vaultwarden.svc.cluster.local:80
       - name: jenkins
-        hostname: jenkins.ericzhu.me
+        hostname: jenkins-dev.ericzhu.me
         namespace: jenkins
         service: http://jenkins.jenkins.svc.cluster.local:8080
 

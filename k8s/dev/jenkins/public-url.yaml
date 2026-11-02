@@ -4,4 +4,4 @@ metadata:
   name: jenkins-public-url
   namespace: jenkins
 data:
-  public_url: "https://jenkins.ericzhu.me/"
+  public_url: "https://jenkins-dev.ericzhu.me/"
