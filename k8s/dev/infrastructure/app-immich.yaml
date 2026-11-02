@@ -23,6 +23,9 @@ spec:
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
       targetRevision: dev
       path: k8s/dev/immich/pvcs
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: dev
+      path: k8s/dev/cloudflared/immich
   destination:
     server: https://kubernetes.default.svc
     namespace: immich

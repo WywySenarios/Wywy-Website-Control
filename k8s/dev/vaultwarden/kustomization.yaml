@@ -6,3 +6,4 @@ namespace: vaultwarden
 resources:
   - ../../base/vaultwarden
   - secrets
+  - ../cloudflared/vaultwarden

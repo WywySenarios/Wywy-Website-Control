@@ -19,6 +19,9 @@ spec:
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
       targetRevision: dev
       ref: values
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: dev
+      path: k8s/dev/cloudflared/jellyfin
   destination:
     server: https://kubernetes.default.svc
     namespace: jellyfin

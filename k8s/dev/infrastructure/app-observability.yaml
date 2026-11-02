@@ -22,6 +22,9 @@ spec:
     - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
       targetRevision: dev
       path: k8s/dev/observability/secrets
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: dev
+      path: k8s/dev/cloudflared/observability
   destination:
     server: https://kubernetes.default.svc
     namespace: observability

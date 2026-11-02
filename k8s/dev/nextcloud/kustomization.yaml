@@ -6,3 +6,4 @@ namespace: nextcloud
 resources:
   - ../../base/nextcloud
   - secrets
+  - ../cloudflared/nextcloud
