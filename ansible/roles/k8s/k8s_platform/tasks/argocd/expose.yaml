@@ -17,7 +17,10 @@
   ansible.builtin.assert:
     that:
       - k8s_platform_argocd_metallb.rc == 0
-    fail_msg: MetalLB is not installed; sync dev-metallb before exposing Argo CD
+    fail_msg: >-
+      MetalLB is not installed; sync {{ k8s_platform_env }}-metallb before
+      exposing Argo CD.
+    quiet: true
 
 - name: Expose the Argo CD server
   vars:
@@ -25,6 +28,7 @@
       spec:
         type: LoadBalancer
         loadBalancerIP: "{{ k8s_platform_argocd_load_balancer_ip }}"
+        loadBalancerSourceRanges: "{{ k8s_platform_argocd_load_balancer_source_ranges }}"
   ansible.builtin.command:
     argv:
       - "{{ k8s_platform_kubectl }}"

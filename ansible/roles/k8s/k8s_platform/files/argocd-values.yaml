@@ -6,11 +6,6 @@ configs:
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
 server:
-  service:
-    type: LoadBalancer
-    loadBalancerIP: 192.168.18.150
-    loadBalancerSourceRanges:
-      - 192.168.18.0/24
   livenessProbe:
     timeoutSeconds: 10
     failureThreshold: 6

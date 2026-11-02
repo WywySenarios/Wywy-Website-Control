@@ -8,7 +8,7 @@
   vars:
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
     argocd_tls_cn: argocd.internal
-    argocd_tls_ip: 192.168.18.150
+    argocd_tls_ip: "{{ argocd_load_balancer_ip }}"
     argocd_tls_days: 825
     # Re-issue the certificate when fewer than 30 days remain.
     argocd_tls_renew_seconds: 2592000
@@ -20,14 +20,6 @@
         - name: Determine the target environment from the selected inventory
           ansible.builtin.set_fact:
             argocd_env: "{{ ansible_inventory_sources | first | basename }}"
-
-        - name: Validate the target environment
-          ansible.builtin.assert:
-            that:
-              - argocd_env in ['dev', 'prod']
-            fail_msg: >-
-              argocd_env must be 'dev' or 'prod' (got '{{ argocd_env }}').
-            quiet: true
 
         - name: Derive the encrypted secret path
           ansible.builtin.set_fact:

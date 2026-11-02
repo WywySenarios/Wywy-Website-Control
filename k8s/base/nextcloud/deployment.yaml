@@ -53,15 +53,24 @@ spec:
                   name: nextcloud-admin-password
                   key: password
             - name: NEXTCLOUD_TRUSTED_DOMAINS
-              value: nextcloud-dev.ericzhu.me
+              valueFrom:
+                configMapKeyRef:
+                  name: nextcloud-public-url
+                  key: host
             - name: NEXTCLOUD_INIT_HTACCESS
               value: "true"
             - name: OVERWRITEHOST
-              value: nextcloud-dev.ericzhu.me
+              valueFrom:
+                configMapKeyRef:
+                  name: nextcloud-public-url
+                  key: host
             - name: OVERWRITEPROTOCOL
               value: https
             - name: OVERWRITECLIURL
-              value: https://nextcloud-dev.ericzhu.me
+              valueFrom:
+                configMapKeyRef:
+                  name: nextcloud-public-url
+                  key: url
             - name: TRUSTED_PROXIES
               value: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
             # Apache runs as the pod uid/gid, not www-data (33), because the

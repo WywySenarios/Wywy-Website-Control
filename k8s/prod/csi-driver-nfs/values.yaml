@@ -3,7 +3,6 @@ storageClasses:
     parameters:
       server: files.internal
       share: /srv/nfs/jenkins
-      subDir: prod
     reclaimPolicy: Retain
     volumeBindingMode: Immediate
     mountOptions:

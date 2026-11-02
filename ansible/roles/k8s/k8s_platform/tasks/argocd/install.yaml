@@ -147,6 +147,8 @@
         --version {{ k8s_platform_argocd_chart_version }}
         --values {{ k8s_platform_argocd_values }}
         --set server.service.type={{ k8s_platform_argocd_service_type }}
+        --set server.service.loadBalancerIP={{ k8s_platform_argocd_load_balancer_ip }}
+        --set-json 'server.service.loadBalancerSourceRanges={{ k8s_platform_argocd_load_balancer_source_ranges | to_json }}'
         --atomic --wait --timeout {{ k8s_platform_helm_timeout }}
       register: k8s_platform_argocd_install
       changed_when: "'STATUS: deployed' in k8s_platform_argocd_install.stdout"

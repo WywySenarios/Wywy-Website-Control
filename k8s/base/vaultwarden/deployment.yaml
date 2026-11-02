@@ -47,7 +47,10 @@ spec:
                   name: vaultwarden-admin-token
                   key: admin-token
             - name: DOMAIN
-              value: "https://vaultwarden-dev.ericzhu.me"
+              valueFrom:
+                configMapKeyRef:
+                  name: vaultwarden-public-url
+                  key: url
             - name: SIGNUPS_ALLOWED
               value: "false"
             - name: ROCKET_PORT
