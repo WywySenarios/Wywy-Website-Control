@@ -13,7 +13,7 @@ For your homelab setup:
 - Multiple computers to run Proxmox VE
 - Preferrably a dedicated network
 
-## Install
+## Usage
 
 Note: The commands below target dev. Substitute `--prod` for production.
 
