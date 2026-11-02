@@ -16,6 +16,9 @@ all:
     proxmox_cluster_leader:
       hosts:
         proxmox-1.internal:
+    proxmox_iso:
+      hosts:
+        localhost:
     # Role tags. Each tag selects exactly one canonical node; tags may overlap.
     db_pve:
       hosts:

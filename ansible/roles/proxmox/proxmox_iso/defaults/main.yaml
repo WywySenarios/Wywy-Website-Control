@@ -1,7 +1,10 @@
 ---
-proxmox_iso_pin_file: "{{ control_dir }}/config/proxmox/pve-iso.yaml"
+proxmox_iso_pin:
+  version: "9.2-1"
+  url: https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso
+  sha256: "4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c"
+
 proxmox_iso_root_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/proxmox/root.sops.yaml"
-proxmox_iso_authorized_keys: "{{ control_dir }}/config/proxmox/authorized_keys"
 
 proxmox_iso_build_dir: "{{ control_dir }}/build/proxmox/{{ wywy_env }}"
 proxmox_iso_cache_dir: "{{ control_dir }}/build/proxmox/cache"

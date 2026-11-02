@@ -7,8 +7,6 @@
 #   proxmox_template_vmid          numeric VMID of the template
 #   proxmox_template_name          VM name, and the marker this role uses to
 #                                  recognise its own template
-# The image to import is pinned in the control repo, in
-# config/proxmox/cloud-image.yaml.
 
 # --- hypervisor storage ---
 # The disk volume becomes <storage>:vm-<vmid>-disk-0.
@@ -22,11 +20,9 @@ proxmox_template_cpu: x86-64-v2-AES
 proxmox_template_disk_size: "16G"
 
 # --- base image ---
-# url and sha512 are one pin and version-controlled together, so the role reads
-# them from the repo instead of repeating either one here.
-proxmox_template_image: "{{ lookup('file', control_dir ~ '/config/proxmox/cloud-image.yaml') | from_yaml }}"
-proxmox_template_image_url: "{{ proxmox_template_image.url }}"
-proxmox_template_image_checksum: "sha512:{{ proxmox_template_image.sha512 }}"
+proxmox_template_image: {}
+proxmox_template_image_url: "{{ (proxmox_template_image | default({})).url | default('') }}"
+proxmox_template_image_checksum: "sha512:{{ (proxmox_template_image | default({})).sha512 | default('') }}"
 # The image lands in the hypervisor's ISO store, where it is visible in the web UI and survives between runs.
 proxmox_template_image_dir: /var/lib/vz/template/iso
 

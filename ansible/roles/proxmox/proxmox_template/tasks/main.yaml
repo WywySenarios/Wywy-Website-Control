@@ -19,9 +19,7 @@
       - (proxmox_template_image_url | regex_replace('^https://[A-Za-z0-9._/-]+$', '')) | length == 0
       - (proxmox_template_image_checksum | regex_replace('^sha512:[0-9a-fA-F]{128}$', '')) | length == 0
     fail_msg: >-
-      a proxmox_template_* var is missing or unsafe to pass to qm(1). The image
-      pin lives in config/proxmox/cloud-image.yaml; fill in url and sha512
-      before running this role.
+      A proxmox_template_* var is missing or unsafe to pass to qm(1). Please fix `proxmox_template_image`.
     quiet: true
 
 # check_mode is disabled for the reads because the guards below need real output

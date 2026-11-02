@@ -9,3 +9,6 @@ all:
       hosts:
         files.internal:
           ansible_user: wywy
+    proxmox_iso:
+      hosts:
+        localhost:

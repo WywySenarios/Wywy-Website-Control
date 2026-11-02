@@ -7,15 +7,14 @@
       - control_dir is defined
       - wywy_env in ['dev', 'prod']
       - proxmox_iso_hosts | length > 0
+      - proxmox_iso_pin is defined
+      - proxmox_iso_pin is mapping
+      - proxmox_iso_public_keys is defined
     fail_msg: >-
       run this role from playbooks/proxmox/iso.yaml with a dev or prod
-      inventory that defines a non-empty proxmox group.
+      inventory that defines a non-empty proxmox group, plus
+      proxmox_iso_public_keys in group_vars/proxmox_iso.yaml.
     quiet: true
-
-- name: Load the pinned PVE ISO
-  ansible.builtin.include_vars:
-    file: "{{ proxmox_iso_pin_file }}"
-    name: proxmox_iso_pin
 
 - name: Validate the ISO pin
   ansible.builtin.assert:
@@ -24,8 +23,8 @@
       - proxmox_iso_pin.sha256 is match('^[0-9a-f]{64}$')
       - proxmox_iso_pin.version is match('^[0-9]+\.[0-9]+-[0-9]+$')
     fail_msg: >-
-      config/proxmox/pve-iso.yaml must pin an https URL, a lowercase SHA256,
-      and a version such as 9.2-1.
+      proxmox_iso_pin (in the role defaults) must pin an https URL, a
+      lowercase SHA256, and a version such as 9.2-1.
     quiet: true
 
 - name: Check the automated-install assistant
@@ -166,16 +165,13 @@
     quiet: true
   no_log: true
 
-- name: Read the tracked public keys
-  ansible.builtin.set_fact:
-    proxmox_iso_public_keys: >-
-      {{ lookup('file', proxmox_iso_authorized_keys).splitlines()
-         | map('trim') | reject('equalto', '') | reject('match', '^#') | list }}
-
 - name: Require valid public keys
   ansible.builtin.assert:
     that:
+      - proxmox_iso_public_keys is sequence
+      - proxmox_iso_public_keys is not string
       - proxmox_iso_public_keys | length > 0
+      - proxmox_iso_public_keys | select('string') | list | length == proxmox_iso_public_keys | length
       - >-
         proxmox_iso_public_keys
         | select('match', '^(ssh|ecdsa|sk-ssh|sk-ecdsa)-[A-Za-z0-9@.-]+ [A-Za-z0-9+/=]+$')
@@ -183,8 +179,9 @@
         == proxmox_iso_public_keys | length
       - proxmox_iso_public_keys | select('search', 'PRIVATE KEY') | list | length == 0
     fail_msg: >-
-      config/proxmox/authorized_keys must contain one or more public keys,
-      one per line, with no comments or options.
+      proxmox_iso_public_keys (in inventory group_vars/proxmox_iso.yaml) must
+      list one or more SSH public keys, one per entry, with no options or
+      comments.
     quiet: true
 
 - name: Build each node's ISO

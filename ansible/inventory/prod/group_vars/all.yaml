@@ -5,3 +5,6 @@ wywy_gateway: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'gateway.internal') }}
 wywy_nameserver: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'nameserver.internal') }}
+proxmox_template_image:
+  url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64-20261017-2634.qcow2
+  sha512: "62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe"

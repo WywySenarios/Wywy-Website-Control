@@ -1,7 +1,7 @@
 ---
 # Build a per-node PVE 9.2-1 installer ISO with an embedded answer file.
 - name: Build per-node PVE 9.2-1 answer ISOs
-  hosts: localhost
+  hosts: proxmox_iso
   connection: local
   gather_facts: false
   become: false
