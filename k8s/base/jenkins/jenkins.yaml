@@ -331,6 +331,39 @@ jobs:
       }
 
   - script: |
+      multibranchPipelineJob('wywy-dotfiles') {
+        branchSources {
+          github {
+            id('dotfiles')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('wywy-dotfiles')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(true)
+            buildOriginPRMerge(true)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }
+
+  - script: |
       multibranchPipelineJob('wc') {
         branchSources {
           github {
