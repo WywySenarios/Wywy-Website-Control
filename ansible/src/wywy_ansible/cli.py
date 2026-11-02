@@ -94,11 +94,15 @@ def main() -> None:
     args = parse_args(sys.argv[1:])
     playbook = resolve_playbook(args.playbook)
     check_collections()
+    shared_inventory = INVENTORY_DIR / "shared"
     inventory = INVENTORY_DIR / args.env
-    print(f"==> {args.env}: {playbook} with {inventory}", file=sys.stderr)
+    print(
+        f"==> {args.env}: {playbook} with {shared_inventory},{inventory}",
+        file=sys.stderr,
+    )
     environment = os.environ | {
         "ANSIBLE_CONFIG": str(CONFIG_FILE),
-        "ANSIBLE_INVENTORY": str(inventory),
+        "ANSIBLE_INVENTORY": f"{shared_inventory},{inventory}",
     }
     # S606/S607: exec is deliberate; the bare name comes from the venv on PATH.
     os.execvpe(  # noqa: S606
