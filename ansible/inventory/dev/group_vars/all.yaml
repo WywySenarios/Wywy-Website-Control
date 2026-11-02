@@ -8,3 +8,29 @@ wywy_nameserver: >-
 proxmox_template_image:
   url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64-20261017-2634.qcow2
   sha512: "62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe"
+
+cloudflare_public_hosts:
+  - name: immich-dev
+    hostname: immich-dev.ericzhu.me
+    namespace: immich
+    service: http://immich-server.immich.svc.cluster.local:2283
+  - name: grafana-dev
+    hostname: grafana-dev.ericzhu.me
+    namespace: observability
+    service: http://prometheus-stack-grafana.observability.svc.cluster.local:80
+  - name: jellyfin-dev
+    hostname: jellyfin-dev.ericzhu.me
+    namespace: jellyfin
+    service: http://jellyfin.jellyfin.svc.cluster.local:8096
+  - name: nextcloud-dev
+    hostname: nextcloud-dev.ericzhu.me
+    namespace: nextcloud
+    service: http://nextcloud.nextcloud.svc.cluster.local:80
+  - name: vaultwarden-dev
+    hostname: vaultwarden-dev.ericzhu.me
+    namespace: vaultwarden
+    service: http://vaultwarden.vaultwarden.svc.cluster.local:80
+  - name: jenkins-dev
+    hostname: jenkins-dev.ericzhu.me
+    namespace: jenkins
+    service: http://jenkins.jenkins.svc.cluster.local:8080

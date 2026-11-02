@@ -8,40 +8,40 @@
   vars:
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
     wywy_env: "{{ ansible_inventory_sources | first | basename }}"
-    cloudflare_public_hosts:
-      - name: immich-dev
-        hostname: immich-dev.ericzhu.me
-        namespace: immich
-        service: http://immich-server.immich.svc.cluster.local:2283
-      - name: grafana-dev
-        hostname: grafana-dev.ericzhu.me
-        namespace: observability
-        service: http://prometheus-stack-grafana.observability.svc.cluster.local:80
-      - name: jellyfin-dev
-        hostname: jellyfin-dev.ericzhu.me
-        namespace: jellyfin
-        service: http://jellyfin.jellyfin.svc.cluster.local:8096
-      - name: nextcloud-dev
-        hostname: nextcloud-dev.ericzhu.me
-        namespace: nextcloud
-        service: http://nextcloud.nextcloud.svc.cluster.local:80
-      - name: vaultwarden-dev
-        hostname: vaultwarden-dev.ericzhu.me
-        namespace: vaultwarden
-        service: http://vaultwarden.vaultwarden.svc.cluster.local:80
-      - name: jenkins
-        hostname: jenkins-dev.ericzhu.me
-        namespace: jenkins
-        service: http://jenkins.jenkins.svc.cluster.local:8080
 
   tasks:
-    - name: Require the dev inventory
+    - name: Validate the target environment
       ansible.builtin.assert:
         that:
-          - wywy_env == 'dev'
+          - wywy_env in ['dev', 'prod']
         fail_msg: >-
-          Public service tunnels are only defined for dev (got '{{ wywy_env }}').
+          wywy_env must be 'dev' or 'prod' (got '{{ wywy_env }}').
         quiet: true
+
+    - name: Require public host definitions
+      ansible.builtin.assert:
+        that:
+          - cloudflare_public_hosts is defined
+          - (cloudflare_public_hosts | default([])) | length > 0
+        fail_msg: >-
+          cloudflare_public_hosts is empty or undefined. Define it in
+          ansible/inventory/{{ wywy_env }}/group_vars/all.yaml.
+        quiet: true
+
+    - name: Validate the public host entries
+      ansible.builtin.assert:
+        that:
+          - (item.name | default('')) | length > 0
+          - (item.hostname | default('')) | length > 0
+          - (item.namespace | default('')) | length > 0
+          - (item.service | default('')) | length > 0
+        fail_msg: >-
+          Each cloudflare_public_hosts entry needs non-empty name, hostname,
+          namespace, and service fields.
+        quiet: true
+      loop: "{{ cloudflare_public_hosts }}"
+      loop_control:
+        label: "{{ item.name | default('<missing name>') }}"
 
     - name: Provision each public tunnel
       ansible.builtin.include_role:
