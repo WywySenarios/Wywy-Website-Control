@@ -14,4 +14,4 @@ resources:
 configMapGenerator:
   - name: jenkins-casc
     files:
-      - jenkins.yaml
+      - jenkins-core.yaml

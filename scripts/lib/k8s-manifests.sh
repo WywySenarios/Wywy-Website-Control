@@ -37,7 +37,9 @@ k8s_classify_raw() {
 			! -name 'values.yaml' \
 			! -path 'k8s/dev/image-updater/patch-deployment.yaml' \
 			! -path 'k8s/dev/image-updater/patch-configmap.yaml' \
-			! -path 'k8s/base/jenkins/jenkins.yaml' |
+			! -path 'k8s/base/jenkins/jenkins-core.yaml' \
+			! -path 'k8s/dev/jenkins/jenkins-unclassified.yaml' \
+			! -path 'k8s/dev/jenkins/jenkins-jobs.yaml' |
 			sort
 	)
 

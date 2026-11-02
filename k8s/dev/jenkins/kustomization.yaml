@@ -7,6 +7,13 @@ resources:
   - ../base/registry-endpoint
   - public-url.yaml
   - secrets
+configMapGenerator:
+  - name: jenkins-unclassified
+    files:
+      - jenkins-unclassified.yaml
+  - name: jenkins-jobs
+    files:
+      - jenkins-jobs.yaml
 replacements:
   - source:
       kind: ConfigMap

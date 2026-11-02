@@ -37,7 +37,7 @@ spec:
               containerPort: 50000
           env:
             - name: CASC_JENKINS_CONFIG
-              value: /var/jenkins_home/casc_configs/jenkins.yaml
+              value: /var/jenkins_home/casc_configs/core,/var/jenkins_home/casc_configs/unclassified,/var/jenkins_home/casc_configs/jobs
             - name: JAVA_OPTS
               value: -Djenkins.install.runSetupWizard=false
             - name: JENKINS_SLAVE_AGENT_PORT
@@ -80,8 +80,14 @@ spec:
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
-            - name: casc-config
-              mountPath: /var/jenkins_home/casc_configs
+            - name: casc-core
+              mountPath: /var/jenkins_home/casc_configs/core
+              readOnly: true
+            - name: casc-unclassified
+              mountPath: /var/jenkins_home/casc_configs/unclassified
+              readOnly: true
+            - name: casc-jobs
+              mountPath: /var/jenkins_home/casc_configs/jobs
               readOnly: true
           readinessProbe:
             httpGet:
@@ -110,6 +116,12 @@ spec:
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: jenkins-home
-        - name: casc-config
+        - name: casc-core
           configMap:
             name: jenkins-casc
+        - name: casc-unclassified
+          configMap:
+            name: jenkins-unclassified
+        - name: casc-jobs
+          configMap:
+            name: jenkins-jobs
