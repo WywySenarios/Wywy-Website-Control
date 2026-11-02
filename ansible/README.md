@@ -1,5 +1,7 @@
 # Wywy Control: Ansible
 
+## Installation
+
 To install Ansible:
 
 ```bash
@@ -10,6 +12,8 @@ scripts/install/ansible.sh
 ../scripts/install/ansible.sh
 ```
 
+## Usage
+
 Run a playbook with the command below:
 
 ```bash
@@ -19,6 +23,8 @@ uv run --directory ansible wywy-ansible --dev|--prod path/to/playbook.yaml
 # if your cwd is ansible/,
 uv run wywy-ansible --dev|--prod path/to/playbook.yaml
 ```
+
+More information on what playbooks to run can be found at `playbooks/**/README.md`.
 
 ## Tests
 
