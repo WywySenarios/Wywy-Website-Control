@@ -1,0 +1,13 @@
+unclassified:
+  location:
+    url: ${JENKINS_PUBLIC_URL}
+    adminAddress: jenkins@wywy.invalid
+  gitHubPluginConfig:
+    hookUrl: ${JENKINS_PUBLIC_URL}github-webhook/
+    hookSecretConfigs:
+      - credentialsId: github-webhook-secret
+    configs:
+      - name: github.com
+        apiUrl: https://api.github.com
+        manageHooks: true
+        credentialsId: github-pat

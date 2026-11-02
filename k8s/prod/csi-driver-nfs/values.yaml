@@ -1,0 +1,10 @@
+storageClasses:
+  - name: nfs-jenkins-prod
+    parameters:
+      server: files.internal
+      share: /srv/nfs/jenkins
+      subDir: prod
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    mountOptions:
+      - nfsvers=4.1

@@ -1,0 +1,34 @@
+jobs:
+  - script: |
+      multibranchPipelineJob('Wywy-Website-Master-Database') {
+        branchSources {
+          github {
+            id('master-database')
+            scanCredentialsId('github-pat')
+            repoOwner('WywySenarios')
+            repository('Wywy-Website-Master-Database')
+            includes('main')
+            buildOriginBranch(true)
+            buildOriginBranchWithPR(false)
+            buildOriginPRMerge(false)
+            buildOriginPRHead(false)
+            buildForkPRMerge(false)
+            buildForkPRHead(false)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('15')
+          }
+        }
+      }

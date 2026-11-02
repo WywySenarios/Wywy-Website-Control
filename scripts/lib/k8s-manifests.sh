@@ -13,6 +13,7 @@ RENDER_DIRS=(
 	k8s/dev/infrastructure
 	k8s/dev/metallb
 	k8s/dev/immich/pvcs
+	k8s/prod/infrastructure
 )
 
 k8s_render() {
@@ -39,7 +40,9 @@ k8s_classify_raw() {
 			! -path 'k8s/dev/image-updater/patch-configmap.yaml' \
 			! -path 'k8s/base/jenkins/jenkins-core.yaml' \
 			! -path 'k8s/dev/jenkins/jenkins-unclassified.yaml' \
-			! -path 'k8s/dev/jenkins/jenkins-jobs.yaml' |
+			! -path 'k8s/dev/jenkins/jenkins-jobs.yaml' \
+			! -path 'k8s/prod/jenkins/jenkins-unclassified.yaml' \
+			! -path 'k8s/prod/jenkins/jenkins-jobs.yaml' |
 			sort
 	)
 

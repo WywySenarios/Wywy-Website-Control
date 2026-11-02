@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-public-url
+  namespace: jenkins
+data:
+  public_url: "https://jenkins.ericzhu.me/"

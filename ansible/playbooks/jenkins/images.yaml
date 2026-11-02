@@ -7,7 +7,6 @@
 
   vars:
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
-    wywy_env: dev
 
     jenkins_version: "2.580.1"
     jenkins_image_tag: "2.580.1-3"
