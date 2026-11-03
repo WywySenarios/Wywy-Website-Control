@@ -2,6 +2,8 @@ secrets/**
 !secrets/**/
 !secrets/**/*.sops.yaml
 !secrets/**/*.sops
+!secrets/README.md
+!secrets/**/README.md
 
 # Ansible toolchain: repo-local venv, installed collections, and the
 # operator-run verify recap (evidence, never committed).

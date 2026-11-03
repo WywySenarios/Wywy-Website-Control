@@ -19,7 +19,7 @@
       block:
         - name: Determine the target environment from the selected inventory
           ansible.builtin.set_fact:
-            argocd_env: "{{ ansible_inventory_sources | first | basename }}"
+            argocd_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
 
         - name: Derive the encrypted secret path
           ansible.builtin.set_fact:

@@ -22,7 +22,7 @@ k8s_platform_argocd_load_balancer_ip: "{{ argocd_load_balancer_ip }}"
 k8s_platform_argocd_load_balancer_source_ranges: "{{ argocd_load_balancer_source_ranges.split(',') }}"
 
 k8s_platform_control_dir: "{{ playbook_dir | dirname | dirname | dirname }}"
-k8s_platform_env: "{{ ansible_inventory_sources | first | basename }}"
+k8s_platform_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
 k8s_platform_argocd_admin_secret: >-
   {{ k8s_platform_control_dir }}/secrets/{{ k8s_platform_env }}/argocd-admin.sops
 k8s_platform_argocd_appproject_file: >-

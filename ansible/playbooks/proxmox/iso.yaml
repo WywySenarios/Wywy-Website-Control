@@ -8,7 +8,7 @@
 
   vars:
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
-    wywy_env: "{{ ansible_inventory_sources | first | basename }}"
+    wywy_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
   roles:

@@ -8,7 +8,7 @@
 
   vars:
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
-    wywy_env: "{{ ansible_inventory_sources | first | basename }}"
+    wywy_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
     registry_endpoint_file: "{{ control_dir }}/k8s/{{ wywy_env }}/base/registry-endpoint/registry-endpoint.sops.yaml"
     registry_endpoint_check: false
 

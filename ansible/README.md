@@ -26,6 +26,8 @@ uv run wywy-ansible --dev|--prod path/to/playbook.yaml
 
 More information on what playbooks to run can be found at `playbooks/**/README.md`.
 
+Some playbooks (for example secret rotation) require a tag, passed in with `... --tags <tag>`.
+
 ## Tests
 
 Run the Ansible checks from the repo root:

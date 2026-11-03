@@ -152,6 +152,7 @@
   ansible.builtin.set_fact:
     cloudflare_tunnel_token_write: >-
       {{ cloudflare_tunnel_created | bool
+         or cloudflare_tunnel_force_token | bool
          or not cloudflare_tunnel_token_stat.stat.exists }}
 
 - name: Manage the tunnel token

@@ -4,7 +4,7 @@ internal_ca_control_dir: "{{ ansible_config_file | dirname | dirname }}"
 # trusts the other's anchor. The environment is already encoded in the inventory
 # path the entrypoint selects; deriving it from ansible_inventory_sources keeps
 # localhost-only plays (which receive no group_vars) consistent with remote ones.
-internal_ca_env: "{{ ansible_inventory_sources | first | basename }}"
+internal_ca_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
 internal_ca_secret: "{{ internal_ca_control_dir }}/secrets/{{ internal_ca_env }}/internal-ca.sops"
 
 internal_ca_temp_prefix: "wywy-internal-ca-"
