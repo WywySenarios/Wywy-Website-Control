@@ -46,8 +46,7 @@
       - argocd
       - account
       - bcrypt
-      - --password
-      - "{{ k8s_platform_argocd_admin_password.stdout | trim }}"
+    stdin: "{{ k8s_platform_argocd_admin_password.stdout | trim }}\n"
   register: k8s_platform_argocd_admin_hash
   changed_when: false
   no_log: true

@@ -135,29 +135,60 @@
     - not k8s_control_plane_kubelet_conf.stat.exists
 
 - name: Join the control plane
-  ansible.builtin.command:
-    argv:
-      - kubeadm
-      - join
-      - "{{ k8s_control_plane_endpoint }}"
-      - --token
-      - "{{ k8s_control_plane_join_token.stdout | trim }}"
-      - --discovery-token-ca-cert-hash
-      - "sha256:{{ k8s_control_plane_ca_hash.stdout | trim }}"
-      - --control-plane
-      - --certificate-key
-      - "{{ k8s_control_plane_certificate_key }}"
-      - --apiserver-advertise-address
-      - "{{ k8s_vm_addresses[inventory_hostname] }}"
-      - --cri-socket
-      - "{{ k8s_control_plane_kubeadm_cri_socket }}"
   when:
     - inventory_hostname != k8s_control_plane_init_host
     - not k8s_control_plane_kubelet_conf.stat.exists
-  changed_when: true
-  no_log: true
-  async: 600
-  poll: 5
+  block:
+    - name: Create a temporary kubeadm join configuration
+      ansible.builtin.tempfile:
+        state: file
+        suffix: .kubeadm-join
+      register: k8s_control_plane_join_config
+      changed_when: false
+      no_log: true
+
+    - name: Write the kubeadm join configuration
+      ansible.builtin.copy:
+        dest: "{{ k8s_control_plane_join_config.path }}"
+        mode: "0600"
+        content: |
+          apiVersion: kubeadm.k8s.io/v1beta4
+          kind: JoinConfiguration
+          discovery:
+            bootstrapToken:
+              apiServerEndpoint: "{{ k8s_control_plane_endpoint }}"
+              token: "{{ k8s_control_plane_join_token.stdout | trim }}"
+              caCertHashes:
+                - "sha256:{{ k8s_control_plane_ca_hash.stdout | trim }}"
+          controlPlane:
+            certificateKey: "{{ k8s_control_plane_certificate_key }}"
+            localAPIEndpoint:
+              advertiseAddress: "{{ k8s_vm_addresses[inventory_hostname] }}"
+              bindPort: 6443
+          nodeRegistration:
+            criSocket: "{{ k8s_control_plane_kubeadm_cri_socket }}"
+      no_log: true
+
+    - name: Join the control plane
+      ansible.builtin.command:
+        argv:
+          - kubeadm
+          - join
+          - --config
+          - "{{ k8s_control_plane_join_config.path }}"
+      changed_when: true
+      no_log: true
+      async: 600
+      poll: 5
+  always:
+    - name: Remove the temporary kubeadm join configuration
+      ansible.builtin.file:
+        path: "{{ k8s_control_plane_join_config.path }}"
+        state: absent
+      when:
+        - k8s_control_plane_join_config is defined
+        - k8s_control_plane_join_config.path is defined
+      no_log: true
 
 - name: Clear the join credentials
   ansible.builtin.set_fact:

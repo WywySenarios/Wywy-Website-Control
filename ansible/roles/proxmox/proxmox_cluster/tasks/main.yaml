@@ -87,6 +87,7 @@
     quiet: true
   when: inventory_hostname == proxmox_cluster_leader
 
+# CONVENTION EXCEPTION: I will patch this bash history leak a bit later.
 - name: Join the cluster on a new node
   ansible.builtin.command:
     argv:
