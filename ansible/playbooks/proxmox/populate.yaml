@@ -1,6 +1,9 @@
 ---
-# Maintain the encrypted per-node root-password store
-- name: Maintain the PVE root-password store
+# Populate: proxmox-root-passwords
+#
+# Not rotatable: this playbook adds missing per-node root passwords.
+# Existing passwords are not replaced.
+- name: Populate the PVE root-password store
   hosts: localhost
   connection: local
   gather_facts: false

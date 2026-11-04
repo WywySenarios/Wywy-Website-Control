@@ -4,16 +4,16 @@
 
 Run these playbooks in order. You will need to flash the ISOs yourself after the iso playbook.
 
-| Playbook                                | Purpose                                                                                               |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `playbooks/proxmox/root-passwords.yaml` | Add missing root passwords to the encrypted store.                                                    |
-| `playbooks/proxmox/iso.yaml`            | Build the per-node installer ISOs.                                                                    |
-| `playbooks/proxmox/apt.yaml`            | Replace all apt sources with controlled Debian, Proxmox, and Ceph Tentacle sources; remove os-prober. |
-| `playbooks/proxmox/cluster.yaml`        | Create the PVE cluster, join nodes using the leader fingerprint and root password, then harden SSH.   |
+| Playbook                          | Purpose                                                                                               |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `playbooks/proxmox/populate.yaml` | Add missing root passwords to the encrypted store.                                                    |
+| `playbooks/proxmox/iso.yaml`      | Build the per-node installer ISOs.                                                                    |
+| `playbooks/proxmox/apt.yaml`      | Replace all apt sources with controlled Debian, Proxmox, and Ceph Tentacle sources; remove os-prober. |
+| `playbooks/proxmox/cluster.yaml`  | Create the PVE cluster, join nodes using the leader fingerprint and root password, then harden SSH.   |
 
 ## Bootstrap
 
-Use playbooks `root-passwords.yaml` and `iso.yaml`
+Use playbooks `populate.yaml` and `iso.yaml`
 
 Tip: `ip link show` and `lsblk -o WWN` can be used to help you gather information.
 
