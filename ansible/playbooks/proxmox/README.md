@@ -31,6 +31,8 @@ Never commit ISOs. They contain plaintext secrets. Delete them once you are done
 
 Note: these commands can and will destroy entire disks worth of content, so take caution.
 
+Tip: if you just connected your USB, you might need to run `sync` for `/dev/sdX` to appear.
+
 Identify the USB device and confirm it is the whole disk, not a partition:
 
 ```bash
