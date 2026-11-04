@@ -44,3 +44,5 @@ Ansible configuration lives in `ansible/inventory/<env>/group_vars/` as plain `*
 ## Status
 
 Unstable. Production with PVE & Kubernetes is not online.
+
+Currently rehearsing prod.
