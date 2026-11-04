@@ -20,8 +20,7 @@ postgres_packages:
   - python3-psycopg2
   - acl
 
-# pg_hba.conf is generated from this repo file
-postgres_hba_source: "{{ control_dir }}/config/db/pg_hba.conf"
+postgres_hba_source: "{{ role_path }}/files/pg_hba.conf"
 
 # One pg_hba rule per worker IP
 postgres_hba_worker_line_pat: 'host    all             all             \g<1>/32                 scram-sha-256'
