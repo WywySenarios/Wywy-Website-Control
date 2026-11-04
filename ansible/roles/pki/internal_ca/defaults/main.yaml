@@ -15,5 +15,6 @@ internal_ca_permitted_dns: ".internal"
 internal_ca_days: 3650
 
 # An existing CA is not replaced by default.
-# Pass in `-e internal_ca_force=true` to replace it.
+# Pass in `-e internal_ca_force=true` to rotate
 internal_ca_force: false
+internal_ca_derive_force: false

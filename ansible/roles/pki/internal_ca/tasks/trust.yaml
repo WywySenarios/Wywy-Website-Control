@@ -1,6 +1,5 @@
 ---
 # Installs the internal root CA into the target host's system trust store.
-# This should be invoked from a proxmox-vm playbook.
 - name: Read the internal root CA from its sops store
   ansible.builtin.command:
     argv:

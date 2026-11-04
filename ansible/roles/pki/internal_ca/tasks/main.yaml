@@ -1,6 +1,6 @@
 ---
-# Produces the internal root CA once, scoped to one environment.
-# An existing CA is left alone unless internal_ca_force=true.
+# Produces the internal root CA if missing, scoped to one environment.
+# An existing CA is replaced only when internal_ca_force is true.
 
 # internal_ca_env is interpolated into a path below, so whitelist it.
 - name: Validate the target environment
@@ -33,20 +33,20 @@
       secrets/{{ internal_ca_env }} does not exist. Provision that
       environment's secrets (and age recipient) before storing a CA there.
     quiet: true
-  when: not internal_ca_stat.stat.exists or internal_ca_force
+  when: not internal_ca_stat.stat.exists or (internal_ca_force | bool)
 
 - name: Report that the existing root CA is kept
   ansible.builtin.debug:
     msg: >-
       {{ internal_ca_secret }} already exists; nothing to do. Pass
-      -e internal_ca_force=true to rotate it (this invalidates every
-      certificate signed by the old CA).
+      -e internal_ca_force=true only for a compromise replacement
+      (this invalidates every certificate signed by the old CA).
   when:
     - internal_ca_stat.stat.exists
-    - not internal_ca_force
+    - not (internal_ca_force | bool)
 
 - name: Generate a new internal root CA
-  when: not internal_ca_stat.stat.exists or internal_ca_force
+  when: not internal_ca_stat.stat.exists or (internal_ca_force | bool)
   block:
     - name: Create a private temp directory on the controller
       ansible.builtin.tempfile:
@@ -77,6 +77,15 @@
       delegate_to: localhost
       become: true
       changed_when: true
+
+    - name: Restrict the root CA private key
+      ansible.builtin.file:
+        path: "{{ internal_ca_key }}"
+        owner: root
+        group: root
+        mode: "0600"
+      delegate_to: localhost
+      become: true
 
     - name: Render the name-constrained CA configuration
       ansible.builtin.template:
