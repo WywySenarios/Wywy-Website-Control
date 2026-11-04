@@ -4,7 +4,6 @@ k8s_version: "1.36.2-2.1"
 containerd_version: "2.4.2-3~debian.13~trixie"
 kube_vip_version: "v1.3.1"
 calico_version: "v3.29.2"
-local_path_version: "v0.0.36"
 
 wywy_k8s_api_ip: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}

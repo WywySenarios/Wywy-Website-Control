@@ -7,7 +7,6 @@
 | `control-plane/bootstrap.yaml`        | Install Kubernetes and bootstrap the control-plane nodes.                 |
 | `cni.yaml`                            | Install Calico CNI.                                                       |
 | `coredns.yaml`                        | Render the `*.internal` names into the CoreDNS hosts block.               |
-| `storage.yaml`                        | Install local-path after the workers exist.                               |
 | `workers/proxmox-template.yaml`       | Build the worker VM template on each `k8s_workers_pve` host.              |
 | `workers/proxmox-vm.yaml`             | Clone the worker VMs.                                                     |
 | `workers/workers.yaml`                | Install Kubernetes and join the worker nodes.                             |

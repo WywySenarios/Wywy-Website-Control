@@ -29,13 +29,13 @@ Adding a new top-level domain means adding its path there.
 
 ## `k8s/`
 
-| Role                | Owns                                       |
-| ------------------- | ------------------------------------------ |
-| `k8s_control_plane` | Kubernetes control-plane lifecycle         |
-| `k8s_network`       | Kubernetes pod network and storage classes |
-| `k8s_node`          | Kubernetes node prerequisites              |
-| `k8s_platform`      | Kubernetes platform services               |
-| `k8s_worker`        | Kubernetes worker lifecycle                |
+| Role                | Owns                                     |
+| ------------------- | ---------------------------------------- |
+| `k8s_control_plane` | Kubernetes control-plane lifecycle       |
+| `k8s_network`       | Kubernetes pod network and CoreDNS hosts |
+| `k8s_node`          | Kubernetes node prerequisites            |
+| `k8s_platform`      | Kubernetes platform services             |
+| `k8s_worker`        | Kubernetes worker lifecycle              |
 
 ## `pki/`
 
