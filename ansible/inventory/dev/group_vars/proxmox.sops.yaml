@@ -10,7 +10,7 @@ proxmox_nodes:
         nic: ENC[AES256_GCM,data:XOBfrg==,iv:/kNY4HTqYVQigCqj1QoLwvo0ewuWZDN6yV5YlZ29C2I=,tag:wT4sBEoVmFGj9G0lPEsLMQ==,type:str]
         disk_filter:
             key: ENC[AES256_GCM,data:G04MysdP,iv:VwFEb66qs3tQKBGIxq4tRYbUTVYF3vI74zoO2TiSoGM=,tag:pVFjQ3IpgboyXTOoHgq8zQ==,type:str]
-            value: ENC[AES256_GCM,data:AUwORJRemmxKSEUUKNenQ5kENFE=,iv:Q0yWeZ225gPSgE0VagJuSzmJIMeJO3PQPk3xoakK1Ac=,tag:jgefmdfuS08X+RFOx034PA==,type:str]
+            value: ENC[AES256_GCM,data:ixJqgkNEev/W9+iFLJH7n1bub5d6ZSTFMVTka+5yCyxQ2Cmd,iv:GWeRBo08w88dzTkz1qT3onrFTQzxRrfNJRFC1jMu4NA=,tag:r9ErI1tVule4FrSzMbyHvg==,type:str]
     proxmox-3.internal:
         address: ENC[AES256_GCM,data:rkXQKic/5j2nbrntNqo=,iv:Z8heCFCbuUYycOaUcxmM6rgHzAxYf5hPybd79F+J7ro=,tag:kSQ0I1/LvBDl1p9QLcLSbQ==,type:str]
         nic: ENC[AES256_GCM,data:tynM7w==,iv:eDCak+r74GDOEIEBAEBLyB/p0ZFfyAUTp/WrshN4cm8=,tag:qYnCo8a0nRXTsMwbgP7Maw==,type:str]
@@ -28,7 +28,7 @@ sops:
             c/EwuuVf4bCK10ka0cxvpiRKhW0PPANWnr8GfmeJxo0Nofr4+v5gSQ==
             -----END AGE ENCRYPTED FILE-----
           recipient: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
-    lastmodified: "2026-10-26T21:56:37Z"
-    mac: ENC[AES256_GCM,data:0V59gaUdRbhC8hF+QH4Ms4cNZPgJI3PV7t7/ZWjJAI6vf9YDIXTdhflDsjpV6LhbNQ/eUBZXoljA50fgW9zJ91OBJbM3q9i7RU9WOyzhv8okCzK6pdbXBXTzmqZVsnQnTOKr7KFU1AZJ1aLSFZwKj2zw0FHxQC2/yGrzmbOl8bM=,iv:s7JqMdef/3AlXizrPUqZAhzGIx3mP3aYZjdTJO9t2I4=,tag:xgnyO+7QD83HYvzuq2XVTA==,type:str]
+    lastmodified: "2026-11-05T14:39:48Z"
+    mac: ENC[AES256_GCM,data:EfyLHDJhcilPmOc8C9cLT56e/E5sFNhA9Qy4plDPvAM+V4JlpJb5WTG3BPxtz9tNrudGk+D6gOnLQzPxbm2YBa/UoKEALJdUUFXB0ZKrFT3kV47p1GxGDJO3GoUQgbB0mura9S0oMT6LGQMptwn3GNjWb9T3tsx2JiTBxCMO3x8=,iv:PymhIvyvOTTnDj7niOMztLHGpLlEEv93ey4yMiNJD/0=,tag:/aj5uMp8bZ71p2siKzEGIQ==,type:str]
     unencrypted_suffix: _unencrypted
-    version: 3.13.2
+    version: 3.13.3
