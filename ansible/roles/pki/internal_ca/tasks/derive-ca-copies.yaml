@@ -1,0 +1,102 @@
+---
+- name: Read the internal CA bundle
+  ansible.builtin.command:
+    argv:
+      - sops
+      - --decrypt
+      - --output-type
+      - binary
+      - "{{ pki_ca_secret }}"
+  register: pki_ca_read
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Derive the internal CA certificate
+  ansible.builtin.set_fact:
+    pki_ca_cert: "{{ (pki_ca_read.stdout | from_yaml).cert }}"
+  no_log: true
+
+- name: Check the image-updater CA consumer
+  ansible.builtin.stat:
+    path: "{{ pki_image_updater_secrets_dir }}/ksops-generator.yaml"
+  register: pki_image_updater_consumer
+
+- name: Ensure the Jenkins CA copy directory exists
+  ansible.builtin.file:
+    path: "{{ pki_jenkins_secrets_dir }}"
+    state: directory
+    mode: "0775"
+
+- name: Ensure the image-updater CA copy directory exists
+  ansible.builtin.file:
+    path: "{{ pki_image_updater_secrets_dir }}"
+    state: directory
+    mode: "0775"
+  when: pki_image_updater_consumer.stat.exists
+
+- name: Check the Jenkins registry CA copy
+  ansible.builtin.stat:
+    path: "{{ pki_jenkins_secrets_dir }}/jenkins-registry-ca.sops.yaml"
+  register: pki_jenkins_ca_stat
+
+- name: Check the image-updater registry CA copy
+  ansible.builtin.stat:
+    path: "{{ pki_image_updater_secrets_dir }}/registry-ca.sops.yaml"
+  register: pki_image_updater_ca_stat
+
+- name: Store the Jenkins registry CA
+  ansible.builtin.include_role:
+    name: sops_secret
+  vars:
+    sops_secret_target: >-
+      {{ pki_jenkins_secrets_dir }}/jenkins-registry-ca.sops.yaml
+    sops_secret_format: yaml
+    sops_secret_plaintext: >-
+      {{ {'apiVersion': 'v1',
+          'kind': 'ConfigMap',
+          'metadata': {'name': 'jenkins-registry-ca',
+                       'namespace': 'jenkins'},
+          'data': {'ca.crt': pki_ca_cert}}
+         | to_nice_yaml }}
+    sops_secret_expected: >-
+      {{ {'apiVersion': 'v1',
+          'kind': 'ConfigMap',
+          'metadata': {'name': 'jenkins-registry-ca',
+                       'namespace': 'jenkins'},
+          'data': {'ca.crt': pki_ca_cert}}
+         | to_json }}
+  when: >-
+    (internal_ca_derive_force | default(false) | bool)
+    or not pki_jenkins_ca_stat.stat.exists
+  no_log: true
+
+- name: Store the image-updater registry CA
+  ansible.builtin.include_role:
+    name: sops_secret
+  vars:
+    sops_secret_target: >-
+      {{ pki_image_updater_secrets_dir }}/registry-ca.sops.yaml
+    sops_secret_format: yaml
+    sops_secret_plaintext: >-
+      {{ {'apiVersion': 'v1',
+          'kind': 'Secret',
+          'metadata': {'name': 'registry-ca',
+                       'namespace': 'argocd'},
+          'type': 'Opaque',
+          'stringData': {'ca.crt': pki_ca_cert}}
+         | to_nice_yaml }}
+    sops_secret_expected: >-
+      {{ {'apiVersion': 'v1',
+          'kind': 'Secret',
+          'metadata': {'name': 'registry-ca',
+                       'namespace': 'argocd'},
+          'type': 'Opaque',
+          'stringData': {'ca.crt': pki_ca_cert}}
+         | to_json }}
+  when:
+    - pki_image_updater_consumer.stat.exists
+    - >-
+      (internal_ca_derive_force | default(false) | bool)
+      or not (pki_image_updater_ca_stat.stat.exists | default(false))
+  no_log: true
