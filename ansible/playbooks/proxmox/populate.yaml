@@ -16,10 +16,9 @@
     proxmox_group_hosts: "{{ groups['proxmox'] | default([]) | sort }}"
 
   tasks:
-    - name: Require a recognised environment and a non-empty proxmox group
+    - name: Require a non-empty proxmox group
       ansible.builtin.assert:
         that:
-          - wywy_env in ['dev', 'prod']
           - proxmox_group_hosts | length > 0
         fail_msg: >-
           the selected inventory must be dev or prod and must define a

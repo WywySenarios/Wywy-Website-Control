@@ -5,13 +5,12 @@
   ansible.builtin.assert:
     that:
       - control_dir is defined
-      - wywy_env in ['dev', 'prod']
       - proxmox_iso_hosts | length > 0
       - proxmox_iso_pin is defined
       - proxmox_iso_pin is mapping
       - proxmox_iso_public_keys is defined
     fail_msg: >-
-      run this role from playbooks/proxmox/iso.yaml with a dev or prod
+      run this role from playbooks/proxmox/iso.yaml with an
       inventory that defines a non-empty proxmox group, plus
       proxmox_iso_public_keys in group_vars/proxmox_iso.yaml.
     quiet: true
