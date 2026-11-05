@@ -13,8 +13,6 @@
 - name: Read the Argo CD admin password
   ansible.builtin.command:
     argv:
-      - sudo
-      - -n
       - sops
       - -d
       - --extract
