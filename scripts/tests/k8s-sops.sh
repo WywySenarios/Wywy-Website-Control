@@ -4,8 +4,8 @@ set -euo pipefail
 
 REPO_ROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/../..")"
 cd "$REPO_ROOT"
-# shellcheck source=../lib/k8s-manifests.sh
-source scripts/lib/k8s-manifests.sh
+# shellcheck source=lib/k8s-manifests.sh
+source scripts/tests/lib/k8s-manifests.sh
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
