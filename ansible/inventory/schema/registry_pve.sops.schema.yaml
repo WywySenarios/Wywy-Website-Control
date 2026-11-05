@@ -1,6 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
-title: Registry Proxmox VM
-description: Proxmox template and VM settings for the registry node.
+title: Encrypted Registry Proxmox VM
+description: Sops-encrypted Proxmox template and VM settings for the registry node.
 type: object
 additionalProperties: false
 required:
@@ -14,25 +14,38 @@ required:
   - proxmox_vm_nameserver
   - proxmox_vm_disk_size
   - proxmox_vm_data_disk_size
+  - sops
 properties:
   proxmox_template_vmid:
-    type: integer
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_template_name:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_vmid:
-    type: integer
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_name:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_template_vmid:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_address:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_gateway:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_nameserver:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_disk_size:
     type: string
+    pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_data_disk_size:
     description: Dedicated ext4 disk for /srv/registry. This disk will contain the payload!
     type: string
+    pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object
