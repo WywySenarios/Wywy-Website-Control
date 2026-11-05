@@ -1,0 +1,14 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Encrypted files variables
+description: Sops-encrypted values for the files group.
+type: object
+additionalProperties: false
+required:
+  - wywy_pod_cidr
+  - sops
+properties:
+  wywy_pod_cidr:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object

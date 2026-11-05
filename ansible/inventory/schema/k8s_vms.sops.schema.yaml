@@ -1,0 +1,55 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Encrypted Kubernetes VM definitions
+description: Sops-encrypted per-node VM definitions.
+type: object
+additionalProperties: false
+required:
+  - k8s_vm_definitions
+  - sops
+properties:
+  k8s_vm_definitions:
+    type: object
+    minProperties: 1
+    additionalProperties:
+      type: object
+      additionalProperties: false
+      required:
+        - role
+        - vm_hostname
+        - proxmox_template_vmid
+        - proxmox_template_name
+        - proxmox_template_disk_size
+        - proxmox_vm_vmid
+        - proxmox_vm_name
+        - proxmox_vm_disk_size
+        - vm_address
+      properties:
+        role:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        vm_hostname:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_template_vmid:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_template_name:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_template_disk_size:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_vm_vmid:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_vm_name:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        proxmox_vm_disk_size:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        vm_address:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object

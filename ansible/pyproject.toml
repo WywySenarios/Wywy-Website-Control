@@ -19,9 +19,12 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "ansible-lint==25.1.0",
+    "jsonschema==4.26.0",
     "mypy==2.4.1",
     "pytest==9.2.0",
     "ruff==0.17.1",
+    "types-jsonschema==4.26.0.20261006",
+    "types-PyYAML==6.0.12.20261103",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -65,4 +68,4 @@ disallow_subclassing_any = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra --tb=short"

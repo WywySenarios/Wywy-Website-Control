@@ -1,0 +1,71 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Wywy Ansible inventory
+type: object
+required:
+  - all
+additionalProperties: false
+properties:
+  all:
+    $ref: "#/$defs/group"
+    required:
+      - children
+    properties:
+      children:
+        type: object
+        required:
+          - proxmox
+          - proxmox_cluster_leader
+          - db_pve
+          - files_pve
+          - registry_pve
+        properties:
+          proxmox:
+            $ref: "#/$defs/groupWithHosts"
+            description: There must be at least 1 proxmox node in the cluster.
+            properties:
+              hosts:
+                minProperties: 1
+          proxmox_cluster_leader:
+            $ref: "#/$defs/singleHostGroup"
+          db_pve:
+            $ref: "#/$defs/singleHostGroup"
+          files_pve:
+            $ref: "#/$defs/singleHostGroup"
+          registry_pve:
+            $ref: "#/$defs/singleHostGroup"
+        additionalProperties:
+          $ref: "#/$defs/group"
+$defs:
+  group:
+    type: object
+    properties:
+      hosts:
+        type: object
+        additionalProperties:
+          type:
+            - object
+            - "null"
+      children:
+        type: object
+        additionalProperties:
+          $ref: "#/$defs/group"
+      vars:
+        type: object
+    additionalProperties: false
+  groupWithHosts:
+    $ref: "#/$defs/group"
+    required:
+      - hosts
+  singleHostGroup:
+    $ref: "#/$defs/groupWithHosts"
+    description: These VMs only have 1 copy that exist on one node.
+    properties:
+      hosts:
+        minProperties: 1
+        maxProperties: 1
+# Every node tag must reference a node inside the cluster.
+x-wywy-subset:
+  proxmox_cluster_leader: proxmox
+  db_pve: proxmox
+  files_pve: proxmox
+  registry_pve: proxmox

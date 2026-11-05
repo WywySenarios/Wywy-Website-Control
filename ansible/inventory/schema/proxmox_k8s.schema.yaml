@@ -1,0 +1,54 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Proxmox hosts for Kubernetes VMs
+type: object
+additionalProperties: false
+required:
+  - ansible_user
+  - ansible_become
+  - ansible_host
+  - proxmox_template_memory
+  - proxmox_template_cores
+  - k8s_vm
+  - proxmox_template_vmid
+  - proxmox_template_name
+  - proxmox_template_disk_size
+  - proxmox_vm_vmid
+  - proxmox_vm_name
+  - proxmox_vm_template_vmid
+  - proxmox_vm_address
+  - proxmox_vm_gateway
+  - proxmox_vm_nameserver
+  - proxmox_vm_disk_size
+properties:
+  ansible_user:
+    type: string
+  ansible_become:
+    type: boolean
+  ansible_host:
+    type: string
+  proxmox_template_memory:
+    type: integer
+  proxmox_template_cores:
+    type: integer
+  k8s_vm:
+    type: string
+  proxmox_template_vmid:
+    type: string
+  proxmox_template_name:
+    type: string
+  proxmox_template_disk_size:
+    type: string
+  proxmox_vm_vmid:
+    type: string
+  proxmox_vm_name:
+    type: string
+  proxmox_vm_template_vmid:
+    type: string
+  proxmox_vm_address:
+    type: string
+  proxmox_vm_gateway:
+    type: string
+  proxmox_vm_nameserver:
+    type: string
+  proxmox_vm_disk_size:
+    type: string

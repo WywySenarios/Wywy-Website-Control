@@ -16,29 +16,6 @@
     proxmox_group_hosts: "{{ groups['proxmox'] | default([]) | sort }}"
 
   tasks:
-    - name: Require a non-empty proxmox group
-      ansible.builtin.assert:
-        that:
-          - proxmox_group_hosts | length > 0
-        fail_msg: >-
-          the selected inventory must be dev or prod and must define a
-          non-empty proxmox group.
-        quiet: true
-
-    - name: Require each role tag to select one node from the proxmox pool
-      ansible.builtin.assert:
-        that:
-          - groups['db_pve'] | default([]) | length == 1
-          - groups['files_pve'] | default([]) | length == 1
-          - groups['registry_pve'] | default([]) | length == 1
-          - groups['db_pve'] | default([]) | difference(proxmox_group_hosts) | length == 0
-          - groups['files_pve'] | default([]) | difference(proxmox_group_hosts) | length == 0
-          - groups['registry_pve'] | default([]) | difference(proxmox_group_hosts) | length == 0
-        fail_msg: >-
-          db_pve, files_pve, and registry_pve must each select exactly one
-          physical node in groups['proxmox']; role tags may overlap.
-        quiet: true
-
     - name: Create the proxmox secret directory
       ansible.builtin.file:
         path: "{{ proxmox_root_secret | dirname }}"

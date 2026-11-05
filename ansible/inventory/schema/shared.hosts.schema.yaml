@@ -1,0 +1,24 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+additionalProperties: false
+required:
+  - all
+properties:
+  all:
+    type: object
+    additionalProperties: false
+    required:
+      - children
+    properties:
+      children:
+        type: object
+        required:
+          - db
+          - files
+          - k8s_vms
+          - k8s
+          - proxmox_k8s
+          - registry
+        additionalProperties:
+          type: object
+          additionalProperties: false

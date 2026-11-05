@@ -1,0 +1,34 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Encrypted environment-wide variables
+description: Sops-encrypted values for the all group.
+type: object
+additionalProperties: false
+required:
+  - cloudflare_api_token
+  - cloudflare_account_id
+  - cloudflare_zone_id
+  - registry_password
+  - argocd_load_balancer_ip
+  - argocd_load_balancer_source_ranges
+  - sops
+properties:
+  cloudflare_api_token:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  cloudflare_account_id:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  cloudflare_zone_id:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  registry_password:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  argocd_load_balancer_ip:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  argocd_load_balancer_source_ranges:
+    type: string
+    pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object

@@ -1,0 +1,22 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Kubernetes node variables
+description: Shared Kubernetes node variables.
+type: object
+additionalProperties: false
+required:
+  - ansible_host
+  - k8s_pod_cidr
+  - k8s_vip_interface
+  - k8s_control_plane_init_host
+  - k8s_node_labels
+properties:
+  ansible_host:
+    type: string
+  k8s_pod_cidr:
+    type: string
+  k8s_vip_interface:
+    type: string
+  k8s_control_plane_init_host:
+    type: string
+  k8s_node_labels:
+    type: string

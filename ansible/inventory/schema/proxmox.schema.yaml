@@ -1,0 +1,40 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Proxmox node defaults
+description: Non-secret defaults for the physical Proxmox node pool.
+type: object
+additionalProperties: false
+required:
+  - ansible_host
+  - proxmox_install_nic
+  - proxmox_install_disk_filter_key
+  - proxmox_install_disk_filter_value
+  - proxmox_install_fqdn
+  - proxmox_ipv4_prefix
+  - proxmox_install_keyboard
+  - proxmox_install_country
+  - proxmox_install_timezone
+  - proxmox_cluster_name
+  - proxmox_cluster_leader
+properties:
+  ansible_host:
+    type: string
+  proxmox_install_nic:
+    type: string
+  proxmox_install_disk_filter_key:
+    type: string
+  proxmox_install_disk_filter_value:
+    type: string
+  proxmox_install_fqdn:
+    type: string
+  proxmox_ipv4_prefix:
+    type: integer
+  proxmox_install_keyboard:
+    type: string
+  proxmox_install_country:
+    type: string
+  proxmox_install_timezone:
+    type: string
+  proxmox_cluster_name:
+    type: string
+  proxmox_cluster_leader:
+    type: string

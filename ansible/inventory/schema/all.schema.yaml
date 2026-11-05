@@ -1,0 +1,54 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Environment-wide variables
+description: Environment-wide Ansible variables.
+type: object
+additionalProperties: false
+required:
+  - wywy_env
+  - control_dir
+  - wywy_gateway
+  - wywy_nameserver
+  - proxmox_template_image
+  - cloudflare_public_hosts
+properties:
+  wywy_env:
+    type: string
+    enum:
+      - dev
+      - prod
+  control_dir:
+    type: string
+  wywy_gateway:
+    type: string
+  wywy_nameserver:
+    type: string
+  proxmox_template_image:
+    type: object
+    additionalProperties: false
+    required:
+      - url
+      - sha512
+    properties:
+      url:
+        type: string
+      sha512:
+        type: string
+  cloudflare_public_hosts:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - hostname
+        - namespace
+        - service
+      properties:
+        name:
+          type: string
+        hostname:
+          type: string
+        namespace:
+          type: string
+        service:
+          type: string

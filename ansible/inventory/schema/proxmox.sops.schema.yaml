@@ -1,0 +1,44 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Encrypted Proxmox node definitions
+description: Sops-encrypted addresses and install settings for physical PVE nodes.
+type: object
+additionalProperties: false
+required:
+  - proxmox_nodes
+  - sops
+properties:
+  proxmox_nodes:
+    type: object
+    minProperties: 1
+    additionalProperties:
+      type: object
+      additionalProperties: false
+      required:
+        - address
+        - nic
+        - disk_filter
+      properties:
+        address:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        nic:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        fqdn:
+          type: string
+          pattern: '^ENC\[AES256_GCM,'
+        disk_filter:
+          type: object
+          additionalProperties: false
+          required:
+            - key
+            - value
+          properties:
+            key:
+              type: string
+              pattern: '^ENC\[AES256_GCM,'
+            value:
+              type: string
+              pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object

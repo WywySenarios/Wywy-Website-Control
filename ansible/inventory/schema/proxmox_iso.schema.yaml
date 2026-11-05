@@ -1,0 +1,12 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Proxmox installer ISO keys
+description: Public keys baked into the Proxmox installer ISO.
+type: object
+additionalProperties: false
+required:
+  - proxmox_iso_public_keys
+properties:
+  proxmox_iso_public_keys:
+    type: array
+    items:
+      type: string

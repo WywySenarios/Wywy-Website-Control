@@ -1,0 +1,40 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Kubernetes VM definitions
+description: Shared variables for the Kubernetes VMs and their Proxmox hosts.
+type: object
+additionalProperties: false
+required:
+  - k8s_version
+  - containerd_version
+  - kube_vip_version
+  - calico_version
+  - wywy_k8s_api_ip
+  - k8s_control_plane_hosts
+  - k8s_vm_addresses
+  - k8s_control_plane_ips
+  - k8s_apiserver_extra_sans
+  - wywy_worker_ips
+  - wywy_control_plane_ips
+properties:
+  k8s_version:
+    type: string
+  containerd_version:
+    type: string
+  kube_vip_version:
+    type: string
+  calico_version:
+    type: string
+  wywy_k8s_api_ip:
+    type: string
+  k8s_control_plane_hosts:
+    type: string
+  k8s_vm_addresses:
+    type: string
+  k8s_control_plane_ips:
+    type: string
+  k8s_apiserver_extra_sans:
+    type: string
+  wywy_worker_ips:
+    type: string
+  wywy_control_plane_ips:
+    type: string
