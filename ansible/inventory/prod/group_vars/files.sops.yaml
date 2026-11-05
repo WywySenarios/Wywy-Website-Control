@@ -1,0 +1,16 @@
+wywy_pod_cidr: ENC[AES256_GCM,data:HfwMb2ncl7o4W5yJGA==,iv:mymH6lLE6YJq0C843wWhd4OuyCf82sUlhlv4x3FWblE=,tag:+vbmRniIrG5MFSt58QynSQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBMk4weWV3cTZKTWRtenor
+            cGtFZUJUM3REbWpCY3hWNk1Od3E5cUM3VDBZCmVvWnpuaVUrV1lLNWRndzRwZzlU
+            Ui9JdmlSK0t5aWVaalpIOXJmb3VGS00KLS0tIDNLd0hvS2ZaYmxYdVJxNmpVbVF6
+            RWgwUW1NZ2t3b2wxWHBtMEZmUU9haTQKdBjR0dUqM3jJyaN6G4wxls7jUitv7EX7
+            m1lFHfqZN8TYQNklopdOiPSDxNKvaLmXHS/MQ8BNW2ns9WgKJmeS5w==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
+    lastmodified: "2026-10-24T17:00:05Z"
+    mac: ENC[AES256_GCM,data:bCI/j6qGWHdSFl+7FwoQo8yIuIED8SEjhtFo22QU4ARajvc8Yydu6XtVWShi88CnDMuexZQkLuxO1AG3yNTWgflO6xCT4JXz4tEeX/tDc2Kjn72EUt6YU6XOeAWFR4pANnmWm+EsHh4R1swDntOJEosAHO95A8KTUsY/YpKN+84=,iv:+JN8woWkczIq6FLtp+tSyJ8ChBFG4RZ5WBsNljgkcLg=,tag:HLr9hu/Q/3s7IG7qnfpogA==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.13.2

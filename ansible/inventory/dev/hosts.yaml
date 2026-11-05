@@ -4,7 +4,6 @@ all:
     localhost:
       ansible_connection: local
   children:
-    # Physical Proxmox node pool.
     proxmox:
       hosts:
         proxmox-1.internal:
@@ -19,7 +18,6 @@ all:
     proxmox_iso:
       hosts:
         localhost:
-    # Role tags. Each tag selects exactly one canonical node; tags may overlap.
     db_pve:
       hosts:
         proxmox-2.internal:

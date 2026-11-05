@@ -1,6 +1,32 @@
 ---
 all:
+  hosts:
+    localhost:
+      ansible_connection: local
   children:
+    proxmox:
+      hosts:
+        proxmox-1.internal:
+          ansible_user: root
+        proxmox-2.internal:
+          ansible_user: root
+        proxmox-3.internal:
+          ansible_user: root
+    proxmox_cluster_leader:
+      hosts:
+        proxmox-1.internal:
+    proxmox_iso:
+      hosts:
+        localhost:
+    db_pve:
+      hosts:
+        proxmox-2.internal:
+    files_pve:
+      hosts:
+        proxmox-3.internal:
+    registry_pve:
+      hosts:
+        proxmox-1.internal:
     db:
       hosts:
         db.internal:
@@ -8,6 +34,10 @@ all:
     files:
       hosts:
         files.internal:
+          ansible_user: wywy
+    registry:
+      hosts:
+        registry.internal:
           ansible_user: wywy
     k8s_vms:
       children:
@@ -41,6 +71,3 @@ all:
                 k8s-worker-node-1.internal:
                 k8s-worker-node-2.internal:
                 k8s-worker-node-3.internal:
-    proxmox_iso:
-      hosts:
-        localhost:
