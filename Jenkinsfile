@@ -23,6 +23,7 @@ pipeline {
           sh 'scripts/tests/ansible/lint.sh'
           sh 'scripts/tests/ansible/ruff.sh'
           sh 'scripts/tests/ansible/syntax.sh'
+          sh 'scripts/tests/ansible/mypy.sh'
         }
       }
     }

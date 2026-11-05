@@ -19,6 +19,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "ansible-lint==25.1.0",
+    "mypy==2.4.1",
     "pytest==9.2.0",
     "ruff==0.17.1",
 ]
@@ -44,6 +45,23 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+# ansible-core ships no py.typed marker or stubs, so treat it as untyped.
+[[tool.mypy.overrides]]
+module = ["ansible", "ansible.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+# The tests monkeypatch wywy_hosts.shutil/subprocess, so those re-exports are
+# part of the module's test surface.
+[[tool.mypy.overrides]]
+module = ["wywy_hosts"]
+implicit_reexport = true
+disallow_subclassing_any = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

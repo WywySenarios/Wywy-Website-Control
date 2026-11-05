@@ -177,9 +177,15 @@ class LookupModule(LookupBase):
             records = parse_hosts(text, source=file_name)
             if kwargs.get("all"):
                 return list_all(records, source=file_name)
-            prefix = kwargs.get("prefix")
-            if prefix is not None:
+            if "prefix" in kwargs:
+                prefix = kwargs.get("prefix")
+                if not isinstance(prefix, str):
+                    message = "prefix must be a non-empty string"
+                    raise AnsibleError(message)
                 return list_prefix(records, prefix, source=file_name)
+            if name is None:
+                message = "wywy_hosts needs a host name"
+                raise AnsibleError(message)
             return [resolve_name(records, name, source=file_name)]
         except HostsError as error:
             raise AnsibleError(str(error)) from error

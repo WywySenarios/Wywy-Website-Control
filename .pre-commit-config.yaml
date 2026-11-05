@@ -22,6 +22,12 @@ repos:
         language: system
         pass_filenames: false
         files: *ansible-files
+      - id: ansible-mypy
+        name: mypy
+        entry: scripts/tests/ansible/mypy.sh
+        language: system
+        pass_filenames: false
+        files: *ansible-files
       - id: ansible-syntax
         name: ansible-playbook --syntax-check
         entry: scripts/tests/ansible/syntax.sh

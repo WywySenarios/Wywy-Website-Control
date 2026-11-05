@@ -12,9 +12,9 @@ ansible/.collections/
 ansible/verify/
 .ansible/
 
-# Python bytecode and lint cache.
 __pycache__/
 .ruff_cache/
+.mypy_cache/
 
 # Proxmox ISO build artifacts
 /build/proxmox/

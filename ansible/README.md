@@ -37,4 +37,5 @@ scripts/tests/ansible/pytest.sh
 scripts/tests/ansible/lint.sh
 scripts/tests/ansible/syntax.sh
 scripts/tests/ansible/ruff.sh
+scripts/tests/ansible/mypy.sh
 ```
