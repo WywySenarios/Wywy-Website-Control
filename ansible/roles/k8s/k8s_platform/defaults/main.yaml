@@ -15,7 +15,7 @@ k8s_platform_helm_repo_name: argo-helm
 k8s_platform_helm_repo_url: https://argoproj.github.io/argo-helm
 k8s_platform_helm_timeout: 10m
 
-k8s_platform_age_key_path: /root/.config/sops/age/keys.txt
+k8s_platform_age_key_path: "{{ lookup('env', 'HOME') }}/.config/sops/age/keys.txt"
 k8s_platform_age_secret_name: argocd-age-key
 k8s_platform_metallb_crd: ipaddresspools.metallb.io
 k8s_platform_argocd_load_balancer_ip: "{{ argocd_load_balancer_ip }}"
