@@ -21,7 +21,7 @@ For your homelab setup:
    scripts/install/ansible.sh
    ```
 
-2. Run all the Ansible playbooks as you see fit! `ansible/playbooks/` might have README's in the subdir to give you an idea of what to run in what order.
+2. Run all the Ansible playbooks as you see fit! `ansible/playbooks/` has README's in some sub-directories to give you an idea of what to run in what order.
 
 ## Configuration
 
