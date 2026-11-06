@@ -9,6 +9,13 @@
       - wywy_k8s_api_ip is defined
     fail_msg: the control-plane group vars are incomplete
 
+- name: Assert the operator home directory is known
+  ansible.builtin.assert:
+    that:
+      - k8s_control_plane_operator_home | length > 1
+      - k8s_control_plane_operator_home is match('^/')
+    fail_msg: HOME must be an absolute operator path; cannot locate the kubeconfig
+
 - name: Check for the control-plane admin kubeconfig
   ansible.builtin.stat:
     path: /etc/kubernetes/admin.conf
@@ -45,10 +52,11 @@
 
 - name: Ensure the operator kube config directory exists
   ansible.builtin.file:
-    path: "{{ lookup('env', 'HOME') }}/.kube"
+    path: "{{ k8s_control_plane_kubeconfig_new | dirname }}"
     state: directory
     mode: "0700"
   delegate_to: localhost
+  become: false
   run_once: true
   when: inventory_hostname == k8s_control_plane_init_host
 
@@ -66,6 +74,7 @@
     path: "{{ k8s_control_plane_kubeconfig_new }}"
     mode: "0600"
   delegate_to: localhost
+  become: false
   run_once: true
   when: inventory_hostname == k8s_control_plane_init_host
 
@@ -292,6 +301,7 @@
     port: 6443
     timeout: 300
   delegate_to: localhost
+  become: false
   run_once: true
   when: inventory_hostname == k8s_control_plane_init_host
 
