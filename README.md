@@ -15,8 +15,6 @@ For your homelab setup:
 
 ## Usage
 
-Note: The commands below target dev. Substitute `--prod` for production.
-
 1. Install the Ansible toolchain:
 
    ```bash
