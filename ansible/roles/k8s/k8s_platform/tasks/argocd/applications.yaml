@@ -1,19 +1,16 @@
 ---
-- name: Check for the Argo CD bootstrap manifests
+- name: Check for the Argo CD infrastructure kustomization
   ansible.builtin.stat:
-    path: "{{ item }}"
-  loop:
-    - "{{ k8s_platform_argocd_appproject_file }}"
-    - "{{ k8s_platform_argocd_root_application_file }}"
-  register: k8s_platform_argocd_bootstrap_files
+    path: "{{ k8s_platform_argocd_infrastructure_dir }}/kustomization.yaml"
+  register: k8s_platform_argocd_infrastructure
 
-- name: Require the Argo CD bootstrap manifests
+- name: Require the Argo CD infrastructure kustomization
   ansible.builtin.assert:
     that:
-      - k8s_platform_argocd_bootstrap_files.results | selectattr('stat.exists') | list | length == 2
-    fail_msg: the Argo CD AppProject or root Application manifest is missing
+      - k8s_platform_argocd_infrastructure.stat.exists
+    fail_msg: the Argo CD infrastructure kustomization is missing
 
-- name: Apply the Argo CD AppProject
+- name: Apply the Argo CD infrastructure
   ansible.builtin.command:
     argv:
       - "{{ k8s_platform_kubectl }}"
@@ -22,28 +19,12 @@
       - --server
       - "{{ k8s_platform_api_server }}"
       - apply
-      - -f
-      - "{{ k8s_platform_argocd_appproject_file }}"
-  register: k8s_platform_argocd_appproject
+      - -k
+      - "{{ k8s_platform_argocd_infrastructure_dir }}"
+  register: k8s_platform_argocd_infrastructure_apply
   changed_when: >-
-    'created' in k8s_platform_argocd_appproject.stdout
-    or 'configured' in k8s_platform_argocd_appproject.stdout
-
-- name: Apply the Argo CD root Application
-  ansible.builtin.command:
-    argv:
-      - "{{ k8s_platform_kubectl }}"
-      - --kubeconfig
-      - "{{ k8s_platform_kubeconfig }}"
-      - --server
-      - "{{ k8s_platform_api_server }}"
-      - apply
-      - -f
-      - "{{ k8s_platform_argocd_root_application_file }}"
-  register: k8s_platform_argocd_root_application
-  changed_when: >-
-    'created' in k8s_platform_argocd_root_application.stdout
-    or 'configured' in k8s_platform_argocd_root_application.stdout
+    'created' in k8s_platform_argocd_infrastructure_apply.stdout
+    or 'configured' in k8s_platform_argocd_infrastructure_apply.stdout
 
 - name: Wait for the Argo CD root Application
   ansible.builtin.command:

@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - pools.yaml
+
+patches:
+  - target:
+      group: metallb.io
+      version: v1beta1
+      kind: IPAddressPool
+      name: lan
+    path: patch-pools.yaml

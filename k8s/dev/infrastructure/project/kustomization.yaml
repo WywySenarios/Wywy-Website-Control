@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../base/infrastructure/project
+
+patches:
+  - target:
+      kind: AppProject
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: wywy-dev

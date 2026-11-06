@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: immich
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argoproj.io
+spec:
+  project: wywy-prod
+  sources:
+    # OCI Helm chart
+    - repoURL: ghcr.io/immich-app/immich-charts
+      chart: immich
+      targetRevision: 0.13.4
+      helm:
+        releaseName: immich
+        valueFiles:
+          - $values/k8s/base/immich/values.yaml
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      path: k8s/prod/immich/pvcs
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      path: k8s/prod/cloudflared/immich
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: immich
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

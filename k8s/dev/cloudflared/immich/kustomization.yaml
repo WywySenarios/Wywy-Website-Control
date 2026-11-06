@@ -5,5 +5,4 @@ namespace: immich
 
 resources:
   - ../../../base/cloudflared
-  - network-policy.yaml
   - secrets

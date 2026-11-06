@@ -1,0 +1,180 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../base/infrastructure/apps
+
+namePrefix: dev-
+
+patches:
+  # Dev does not selfHeal.
+  - target:
+      kind: Application
+    patch: |-
+      - op: remove
+        path: /spec/syncPolicy/automated/selfHeal
+
+  - target:
+      kind: Application
+    patch: |-
+      - op: replace
+        path: /spec/project
+        value: wywy-dev
+
+  - target:
+      kind: Application
+      name: app-of-apps
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/infrastructure
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: argocd-tls
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/argocd/tls
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: csi-driver-nfs
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: immich
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/path
+        value: k8s/dev/immich/pvcs
+      - op: replace
+        path: /spec/sources/3/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/3/path
+        value: k8s/dev/cloudflared/immich
+
+  - target:
+      kind: Application
+      name: immich-secrets
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/immich/secrets
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: jellyfin
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/path
+        value: k8s/dev/cloudflared/jellyfin
+
+  - target:
+      kind: Application
+      name: jenkins
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/jenkins
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: master-database-secrets
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/master-database/secrets
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: master-database
+    patch: |-
+      - op: replace
+        path: /spec/sources/0/path
+        value: k8s/dev
+      - op: replace
+        path: /spec/sources/0/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: metallb
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: nextcloud
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/nextcloud
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev
+
+  - target:
+      kind: Application
+      name: observability
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/2/path
+        value: k8s/dev/observability/secrets
+      - op: replace
+        path: /spec/sources/3/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/3/path
+        value: k8s/dev/cloudflared/observability
+
+  - target:
+      kind: Application
+      name: vaultwarden
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: k8s/dev/vaultwarden
+      - op: replace
+        path: /spec/source/targetRevision
+        value: dev

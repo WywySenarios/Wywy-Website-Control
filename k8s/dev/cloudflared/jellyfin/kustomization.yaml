@@ -5,5 +5,4 @@ namespace: jellyfin
 
 resources:
   - ../../../base/cloudflared
-  - network-policy.yaml
   - secrets

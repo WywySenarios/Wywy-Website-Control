@@ -1,23 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Wywy dev-cluster ArgoCD infrastructure: AppProject + one file per
-# Application, plus the app-of-apps root that manages this folder.
-# Apply once with:  kubectl apply -k k8s/dev/infrastructure
-# (after that dev-app-of-apps owns this folder — push changes, don't re-apply)
 resources:
-  - appproject.yaml
-  - app-of-apps.yaml
+  - apps
+  - project
   - app-image-updater.yaml
-  - app-master-database.yaml
-  - app-master-database-secrets.yaml
-  - app-nextcloud.yaml
-  - app-observability.yaml
-  - app-immich-secrets.yaml
-  - app-immich.yaml
-  - app-csi-driver-nfs.yaml
-  - app-jenkins.yaml
-  - app-jellyfin.yaml
-  - app-vaultwarden.yaml
-  - app-metallb.yaml
-  - app-argocd-tls.yaml

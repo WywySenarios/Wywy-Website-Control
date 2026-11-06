@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - app-of-apps.yaml
+  - app-argocd-tls.yaml
+  - app-csi-driver-nfs.yaml
+  - app-immich-secrets.yaml
+  - app-immich.yaml
+  - app-jellyfin.yaml
+  - app-jenkins.yaml
+  - app-master-database-secrets.yaml
+  - app-master-database.yaml
+  - app-metallb.yaml
+  - app-nextcloud.yaml
+  - app-observability.yaml
+  - app-vaultwarden.yaml

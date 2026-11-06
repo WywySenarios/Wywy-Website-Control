@@ -7,11 +7,12 @@ CRD_SCHEMA_URL="https://raw.githubusercontent.com/datreeio/CRDs-catalog/${CRD_SC
 RENDER_DIRS=(
 	k8s/base/cloudflared
 	k8s/base/image-updater
+	k8s/base/infrastructure
 	k8s/base/jenkins
+	k8s/base/metallb
 	k8s/base/nextcloud
 	k8s/base/vaultwarden
 	k8s/dev/infrastructure
-	k8s/dev/metallb
 	k8s/dev/immich/pvcs
 	k8s/prod/infrastructure
 )

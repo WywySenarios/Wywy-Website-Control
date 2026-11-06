@@ -5,5 +5,4 @@ namespace: nextcloud
 
 resources:
   - ../../../base/cloudflared
-  - network-policy.yaml
   - secrets

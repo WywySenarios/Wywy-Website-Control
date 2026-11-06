@@ -5,5 +5,4 @@ namespace: vaultwarden
 
 resources:
   - ../../../base/cloudflared
-  - network-policy.yaml
   - secrets

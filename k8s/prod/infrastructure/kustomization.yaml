@@ -2,7 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - appproject.yaml
-  - app-of-apps.yaml
-  - app-csi-driver-nfs.yaml
-  - app-jenkins.yaml
+  - apps
+  - project
