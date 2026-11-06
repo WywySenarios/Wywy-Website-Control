@@ -15,8 +15,6 @@
     argv:
       - sops
       - -d
-      - --extract
-      - '["data"]'
       - "{{ k8s_platform_argocd_admin_secret }}"
   register: k8s_platform_argocd_admin_password
   changed_when: false

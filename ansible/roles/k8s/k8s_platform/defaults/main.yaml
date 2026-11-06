@@ -25,10 +25,8 @@ k8s_platform_control_dir: "{{ playbook_dir | dirname | dirname | dirname }}"
 k8s_platform_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
 k8s_platform_argocd_admin_secret: >-
   {{ k8s_platform_control_dir }}/secrets/{{ k8s_platform_env }}/argocd-admin.sops
-k8s_platform_argocd_appproject_file: >-
-  {{ k8s_platform_control_dir }}/k8s/{{ k8s_platform_env }}/infrastructure/appproject.yaml
-k8s_platform_argocd_root_application_file: >-
-  {{ k8s_platform_control_dir }}/k8s/{{ k8s_platform_env }}/infrastructure/app-of-apps.yaml
+k8s_platform_argocd_infrastructure_dir: >-
+  {{ k8s_platform_control_dir }}/k8s/{{ k8s_platform_env }}/infrastructure
 k8s_platform_argocd_root_application_name: "{{ k8s_platform_env }}-app-of-apps"
 k8s_platform_argocd_wait_retries: 60
 k8s_platform_argocd_wait_delay: 10
