@@ -41,6 +41,12 @@ Some secrets are sops-encrypted under `secrets/<env>/` (currently `secrets/dev/`
 
 Ansible configuration lives in `ansible/inventory/<env>/group_vars/` as plain `*.yaml` and encrypted `*.sops.yaml` files.
 
+## Known Bugs
+
+Jenkins images playbook fails to resolve registry.internal. Currently /etc/hosts manual workaround is needed.
+
+kubectl does not work unless k8s-api.internal is manually defined in /etc/hosts.
+
 ## Status
 
 Unstable. Production with PVE & Kubernetes is not online.
