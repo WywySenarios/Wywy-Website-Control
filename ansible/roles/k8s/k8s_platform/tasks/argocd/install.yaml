@@ -80,7 +80,7 @@
     - name: Create the Argo CD age key Secret
       ansible.builtin.shell: |
         set -o pipefail
-        sudo -n cat {{ k8s_platform_age_key_path }} \
+        cat {{ k8s_platform_age_key_path }} \
           | {{ k8s_platform_kubectl }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }} \
               -n {{ k8s_platform_argocd_namespace }} create secret generic \
               {{ k8s_platform_age_secret_name }} \
