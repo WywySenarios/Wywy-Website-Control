@@ -1,13 +1,13 @@
 creation_rules:
   - path_regex: (^|/)(k8s/(.*/)?prod|prod/(.*/)?k8s)/.*\.sops(\.yaml)?$
     encrypted_regex: ^(data|stringData)$
-    age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
+    age: age146fptcfz3qksgvxu8hexmve4p59qhse9ft7asxpfqzqwflv89c2s3fy4tw
   - path_regex: (^|/)prod/.*\.sops$
-    age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
+    age: age146fptcfz3qksgvxu8hexmve4p59qhse9ft7asxpfqzqwflv89c2s3fy4tw
   - path_regex: (^|/)prod/.*\.sops\.yaml$
-    age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
+    age: age146fptcfz3qksgvxu8hexmve4p59qhse9ft7asxpfqzqwflv89c2s3fy4tw
   - path_regex: (^|/)secrets/(.*/)?prod/.*
-    age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
+    age: age146fptcfz3qksgvxu8hexmve4p59qhse9ft7asxpfqzqwflv89c2s3fy4tw
   - path_regex: (^|/)(k8s/(.*/)?dev|dev/(.*/)?k8s)/.*\.sops(\.yaml)?$
     encrypted_regex: ^(data|stringData)$
     age: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
