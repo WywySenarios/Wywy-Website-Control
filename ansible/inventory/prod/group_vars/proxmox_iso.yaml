@@ -1,2 +1,3 @@
 ---
-proxmox_iso_public_keys: []
+proxmox_iso_public_keys:
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGu2xPf0PdN2Xv+ZQyUKiZeCJ51kumkti3PI0KqlBo0y"

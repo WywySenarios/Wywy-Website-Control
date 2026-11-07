@@ -1,76 +1,76 @@
 k8s_vm_definitions:
     k8s-control-plane-node-1.internal:
-        role: ENC[AES256_GCM,data:wlgIUOgCXBrRF9mi9w==,iv:rR8RO572fdTZbMDFyYFGeNv/e9hFInvrMNt/l3C4gnI=,tag:Uopm10CQTlBykX9kWE+5hg==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:bo3yEvZnNzM+fU68DAuYnyx6PcxFDzhl65R5oA==,iv:yOuSWVfwwkryswfj9L0LwlPWM1p+QmwgCGno3JfhdLM=,tag:njKRunKoTirwR9cGyN2QvA==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:ER7cXQ==,iv:BuSo2wOBu1QfWIkLQSBpRpVSiZmejB3DiMX6ftSQp7Q=,tag:mD4h/CfQeV+4jOC0EUshqQ==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:2sPD89FCG4zPB9QQiT9obOgzOdCWUEE+EmMCZ9zyWyk=,iv:S2/7hbqE1yHrdd5mjGcg/hCu31KFcQbAHtIRURFcINQ=,tag:8UujqGZ1lDaRCX8bvaJVeg==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:H7ta,iv:lBAJB0WnN8cXJiOkSgyLP2XGFVdqkW/4TTR6cNXnhy4=,tag:PUtUOv3M9OEKDje4sOFw7Q==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:QgH6,iv:XCL5IltUxSgystgTJLqeHs1+x7ZT6Ko47rJLr+OSjdg=,tag:iy7j0PJPWS3O389Xw4qMhA==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:SJq7PW6EFtygjbKNLTdL3dQ28g==,iv:7J/7nTcj2VZJfYfIqGDfCNptRfQ1beAu+j9wqrEzLJg=,tag:mKVGX6Xhs9BmI0EJeFm8Hg==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:5p26,iv:DyF9PH694tTCq6lpSIJkWgHEdBdUsus+ux427OtoGMQ=,tag:imuNTkAk0UPH+YO4gHHb3Q==,type:str]
-        vm_address: ENC[AES256_GCM,data:VGw/gCrFK3UCD3/s98U=,iv:dIFynsk3/znRUPZ370W7RQ0VkgfKkEJc3eGTZRqXn/o=,tag:aTr+plZ/Aa4PY39sYkqI3g==,type:str]
+        role: ENC[AES256_GCM,data:Qp+dC4xxR/Qnopvhaw==,iv:6NjacSF+PjAQHsx7O7FzSu0geeft7MQY79ImNhBLntU=,tag:XJ594OLMYl5+EYcvHQ9GZQ==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:A6yNW9trGAB36WUIMwvQ3OzuvPk45ph8R7rRuw==,iv:cUIwjDZ35luZSGoXSrPaKD1QZRHAi0tzfqabOfOgzC8=,tag:jceCY2HCNfpxaQE0nriSRg==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:1XJAdLK9jrQ=,iv:eYbaH7vj4Yxoi7DHbVZX4efp1hDkk7wtTE6PNNLSbv0=,tag:c/JZN6/j0e0oboFZUGz7Ag==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:uysL0eYUtm+aoKHl8Gkivefp4ovn1OF1kOK0wQ==,iv:t6gV0z6pXAHzhdPIgXd7QIUa8ujv8/5WQBdV4V8y+IE=,tag:hSqx8Pe6EcLoc5RDhtDH5A==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:/zId,iv:HDagC9vFjeSJYpNNDzCQxLEMyhYlNCDpX3bNm51y1zw=,tag:TpQ2JOANqrqZub1jpHUO1A==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:ph6AUJhY,iv:jjBagcjupeK2pLDeENYoajiffDYKzLlP0Sr5wUj3YPM=,tag:S68kshOCHoSeWnxYWmcujg==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:HRQhBv05lHg5amrRsUiPPlo5Lg==,iv:sytgc7++0PbXixtafJupKnteFUOSQKNthT+5wG2kmZc=,tag:JvBrNpdds7aj3q+2KpdELA==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:deRu,iv:+OXd5xxU4cXAkKJtNoDQaOQskyXQoTWZzHq825xQLLg=,tag:NXVv0lOOBbF6XQUPvIYQeA==,type:str]
+        vm_address: ENC[AES256_GCM,data:KDLoNUuwVa8rBH7GWA==,iv:+LIKSU6JC1G8og8/6YMDyDlnpHNwY9t1NhXuFAiWU4o=,tag:X7nfzAX/FCdDriK3/u8tAg==,type:str]
     k8s-control-plane-node-2.internal:
-        role: ENC[AES256_GCM,data:gVxbySt66J2HAn/mbw==,iv:yJhJX3D6iqqbcyfa43PMemdzPStI2hU17bwbiTiJZFE=,tag:hWejiZdXYoRfMAq0wxL60A==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:vT6C8szi7sor4kRNE4P3EdZnUv+DAmnTJME/iQ==,iv:9++kSJRsd6yiiJbmLo5J902Z07p9QlsONZvzumkfyLk=,tag:K9VnvIkL+07QNL7UywoyyQ==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:cZ+5dA==,iv:7axEApOJggWMrrN+3sbP2aGF4Fgcxzr8MzP/ZkPQDgk=,tag:e4yzBpxRM43wiulI0rA/Sg==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:UcZtkeXSp8IKtKLJXjrWLPPDPM8tBtxgfd6MA/mse54=,iv:BQ6+UXLCh5FTPriv7ZBE1ReHg1gOLMMUh7oMMXK6IV0=,tag:W4sK7ujPKglKzCoxxw5hdw==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:px1F,iv:9Y1vFno9xLtxO0KiEvtGx8ktbe4Q8On7GLQCU+db7jI=,tag:M3Q8KNMiyue5c1tQx/73tg==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:4uus,iv:42WpiAu20l70GrMmf4C6oQjUM7nG0TPH3O4A/O6nuDc=,tag:lVkm8TfY4B7nDQzfJirqew==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:1t9lq1gzbdxtMuAzeFcBkjY9Cw==,iv:KgeDxSUSVU2YqDcWFXAbNHNqbxbY1yGk0NuHR8pAefA=,tag:9yY4ZsW0Di89kWe80N4CWw==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:PJ0v,iv:znuSWasYCXi8uLpkClyfXVonZOctnfruu+l4tG8BkWM=,tag:P3HAQuA89lOvZL/5/IFwHw==,type:str]
-        vm_address: ENC[AES256_GCM,data:+jCXORm8DA8++f1fS6Q=,iv:CzcFMLe9+tAKF9PaD1KacKW90bIiUkHaMZwNycmow8I=,tag:qQ93VSLyCBKUlJqkbUMB1w==,type:str]
+        role: ENC[AES256_GCM,data:QodevsNB5/D5zkUb8A==,iv:8rrffmkkLnPBIPsgcrbhwTq43zEl0WHXOsKCVQHNyfg=,tag:iijrqCutAqpYsk6Ir6A4BQ==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:ks/8jzhzwyVD4ypEV8KUyE1ylR3X57BuZUdLLg==,iv:uXYx7dQLCLodXQ6jrqlE5a5F4DR/AErCXGZI8yI51Ms=,tag:EOi1mojM6d2tJ1UY/1HPOw==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:zLEnAVQpzOU=,iv:iIFfkzWzSOb2FtTpEZvlb39fXJCgZwJo4fNSyLFUDiY=,tag:35MRxWznA8Qv9Qt2bYhSnw==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:46VOm42hd2dvBj7u4dCf6yERTTqA0smjgO29VQ==,iv:aClkocGQ+ERali33EGXXUhF0gb62HiCQFx4BXBrEIog=,tag:9IhlFXw0om2qnW9v8FEu5g==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:2R7L,iv:hgYjIeAxDdbXWUCBuwCpmzsZpgG+6la5jGFfH2gWxSU=,tag:JBrT6QiaarQfrSRYsgrlsQ==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:2rQqP36/,iv:3AdIxdmtsGVdua2WXlqe+WpX289k+8MXxkGnNr9DCmI=,tag:VEq44jEv5kGSYseiPWtyHQ==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:jD3wwQE6b7asRajD3btiqNkY6g==,iv:SWSkFzlZCIhYD5EAQ97BEV6Jeec/N0/U3/9BvBNQAao=,tag:W2Qf6TCR7/JZQR9Cnhu3Ag==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:eNVD,iv:bQQBsxc7Ku3TrrTLlK3fm0rjpwRTQCPV5YMoItNASJ4=,tag:RCs8/O/lSJD3ifIqmjxr0A==,type:str]
+        vm_address: ENC[AES256_GCM,data:74rnZ8bafCV5qk3WQw==,iv:DApXO+h1Kawjr+/jNIKFBou39d+dOcLS2Ok6ShaZENs=,tag:XzJLN7xAFSugSRjTlT6VNw==,type:str]
     k8s-control-plane-node-3.internal:
-        role: ENC[AES256_GCM,data:2hloFujfrbSypvuavw==,iv:WeeQ7mGLt+wtvwCFqKjPAcSWm34HTK/baksz2mBG2/c=,tag:H+QL4Ln+SOzwq8ivxx5i/g==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:+Plq5gqtOe2q9bI5PSjDlyufNQEcHLZ2uwpi8g==,iv:X2whAUvbOVLpHA2JBf7kniDzDtKNz5vwe01312ce65I=,tag:H74yEfEbgoltSze48wi6vQ==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:VhLtdA==,iv:juKGDHgY6GCtA8sCX4ukP0Mq8yNO7WMB154Y9FbtKmo=,tag:3hI4ss0wMkyjjFV7bj4wvw==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:w3LwDjh6VTDBLJ4mhNioiOlAdXUJfMeIdOP0kFDXGw0=,iv:Me4rmx890epWhkEGvrzooiPgHuIz+2FwDTKL3Pg4yEI=,tag:PLItgFhsewo6D9eOhcWUMQ==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:lKMs,iv:iZykKGzxuLKmdWWFhiT8HoycL/XWcOPO2sQTZ7YKGCo=,tag:moPJv1jqoTF4zFRF6fRtUA==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:80Ub,iv:OxckFQcPWtWbAKuBsJMnrMR2iJNtWwa1A9yM9pMaZfs=,tag:oU6DBkMNw7jIEI7vfDiLZA==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:6pMY6A1kuSp5K2VBtqCesQp/sQ==,iv:e8OAnYtbaOwl0MiqigZt2kH4/NWxOkYHsInGupztrc0=,tag:45ADl9XCe++HzhlUh+zmIA==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:/Kka,iv:Cem0TDOjHL8IGGh7pdYiRKrzyriVSYJQksB85c2UHeE=,tag:JWa9IvGsb9U7bniEIvyM8g==,type:str]
-        vm_address: ENC[AES256_GCM,data:KZC+yMnm+woyhfDzz7k=,iv:jQii+wEY7XAnDN5J3j+1Obh0uUVUPN7aJBKBi+keJpc=,tag:MMm7noLIe8tAJm3+UI0GHg==,type:str]
+        role: ENC[AES256_GCM,data:5eegj+69dc2wyhFk/g==,iv:Gf2/1BsOv4o/kqEMbgXAwhCoDd67QiFiajWOflqNSpk=,tag:2MjD9hMcwKKUkqA3dxoemA==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:j/NPB+fZu94ANvAK+Xoyv4fcPFUxuCzVgBZUWg==,iv:o7G8rZBtea/sgxVcetCHoZJMeiGNC+oNLKNr9Ztk3Og=,tag:Ex/YEpP8gq6BTUoGppqF5A==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:edQQzDxoQcQ=,iv:vxjCqj8cR6tgragHQSUXC0ApmiFRAnJdykESPGAYjRI=,tag:JZtrNIlgELkbGPgmb4J/1Q==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:P/FcWfcaNcRcreE/Ilw0Aq/PVz98RE/XbY+KxA==,iv:JloCt5rQW7phgIciR/heKAlEdkvaU6mTy+lJPYJvbuk=,tag:AWbmNDt1QovjbQ3A1lyyKQ==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:e84z,iv:eFDLzWBKIwTCNwrNkFqBvROPksSgObXQSkhVnOgLUyk=,tag:Kr5MvvQfQsMIfEY/UGuaWQ==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:cxgt98vr,iv:iRGvTcsZKhR+JlxZqzLBwcMwS1MSfrvMv09+YSoGlYg=,tag:CgOoaSgmtTEs0Tl0zOLYlA==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:YPhHw3g493rMb6zXNSB/6aqyig==,iv:mAi/ifJu41p1zvQse43vOkoQ0NgBxttRfIBEiVW0iJM=,tag:+8laRJvbNGMO4OdaVSB0tQ==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:yONu,iv:+k6pBpScTgi0v0WHQmNHHDRZRKYqR6Fe1G+0R9qJ+ME=,tag:RCgNsVZmwklffzotXuSV4A==,type:str]
+        vm_address: ENC[AES256_GCM,data:iot7w2pi3bSdLc8Y7Q==,iv:ktkByyayyJBq0KCRrgZpV4JNmm7KS6I/kq2/RKEeAgA=,tag:q2/Wi8up841WgSfF4exVpQ==,type:str]
     k8s-worker-node-1.internal:
-        role: ENC[AES256_GCM,data:TaV2e04S,iv:lRfdfoW8x8LQOX2+Pzk8Cc2O0vUm+tnjZVyuwsOCEDA=,tag:j5QicBnaLLIzjaeYUf7tUQ==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:VmLisJxlvIChYEtIg2PleFxIbD4S,iv:QUC31Fq9XBbT6jxuvkVXCc39nBP9OJbC6slROly+8D0=,tag:mgITDR3tM8c8qcY1IjDXig==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:ZN9o8w==,iv:tsEuUB6eIZsnnT/7lje69Jsq7hVuD8lbUQ0vyNoKOP4=,tag:hZ4F7ktlrSGYt5LkH5ZN8A==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:sGvp73fRLKKVT4dAG0dJTjaPcGo5RcxifyzRYLW3pbZgA/WI,iv:exITkcimElVre8fNH3O6SSn+QhyKum8u4uwgsBN40GM=,tag:LseG9p2FOEFE32nvHn0d3g==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:gs96,iv:zSDTaTKTqAnLH3MNVIh9O+mg0qoG5dxaYQjDaAHbS5g=,tag:vExQQWmlgTP6s5LiN9IKEA==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:lWxt,iv:V5dOXQck+H60dbvnHUD68mNOR2Dk3SnyuaVgU50rb0Q=,tag:mff+PlX8WPhlhOPlNnXzbw==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:wfGpqamnrKiGT5jy,iv:AVi/S4GMTmmyz4Z13suwLuyduwwWinGjBrcS5Vhvcm0=,tag:8RJwEApZZNppGHu27aUvCw==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:uhdz,iv:hybhpvdb4MVVGk3i7LesQJjUDn4eWtts6tmOOdSUC10=,tag:esPj+qVVnjjcAUSJ3R4Mxg==,type:str]
-        vm_address: ENC[AES256_GCM,data:f1t/eSL3W4PvFeY1pGE=,iv:AwiAAXrzSAbRZcpnZ6JFJv0YMTu6hfg8R/mnDC5VJG4=,tag:x/hnrMCrHVitD289OQPnfQ==,type:str]
+        role: ENC[AES256_GCM,data:s8X1gOZp,iv:JuJbzTKippsX1JmJ6JCupfo8fo8gk4Yau10uTlKgskY=,tag:GtQYeEv8+0edoAAvp3v/Ag==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:XddbIWLM48hCWh+bfXkNmneuHaQ9,iv:Xf/s82ZinCmaHoKgaY1X3YaNaCPJYGHqXm1y7xK0NGs=,tag:IlNhNIEUZp1AXT56aCyJuQ==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:azzxZw5Ye6A=,iv:IJ9ny+xnFF+eXO7m7aF9AFhVjgMEiWLUoIVRlyCClHI=,tag:aL27KSF+/Zky+Giq8/bVeA==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:VRRFrJQSRtWVDJzkIkzE98HeU85i,iv:Hrd7cqBH1tff4VUC2u1nv7bb34y/6GMAOLk2lLuM8vc=,tag:6BOOOOxAPkivocORqwxvlQ==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:PrgV,iv:8mLVCH5yu/qwnGi9mf2H5Za60AvkXNOXerVJ0uxhaq4=,tag:eOXM3vnQYkrm6Qj3nVwZuQ==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:+rQDGZMH,iv:I5zuGQ3aN74CYRgT69Vty7AGirtkVzYaOI5UKW3LEA4=,tag:NqK1LeuGbbCGjbo59A0jYw==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:4a29+TturIpl7ShV,iv:3gJaDnfg/OX822yNdTYKYkgmi4FihYGQ7nsGrKHKIx8=,tag:Y/4F8dZrvW8A1o1UUoNnFQ==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:2GkG,iv:aDBjETcj6UlGZMcvgN3Nn4w+71lyEDF91Q3ym5w2F1Y=,tag:PNjUjt1GHYg7MD8JPnSYTA==,type:str]
+        vm_address: ENC[AES256_GCM,data:8NpKc6sAQdWM+F+Sfg==,iv:rWGokWd3YWJxBNm8W8um/p3k38JZJW2WHdDH6D7Ik2Y=,tag:1tLkxgx2l/7bpt280o6jqw==,type:str]
     k8s-worker-node-2.internal:
-        role: ENC[AES256_GCM,data:Rf6haeoE,iv:Rsht0OqufkOaRy7KOYzBTzOjdylA3lvbxKveB/k/+C8=,tag:i3WfE5PfESDzQBg/9Jp6PQ==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:Ju7h+BBPZXCjSq4ct1y6DLblkRXR,iv:cu9CjNIRLwXddm+SS3+Bh9GHaWl96cbAJM5VAopC8g4=,tag:TYA5zie0X3I3tKHW5CDu1Q==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:AvJsHQ==,iv:7k8x1IzC+YukyqkKFsN7MytCcq0RpbSqetnPwk79Pa8=,tag:HlZJjzYCWC4PGRLZaVA2QA==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:cAITOu8aqVYHla9hyVHx2Uk/Y3ZNO2orfu1D4ozXJt8EgqhQ,iv:tO0l8ZTCLbQH3dxDTtJhMxE2D1DCr3LRhFsFyFrJzuo=,tag:vpG0ieem8zFXHWCobIecOg==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:Bfny,iv:MBiYDuDgas+lMnyuMdz2W0l2qUqotUbirHd1eUI/sdk=,tag:KwIdI29TK0KjOllytTE2Dg==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:GgBZ,iv:LZTV8UM101ofb8zwd1V87203acGXcSKCnRh5Jhc1DAU=,tag:Pi1iuPGmPtp+AC5wIiK4ww==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:sunQ7wM0LZfMhF7G,iv:7bPqbgrEORL/SvKixvv4Sk7DRExPK5b1+4GYU4OdBLM=,tag:01Acp7uHkC6EF3zPQla1wg==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:SzT9,iv:ikcDKYc88m1AQOeodhggdlPuzuL+PB8eGLEFstiIGNQ=,tag:gw8EUI+nV9DMk4NWGTlgqA==,type:str]
-        vm_address: ENC[AES256_GCM,data:CMIDKJQwwXrBmJCMUC8=,iv:GQNMv6sop3NG4gkYr1FNyQTVlXFDbQ4GQjLX0nRYahM=,tag:2oPY0TxyoZSZv0tlhmYrYQ==,type:str]
+        role: ENC[AES256_GCM,data:7/IrVQNe,iv:PjkxRohOdlREG0MEJCTv7VtsSwB8EmQjDG4DZLKo7O0=,tag:Tq2xJVbFopHyLoppgFKsvw==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:WSNNpydFkPpgK6NO8HUVYrfz6F/N,iv:fWuYiiI0n2EQEfU1IE1uOS1QLWcquiQiSwaAObswED8=,tag:8IbYzZuWHjbRTCCwY9i1sA==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:jkRLoByaCsQ=,iv:LF78AKvLu2k4fuo7ipd2BbMq31nSO7GV+NWZNElxjOI=,tag:1hVUwkHpFNTXjEyv3RzIHw==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:mN+M31ly8eD412kGWVnH/eA6e0c1,iv:wqsJTt48ZKb4+jGWFFR/4OCrhUBPC2uIAt60cN44TlQ=,tag:40alzE1HqZ7U/xcGBAtW8Q==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:ilrh,iv:8yzVyjNGvsCkqQ+MCA92gVx6vHhNgMDhFGNow25J5jc=,tag:hZQmz2wy7fcb6zv5uhYjDw==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:eJQNQUdC,iv:z733U4NyF2aZuuRF3vdVR5HXKLCRKxN+/iSsFK4eqQw=,tag:T5bn6b13dNq9FsRfQFnloA==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:X20Whk6Igqg14B6T,iv:r8he+Nr+ealWvaJEvXNQl6UQarz9t/8YLqMpJ8D7S2g=,tag:KRCMSDLYP6umoSZX/iwy0w==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:DcRX,iv:gcTULxyF7saAhZ+gXga+Um/eudk8COXg8bcC05S+O6U=,tag:OUB6Uju8whR4kgj7wHCkkQ==,type:str]
+        vm_address: ENC[AES256_GCM,data:TndPZOu6Es1JbU1pAQ==,iv:PX4I+WLZOOZRr+r8OnZ1J0qbGkXm0NH9eB3Rh/6s3D8=,tag:htAX3ZfBIorgAgNiNB8rNw==,type:str]
     k8s-worker-node-3.internal:
-        role: ENC[AES256_GCM,data:lmnbMedh,iv:3g5mEGorK5X5yRYUVfTbwgmS7hxiahwzCM00oV67I1U=,tag:q52Evz6c+LHuQEsEcVPD0Q==,type:str]
-        vm_hostname: ENC[AES256_GCM,data:aUMBCUa/rCONJ9OLmQG5y+cmlBWf,iv:iIcQkXJUhdJCLlDASjOU8bDNuRl/wKLF7Aq4LUJ2wT8=,tag:X88emNX2yeoGQl3JF5dzxA==,type:str]
-        proxmox_template_vmid: ENC[AES256_GCM,data:t+pfTQ==,iv:P11D/hRO1qwMyP7CoB9awANmvQ9a2GSqDUdLlEgYcgE=,tag:Un8RpSBxgIX6+JDw/I/raQ==,type:int]
-        proxmox_template_name: ENC[AES256_GCM,data:bpgcgxKmMtiTyfyHGq6M96LBrAqai3jYAM0TtvOEKfhiZHqp,iv:b8KRAEnQq9dKdc1zYI3gaoBx2uTl7GuKL48bD8XSuaY=,tag:MXTjgic7EpqSCeEzm2zV3Q==,type:str]
-        proxmox_template_disk_size: ENC[AES256_GCM,data:2AG1,iv:QO13OhsD/I0G97NrDInBbKFB7iBZtCI9XqycZ5wCpvM=,tag:bzP6Yt5o7nzjQeY2Frgrew==,type:str]
-        proxmox_vm_vmid: ENC[AES256_GCM,data:/O2Y,iv:irVCaxjNW1hM8b51o3a0vX+Oxw3riuOl/63qPW+zyT8=,tag:X5G2/FwYp3qk1oHb1TA56g==,type:int]
-        proxmox_vm_name: ENC[AES256_GCM,data:QzsHIuGF+FKJmL+z,iv:dFj4asZejY3ToJSSEdNFy8BprXi0JkUDMCQsW2qkRoI=,tag:MNxfv1LyBy5k9FCntp+GZw==,type:str]
-        proxmox_vm_disk_size: ENC[AES256_GCM,data:Rjue,iv:1XWgA8eu5WAkNV7rHnqx7zALRT30LqjELVdn6UiawAI=,tag:eIg1NJH2sl0Mh5YzrNio9A==,type:str]
-        vm_address: ENC[AES256_GCM,data:i+RYQNeNUCMRusMp7Kg=,iv:5TJSaI9KA0NkWuwW7c8QzIgmZW29s9xZHf1bV47J1/U=,tag:K0R3OVFNDvlvSKQHIJUeIQ==,type:str]
+        role: ENC[AES256_GCM,data:c9mCedXH,iv:pj8mJICikvWZvzf+z1xruYS+FlMrnrC2my/ZGHuli34=,tag:p1s9zwR6QpixBmBc15Kf/A==,type:str]
+        vm_hostname: ENC[AES256_GCM,data:2zCPJOYFgfPrpmAZyUWU2cr5ZaBc,iv:tCqbPbeXAJM9vRPvThtVv7S8pzxOw+xigP9IzivEcy8=,tag:9Fa3FwpDtLGuzlt1M6mVDQ==,type:str]
+        proxmox_template_vmid: ENC[AES256_GCM,data:DyojkSovTuQ=,iv:66/oygsSsjSqeikIOQBG7pGVVOwklxVehpzLz5kosFU=,tag:f1bWUUV0O25qDCyBN35+aQ==,type:int]
+        proxmox_template_name: ENC[AES256_GCM,data:tO5N+FoGvOVW2HxNvZnR4FDxiUdr,iv:/lXvOXyM53oACIBurihCNx2QhdC4xcAckhzA4YlEhX0=,tag:+iflMNLIjotHYCvV8/kQlw==,type:str]
+        proxmox_template_disk_size: ENC[AES256_GCM,data:11KA,iv:byY3H7AWTXvpi78P0qBdlSiFScVe612r7DAH+AIwO24=,tag:hYicPnpkLsH28qbEOQvUtw==,type:str]
+        proxmox_vm_vmid: ENC[AES256_GCM,data:D9OfraFb,iv:sCzZn+G+SLkCVv+C8LTq/2M4QTGgGG+CK4yBuYyc2/Y=,tag:bWgSIcE2X08GONIBeUMYNw==,type:int]
+        proxmox_vm_name: ENC[AES256_GCM,data:oSbcX2TNY4vfEEgN,iv:bnVOWGoqn5YbpPO5zoTDK2TszYjzx+tUhKDbNVmIvv0=,tag:ccJSoV9e8bChvonCqxQwwQ==,type:str]
+        proxmox_vm_disk_size: ENC[AES256_GCM,data:ydER,iv:2Tgcdic3ZReF3SZkfllDIo75rmi+HgiZPdCwKY231sY=,tag:K3mDPcQHvqik0eAxwNm55g==,type:str]
+        vm_address: ENC[AES256_GCM,data:ZvZtoALvi5uu7K5F8Q==,iv:aDVSXaRrFYz8o1fCRWy/aPYezvd5pzCp3H4x8PA/mII=,tag:8wBhZ3pT2ZfYW55dGvrfkg==,type:str]
 sops:
     age:
         - enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBYzJIK3Z5YkFBVVpLTEIx
-            MXJGcVRCVDFYblhJTTU4aXZSNnNtYjIxVGhBClQvTWxaUDZIYXRzbzJTVTZUSFFx
-            OXdrUGdBeElDWFRsUVZRRC91djBpZkkKLS0tIHZxeVBNNWV5dWIvSjh2TmpIek5N
-            SUlHUXZUeU43YXRoYjMzbGNlRnpFWXMKiVEyHDwR9MV3tWzCUtZiajlcUY+vrREU
-            Xd+4rmw0GXSMhOUakBsg0H1BQs+DDbMbeeTL0BuEoHNDMv2A3PEnlQ==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA2OUFPbU0vK3hTRm5MYkgz
+            YVRhTXJFMENROWg4TE9mUEd3WVBJdGdZc2tvCjduWXBDYlFPYmlCSW5KL0dnV1Jw
+            Q2h3bXhGYjRYcWJub2NCZ2NzZ3Y5c1EKLS0tIDQ1M0NOVVp6Um9kcUozUmpIMk5s
+            NnhBbjVNTnRodXlabzlEcWRWcnpTNzQKGOICZ/nFhsSqOoRBj7Ylu8Tb+gLge9s/
+            laTkHm83D9Xx0bZChdD4IYGFyHYbUyGir6QX4hk3s/062GiedKEZlg==
             -----END AGE ENCRYPTED FILE-----
-          recipient: age19rz07h4nrfarqdm5fwucwj8024w2el04ak39nwrmdvjypjgukpsst5dmar
-    lastmodified: "2026-10-29T02:35:28Z"
-    mac: ENC[AES256_GCM,data:huBdA5I3K7XBv0C2wokDrqznJTl/wiPBHs+deeoCoX0BH+Tl5RbuGl5edI3mFd7VOBYY8rkYFPiO12a7R6gKcNoAGIb+XU6DAkots4lmGSkJsrf7OS9zSOsUaUNo8Ak1xwQRHEz3vYClU+ICuLhbMpRTwQv2HsBW3HMCDb1ecQw=,iv:k3JKtMaK22BhDVn6JblEG1tYnG196HCVvwDbte7qzFo=,tag:vni8ilyXbk/Mmi8a3RBuvw==,type:str]
+          recipient: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
+    lastmodified: "2026-11-07T21:07:07Z"
+    mac: ENC[AES256_GCM,data:YLYQ6kbOpwF7tu60w3Vu8y2wfnSozg1Uy81lgikWPdPm6M3YteRzonRxkDjh0Bcayydxzj2kN+ifERr31TTf39keBlNQik5lcmVxiWL0omNtvuLY5Xud3ThExt2pmAfFxDQ289W5iNmcTAF3ektECaOuK532aVksZTI4c3DiYvA=,iv:8A226A6+9YB7JqoJlOQceRF0Y1YkM2uzvic5TuVfQiQ=,tag:rNiczARk0Boh0bwFqBORNA==,type:str]
     unencrypted_suffix: _unencrypted
-    version: 3.13.2
+    version: 3.13.3
