@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: registry-endpoint
+data:
+    ip: ENC[AES256_GCM,data:4/kf6ukCv6nPW9tURKrh9A==,iv:D2KIDayqmN7bjKyz661do5CFHtdVLLlDoJjfrmkKaks=,tag:7GT0MYhmNr5SuxwcZeEueA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBHTXNiV0ZQWGtkZnYyclVi
+            K0ZLSDFPeGp3SjVpOGJkbnY2WFdwV0tsemc4Cm8xeWR6enZpaW84Ri8xYWx6d29y
+            WG1XY2JiWk5pazRyY0x5dDI0Tit1dU0KLS0tIHJtL29hVkcydnMvUmVGYmQ0R1Zh
+            SmpKUmhQdzNBNE9NdjBPdk03Q3NIazAKBmtrKjRqaw/BjmXRftmiEfBUDikoH4f3
+            DVJK8Vwu0gdLMT1mCGZMjqmXV0LWhW4Q9KsKdfTqrGgvP1AebSmCiQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-08T03:40:35Z"
+    mac: ENC[AES256_GCM,data:KCcs1XCEp/WfMmHyXhmAQBZCVkVtiJZdadII4stroPWsH8caDANcmAm1H1KmBeBIDXHx5OSCitw0ji0ucvMVJd9WI+2UgXOIyCYmpmXhaHAp52q0VXEqix22h8xwxnUWlagsRUL23aOHdudD6iY03JEcdFrQOENJJHyQE2j3Sm4=,iv:o2iw+Z54HuDJ54C1PRpFClCo93mAomx+MHCBu1Uh3rg=,tag:L5S1DyI/jfQua5yHPyVjEw==,type:str]
+    version: 3.13.3
