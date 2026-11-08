@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-public-url
+  namespace: nextcloud
+data:
+  host: nextcloud.ericzhu.me
+  url: https://nextcloud.ericzhu.me

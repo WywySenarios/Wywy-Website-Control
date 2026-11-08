@@ -1,0 +1,11 @@
+apiVersion: viaduct.ai/v1
+kind: ksops
+metadata:
+  name: argocd-tls-secrets-generator
+  annotations:
+    # Without the KRM exec annotation kustomize emits this object instead of running ksops over the listed files.
+    config.kubernetes.io/function: |
+      exec:
+        path: ksops
+files:
+  - argocd-server-tls.sops.yaml

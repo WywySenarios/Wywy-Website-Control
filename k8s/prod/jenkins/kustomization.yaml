@@ -7,6 +7,7 @@ resources:
   - ../base/registry-endpoint
   - public-url.yaml
   - secrets
+  - ../cloudflared/jenkins
 configMapGenerator:
   - name: jenkins-unclassified
     files:
@@ -25,11 +26,3 @@ replacements:
           name: jenkins-agent
         fieldPaths:
           - spec.egress.2.to.0.ipBlock.cidr
-patches:
-  - target:
-      kind: PersistentVolumeClaim
-      name: jenkins-home
-    patch: |-
-      - op: replace
-        path: /spec/storageClassName
-        value: nfs-jenkins-prod
