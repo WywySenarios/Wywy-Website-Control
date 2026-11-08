@@ -136,6 +136,9 @@ patches:
       - op: replace
         path: /spec/sources/1/targetRevision
         value: dev
+      - op: replace
+        path: /spec/sources/1/path
+        value: k8s/dev/metallb
 
   - target:
       kind: Application

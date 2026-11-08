@@ -1,0 +1,25 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+    name: lan
+    namespace: metallb-system
+    annotations:
+        argocd.argoproj.io/sync-wave: "1"
+spec:
+    addresses:
+        - ENC[AES256_GCM,data:9zv7JkYJl3Gwpfw+Rcb8JVGSDiaxKAZ93aTkgzU=,iv:iYQa3SIpXArGhmmGP1k2E/qwvwTKblbnM5R6wKHT944=,tag:/q8RgEen2tSyH+EdmxgtpQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUT0Z0SjYrZEF2bjM2V3A1
+            QnFLSFRsQ2lzWkI5U0g3UlFGWUpDSDJYeUVjCnhFem9KOFRhb1gzSVl0M1crS2x3
+            ZFFmMlI5eXlabVlsWkdwUXBYN3BNcDQKLS0tIDdURnp3V2xweEpZOS9qQlU2aFZG
+            SnUxRDkwRXZBc1diZVlmaFhSUytvcHMKHvYzFV53+xmc+2Ylkv+0XLLD5Yi6HxEm
+            CocADoghFtEgsoD97r8ggsXEGp2BrWrfWBmeChkT/fVkUPiqDW2d3Q==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
+    encrypted_regex: ^(data|stringData|addresses)$
+    lastmodified: "2026-11-08T05:27:09Z"
+    mac: ENC[AES256_GCM,data:+wuU5nLbpfNHkBenG/pEu7x2BdeFLJy9qjmTKwp5lO5m/3M2GYGin3jO80G0IN/khjuwzg7ovbph9co/NCBFUUdHP9H5RXjxUTyUJVoynw5z4SSp4mOMcktqqkOwO3OSmpvdkUMr5Icv3DDblJ/g9tfuTcRSdJDi34khQ/bIomE=,iv:tmD6bSpGwotkY1N4Td1pJGBbwXeGzpgbAGSIKxTdAa4=,tag:rcf13ioYDJTmL4teNj/C4Q==,type:str]
+    version: 3.13.3

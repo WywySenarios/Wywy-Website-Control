@@ -5,3 +5,12 @@ resources:
   - ../../../base/infrastructure/apps
 
 namePrefix: prod-
+
+patches:
+  - target:
+      kind: Application
+      name: metallb
+    patch: |-
+      - op: replace
+        path: /spec/sources/1/path
+        value: k8s/prod/metallb

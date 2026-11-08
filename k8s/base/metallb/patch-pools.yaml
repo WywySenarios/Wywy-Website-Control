@@ -1,4 +1,0 @@
-- op: add
-  path: /spec/addresses
-  value:
-    - 192.168.18.150-192.168.18.157
