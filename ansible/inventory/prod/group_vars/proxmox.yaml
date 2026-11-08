@@ -6,7 +6,7 @@ proxmox_install_disk_filter_key: "{{ proxmox_nodes[inventory_hostname].disk_filt
 proxmox_install_disk_filter_value: "{{ proxmox_nodes[inventory_hostname].disk_filter.value }}"
 proxmox_install_fqdn: >-
   {{ proxmox_nodes[inventory_hostname].fqdn | default(inventory_hostname) }}
-proxmox_ipv4_prefix: 24
+proxmox_ipv4_prefix: 17
 # --- PVE 9 answer-file global section ---
 proxmox_install_keyboard: en-us
 proxmox_install_country: us
