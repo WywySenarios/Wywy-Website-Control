@@ -45,6 +45,8 @@ Jenkins images playbook fails to resolve registry.internal. Currently /etc/hosts
 
 kubectl does not work unless k8s-api.internal is manually defined in /etc/hosts.
 
+registry VM playbooks read gateway & nameserver from its own group var instead of hosts.sops.
+
 ## Status
 
 Unstable. Production with PVE & Kubernetes is not online.

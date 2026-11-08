@@ -4,8 +4,8 @@ proxmox_vm_vmid: ENC[AES256_GCM,data:8hbfuMB4,iv:2aIdC5TIvDhhqsNzsEd5hzmxrRSHupy
 proxmox_vm_name: ENC[AES256_GCM,data:PrDfSgVnxLw=,iv:2rAKIiLkp15Py+LbtpKVm+UpAdWsTkGdeUkj1+bAPUQ=,tag:zAbk525V5qYDxuCalrNwpg==,type:str]
 proxmox_vm_template_vmid: ENC[AES256_GCM,data:emy6K05qW13R8QYQ3UMoCR0XW7m4zLjYALB9,iv:0Z5/CnDBYsWhQt0rr/dvXdcW5Ndv2Ttr4DCdQGWBk+0=,tag:h6EhDy3ObpfBruNAxMHWxA==,type:str]
 proxmox_vm_address: ENC[AES256_GCM,data:H9eEQATjzO+YgmN9BA==,iv:0/VNfYaP1IgCVGOUc9kim0rKyJdutQ8ZakwAJNsq7+w=,tag:zFO8zuNwMko6c3CMXxbSWA==,type:str]
-proxmox_vm_gateway: ENC[AES256_GCM,data:fOzdJtpCs58GzIc=,iv:5Sv4cu8gZ/CSe5DHHQJ3ZwVdDcktSjrqHdZc9SjLV98=,tag:PSsA5DEV/x7HptZH2lhQDw==,type:str]
-proxmox_vm_nameserver: ENC[AES256_GCM,data:sWdazk9y9s8TO7w=,iv:hFQZQGskn4A01Xc2yfLaD7Ca87FNlla5YXlXsS54qAI=,tag:2C9aS+DruNumFwPexsDnnw==,type:str]
+proxmox_vm_gateway: ENC[AES256_GCM,data:14mTtI6/cUhBmS3d4Q==,iv:ep4ZjKKXd8BENoUGlzGOdcgDelo6hJomUi1e9WEYUYE=,tag:0DjpsgFZ0btqSj0CgmZxKA==,type:str]
+proxmox_vm_nameserver: ENC[AES256_GCM,data:jcZbu7iTkpqEdb2HOg==,iv:wnm3WFfDTnPqj8kSDu3KEuNBXG300yrRx8RMSicEC4M=,tag:TzYgP7qn5UirTTMdTWGaEQ==,type:str]
 proxmox_vm_disk_size: ENC[AES256_GCM,data:3wsU,iv:oH09U8FiDCRwQsLcN6HVUr/iNgERngSRFkh2C7t3mBQ=,tag:ncC2RLfHSoHQX6qdR4cpkw==,type:str]
 proxmox_vm_data_disk_size: ENC[AES256_GCM,data:HeLO,iv:jByCa4J4u1+qw4f6jZumdhRYGiXHGHOvuYc8ZOx77bY=,tag:4Xjz4hyS9MKDzGPDvBeYUg==,type:str]
 sops:
@@ -19,7 +19,7 @@ sops:
             8pIs99wBfZV/es2kqXJGODjoIL47hl0W+KrMsk+4OziNMb3G2WSM+A==
             -----END AGE ENCRYPTED FILE-----
           recipient: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
-    lastmodified: "2026-11-07T21:04:54Z"
-    mac: ENC[AES256_GCM,data:t5LlPLrLVYE3BZ2Ae1TuzRy32TTl1JCCrJomfEdH3ssg3vuk65d74uvASTmEilKy179G76AglxKeD/fRblZho4NWitJIgEZzt9IBqipMBqknho77WlbzquVCTV/3Ct5Vevynt4OS9JaYtWyFL7ApOwq6lF9Ynkf1F+8BPsP4Gzg=,iv:/KTdYLiZO0+32OChAh0HcUlSQRdSrXVG9B9CIsady+Y=,tag:g9rGtOC2Kw4WuJ5AfJo03g==,type:str]
+    lastmodified: "2026-11-08T03:39:27Z"
+    mac: ENC[AES256_GCM,data:/avGDYXDu+QpNnSbL4oe88bD8WkuSsle+GrLoMN8d+qe2nuaROj0NB6kl0Idhs7cB5m+/YYXaezvAWrDoY7NdcsPaZ6XRFTkrTzKeNM9+SRGdwocqUYeMa+AFiLLPy1hMQsOK6kJpIybeplcJnhlPuWFVpIisdhIcDoDb9OntiI=,iv:k1/65QcpE+cLXvjPGF6LoFTQ2m27ciVaprC9RAIw2ZE=,tag:A8GG1Pr6PqhyL9/k4vP3OQ==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3
