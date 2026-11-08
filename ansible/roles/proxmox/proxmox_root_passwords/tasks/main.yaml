@@ -1,0 +1,191 @@
+---
+- name: Require the password-store context
+  ansible.builtin.assert:
+    that:
+      - control_dir is defined
+      - proxmox_root_passwords_secret is defined
+      - proxmox_root_passwords_hosts is defined
+      - proxmox_root_passwords_label is defined
+    fail_msg: >-
+      pass proxmox_root_passwords_secret, proxmox_root_passwords_hosts, and
+      proxmox_root_passwords_label, and define control_dir.
+    quiet: true
+
+- name: Report an empty host selection
+  ansible.builtin.debug:
+    msg: "no {{ proxmox_root_passwords_label }} hosts selected; nothing to populate."
+  when: proxmox_root_passwords_hosts | length == 0
+
+- name: End the role when no hosts are selected
+  ansible.builtin.meta: end_role
+  when: proxmox_root_passwords_hosts | length == 0
+
+- name: Create the secret directory
+  ansible.builtin.file:
+    path: "{{ proxmox_root_passwords_secret | dirname }}"
+    state: directory
+    mode: "0700"
+
+- name: Check for an existing root-password store
+  ansible.builtin.stat:
+    path: "{{ proxmox_root_passwords_secret }}"
+  register: proxmox_root_passwords_store
+
+- name: Read the existing root-password store
+  ansible.builtin.command:
+    argv:
+      - sops
+      - --decrypt
+      - --output-type
+      - yaml
+      - "{{ proxmox_root_passwords_secret }}"
+  when: proxmox_root_passwords_store.stat.exists
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: proxmox_root_passwords_store_read
+
+- name: Parse the existing store
+  ansible.builtin.set_fact:
+    proxmox_root_passwords_existing: >-
+      {{ proxmox_root_passwords_store_read.stdout | from_yaml
+         if proxmox_root_passwords_store.stat.exists else {} }}
+  no_log: true
+
+- name: Fail closed when the existing store is not a mapping
+  ansible.builtin.assert:
+    that:
+      - proxmox_root_passwords_existing is mapping
+    fail_msg: >-
+      {{ proxmox_root_passwords_secret }} decrypted but is not a
+      hostname-to-password mapping; refusing to regenerate it.
+    quiet: true
+  when: proxmox_root_passwords_store.stat.exists
+
+- name: Determine which nodes are missing a password
+  ansible.builtin.set_fact:
+    proxmox_root_passwords_missing: >-
+      {{ proxmox_root_passwords_hosts
+         | difference(proxmox_root_passwords_existing.keys() | list) }}
+
+- name: Seed the desired map from the existing store
+  ansible.builtin.set_fact:
+    proxmox_root_passwords_desired: "{{ proxmox_root_passwords_existing }}"
+  no_log: true
+
+- name: Add a fresh random password for each missing node
+  ansible.builtin.set_fact:
+    proxmox_root_passwords_desired: >-
+      {{ proxmox_root_passwords_desired
+         | combine({item: lookup('pipe', 'openssl rand -base64 36') | trim}) }}
+  loop: "{{ proxmox_root_passwords_missing }}"
+  no_log: true
+
+- name: Re-encrypt and install the store when a node was added
+  when: proxmox_root_passwords_missing | length > 0
+  block:
+    - name: Create a private staging directory beside the store
+      ansible.builtin.tempfile:
+        state: directory
+        path: "{{ proxmox_root_passwords_secret | dirname }}"
+        prefix: ".root-passwords."
+      register: proxmox_root_passwords_staging
+
+    - name: Write the merged store as plaintext in the staging directory
+      ansible.builtin.copy:
+        content: >-
+          {{ proxmox_root_passwords_desired | to_nice_yaml(indent=2, sort_keys=true) }}
+        dest: "{{ proxmox_root_passwords_staging.path }}/root.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Encrypt the merged store
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          sops --encrypt \
+            --config "{{ control_dir }}/.sops.yaml" \
+            --filename-override "{{ proxmox_root_passwords_secret }}" \
+            "{{ proxmox_root_passwords_staging.path }}/root.yaml" \
+            > "{{ proxmox_root_passwords_staging.path }}/root.enc.yaml"
+        executable: /bin/bash
+      changed_when: true
+      no_log: true
+
+    - name: Restrict the staged ciphertext
+      ansible.builtin.file:
+        path: "{{ proxmox_root_passwords_staging.path }}/root.enc.yaml"
+        mode: "0600"
+
+    - name: Validate the staged ciphertext before installing it
+      ansible.builtin.command:
+        argv:
+          - sops
+          - --decrypt
+          - --output-type
+          - yaml
+          - "{{ proxmox_root_passwords_staging.path }}/root.enc.yaml"
+      changed_when: false
+      check_mode: false
+      no_log: true
+      register: proxmox_root_passwords_staged_read
+
+    - name: Verify the staged ciphertext matches the desired store
+      ansible.builtin.assert:
+        that:
+          - (proxmox_root_passwords_staged_read.stdout | from_yaml) == proxmox_root_passwords_desired
+        fail_msg: >-
+          the staged ciphertext does not decrypt to the desired store;
+          refusing to replace {{ proxmox_root_passwords_secret }}.
+        quiet: true
+      no_log: true
+
+    - name: Install the re-encrypted store atomically
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ proxmox_root_passwords_staging.path }}/root.enc.yaml"
+          - "{{ proxmox_root_passwords_secret }}"
+      changed_when: true
+
+  always:
+    - name: Remove the staging directory
+      ansible.builtin.file:
+        path: "{{ proxmox_root_passwords_staging.path }}"
+        state: absent
+      when: proxmox_root_passwords_staging.path is defined
+
+- name: Validate that the installed store decrypts
+  ansible.builtin.command:
+    argv:
+      - sops
+      - --decrypt
+      - --output-type
+      - yaml
+      - "{{ proxmox_root_passwords_secret }}"
+  changed_when: false
+  check_mode: false
+  no_log: true
+  register: proxmox_root_passwords_validated
+
+- name: Parse the validated store
+  ansible.builtin.set_fact:
+    proxmox_root_passwords_stored: "{{ proxmox_root_passwords_validated.stdout | from_yaml }}"
+  no_log: true
+
+- name: Verify exactly one unique, non-empty password per node
+  ansible.builtin.assert:
+    that:
+      - proxmox_root_passwords_stored is mapping
+      - proxmox_root_passwords_stored.keys() | list | sort == proxmox_root_passwords_hosts
+      - proxmox_root_passwords_stored.values() | list | select('string') | list | length
+        == proxmox_root_passwords_hosts | length
+      - proxmox_root_passwords_stored.values() | list | unique | length
+        == proxmox_root_passwords_hosts | length
+      - proxmox_root_passwords_stored.values() | list | select('equalto', '') | list | length
+        == 0
+    fail_msg: >-
+      {{ proxmox_root_passwords_secret }} must contain exactly one unique,
+      non-empty password for every selected {{ proxmox_root_passwords_label }}
+      host.
+    quiet: true

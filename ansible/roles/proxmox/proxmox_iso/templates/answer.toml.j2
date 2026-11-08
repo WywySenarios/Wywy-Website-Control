@@ -1,4 +1,4 @@
-# PVE automated-install answer file.
+# {{ proxmox_iso_product | upper }} automated-install answer file.
 # Rendered by ansible/roles/proxmox/proxmox_iso. The plaintext root password is never
 # written here; root-password-hashed is derived from the root-password store.
 [global]
@@ -20,5 +20,5 @@ dns = {{ proxmox_iso_dns | to_json }}
 filter.ID_NET_NAME = {{ proxmox_iso_nic | to_json }}
 
 [disk-setup]
-filesystem = "ext4"
+filesystem = {{ proxmox_iso_filesystem | to_json }}
 filter.{{ proxmox_iso_disk_filter_key }} = {{ proxmox_iso_disk_filter_value | to_json }}

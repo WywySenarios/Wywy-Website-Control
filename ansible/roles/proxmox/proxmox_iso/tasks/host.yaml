@@ -47,13 +47,27 @@
       - proxmox_iso_prefix | int >= 0
       - proxmox_iso_prefix | int <= 32
     fail_msg: >-
-      {{ proxmox_iso_host }} is missing PVE 9 install data. Set its `nic` and
-      `disk_filter.value` in the encrypted node map:
-      `sops edit ansible/inventory/{{ wywy_env }}/group_vars/proxmox.sops.yaml`.
+      {{ proxmox_iso_host }} is missing {{ proxmox_iso_product }} install data.
+      Set its `nic` and `disk_filter.value` in the encrypted node map:
+      `sops edit ansible/inventory/{{ wywy_env }}/group_vars/{{ 'proxmox' if proxmox_iso_product == 'pve' else 'proxmox_backup' }}.sops.yaml`.
       Use `proxmox-auto-install-assistant device-info -t disk` and `-t network`
       on the running physical node. The disk filter must already match exactly
-      one disk.
+      one disk; additional disks are left untouched and no RAID is created.
     quiet: true
+  no_log: true
+
+# A wildcard can match several drives, and the installer would then include all
+# matches in the OS volume group. PBS must name the single OS disk exactly.
+- name: Require an exact disk filter for {{ proxmox_iso_host }}
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_disk_filter_value is not search('[*?\[]')
+    fail_msg: >-
+      {{ proxmox_iso_host }} uses a wildcard in its PBS disk filter. Use the
+      complete WWN or serial of the single OS disk so the other drives are left
+      untouched.
+    quiet: true
+  when: proxmox_iso_product == 'pbs'
   no_log: true
 
 - name: Set the per-node artifact paths
@@ -124,6 +138,20 @@
     fail_msg: >-
       the rendered answer file for {{ proxmox_iso_host }} contains a plaintext
       root password or a root-password key; refusing to build.
+    quiet: true
+  no_log: true
+
+# The installer must target exactly one OS disk. disk-list or a RAID level
+# would spread the install across the extra drives that are reserved for
+# datastores (PBS) or left free for later use (PVE).
+- name: Reject multi-disk and RAID layouts for {{ proxmox_iso_host }}
+  ansible.builtin.assert:
+    that:
+      - not (proxmox_iso_answer_content is search(proxmox_iso_multi_disk_regex))
+    fail_msg: >-
+      the answer file for {{ proxmox_iso_host }} configures disk-list or a RAID
+      level. Install to exactly one disk and leave the remaining disks
+      untouched.
     quiet: true
   no_log: true
 
@@ -228,15 +256,16 @@
         that:
           - proxmox_iso_inspect.stdout is search('Auto-install:\s+enabled')
           - proxmox_iso_inspect.stdout is search('Fetch mode:\s+iso')
-          - proxmox_iso_inspect.stdout is search('filesystem\s*=\s*"ext4"')
+          - proxmox_iso_inspect.stdout is search('filesystem\s*=\s*"' ~ proxmox_iso_filesystem ~ '"')
           - proxmox_iso_inspect.stdout is search(proxmox_iso_disk_filter_key ~ '\s*=\s*')
           - proxmox_iso_inspect.stdout is search(proxmox_iso_disk_filter_value | regex_escape)
           - "'disk-list' not in proxmox_iso_inspect.stdout"
           - proxmox_iso_root_hash not in proxmox_iso_inspect.stdout
         fail_msg: >-
           inspect-iso did not report the expected ISO-fetch automated
-          installation for {{ proxmox_iso_host }}, did not show the ext4/WWN
-          disk selection, or exposed the root hash.
+          installation for {{ proxmox_iso_host }}, did not show the
+          {{ proxmox_iso_filesystem }} single-disk selection, or exposed the
+          root hash.
         quiet: true
       no_log: true
 
@@ -244,10 +273,12 @@
       ansible.builtin.copy:
         content: >-
           {{ {
-            'schema': 1,
+            'schema': 2,
+            'product': proxmox_iso_product,
             'host': proxmox_iso_host,
             'fqdn': proxmox_iso_fqdn,
-            'pve_version': proxmox_iso_pin.version,
+            'version': proxmox_iso_pin.version,
+            'filesystem': proxmox_iso_filesystem,
             'source_iso': {
               'url': proxmox_iso_pin.url,
               'sha256': proxmox_iso_source_stat.stat.checksum

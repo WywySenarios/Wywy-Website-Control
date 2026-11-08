@@ -1,0 +1,11 @@
+---
+ansible_host: "{{ proxmox_backup_nodes[inventory_hostname].address }}"
+proxmox_install_nic: "{{ proxmox_backup_nodes[inventory_hostname].nic }}"
+proxmox_install_disk_filter_key: "{{ proxmox_backup_nodes[inventory_hostname].disk_filter.key }}"
+proxmox_install_disk_filter_value: "{{ proxmox_backup_nodes[inventory_hostname].disk_filter.value }}"
+proxmox_install_fqdn: >-
+  {{ proxmox_backup_nodes[inventory_hostname].fqdn | default(inventory_hostname) }}
+proxmox_ipv4_prefix: 24
+proxmox_install_keyboard: en-us
+proxmox_install_country: us
+proxmox_install_timezone: UTC

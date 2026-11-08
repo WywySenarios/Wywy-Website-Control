@@ -1,27 +1,56 @@
 ---
-proxmox_iso_pin:
-  version: "9.2-1"
-  url: https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso
-  sha256: "4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c"
+proxmox_iso_product: pve
 
-proxmox_iso_root_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/proxmox/root.sops.yaml"
+proxmox_iso_pins:
+  pve:
+    version: "9.2-1"
+    url: https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso
+    sha256: "4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2c6c"
+  pbs:
+    version: "4.2-1"
+    url: https://enterprise.proxmox.com/iso/proxmox-backup-server_4.2-1.iso
+    sha256: "2fb299deac3929253712c9c3dfc9237edbe70af83c8848467616b771a1d5453e"
 
-proxmox_iso_build_dir: "{{ control_dir }}/build/proxmox/{{ wywy_env }}"
-proxmox_iso_cache_dir: "{{ control_dir }}/build/proxmox/cache"
+proxmox_iso_pin: "{{ proxmox_iso_pins[proxmox_iso_product] }}"
+
+proxmox_iso_filesystems:
+  pve: ext4
+  pbs: ext4
+proxmox_iso_filesystem: "{{ proxmox_iso_filesystems[proxmox_iso_product] }}"
+
+# PVE keeps the historical build/ and secrets/ paths.
+# PBS gets its own tree.
+proxmox_iso_product_dir: "{{ 'proxmox' if proxmox_iso_product == 'pve' else 'proxmox-backup' }}"
+
+proxmox_iso_root_secret: >-
+  {{ control_dir }}/secrets/{{ wywy_env }}/{{ proxmox_iso_product_dir }}/root.sops.yaml
+
+proxmox_iso_build_root: "{{ control_dir }}/build/{{ proxmox_iso_product_dir }}"
+proxmox_iso_build_dir: "{{ proxmox_iso_build_root }}/{{ wywy_env }}"
+proxmox_iso_cache_dir: "{{ proxmox_iso_build_root }}/cache"
 proxmox_iso_answer_dir: "{{ proxmox_iso_build_dir }}/answers"
 proxmox_iso_iso_dir: "{{ proxmox_iso_build_dir }}/iso"
 proxmox_iso_manifest_dir: "{{ proxmox_iso_build_dir }}/manifests"
 
 # Set proxmox_iso_force_rebuild=true to rebuild despite an unchanged manifest.
 proxmox_iso_force_rebuild: false
-# groups['proxmox'] is the physical node pool, independent of role tags.
+
+# groups['proxmox'] is the physical PVE node pool. The PBS play in iso.yaml
+# overrides this with groups['proxmox_backup'].
 proxmox_iso_hosts: "{{ groups['proxmox'] | default([]) | sort }}"
 
 # The install disk must be selected by hardware identity, never by device name.
+# The filter value must match exactly one disk.
+# Extra drives are not added to a RAID array or to the OS volume group.
 proxmox_iso_disk_filter_keys:
   - ID_WWN
   - ID_SERIAL
   - ID_SERIAL_SHORT
+
+# Disk-setup keys that would span multiple disks or create redundancy.
+# The rendered answer file must not contain any of them.
+proxmox_iso_multi_disk_regex: >-
+  (?m)^\s*(disk-list|zfs\.raid|btrfs\.raid)\s*=
 
 proxmox_iso_ipv4_regex: '^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$'
 proxmox_iso_fqdn_regex: "^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$"

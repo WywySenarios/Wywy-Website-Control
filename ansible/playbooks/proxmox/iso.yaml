@@ -1,5 +1,6 @@
 ---
-# Build a per-node PVE 9.2-1 installer ISO with an embedded answer file.
+# Build per-node Proxmox ISO files
+
 - name: Build per-node PVE 9.2-1 answer ISOs
   hosts: proxmox_iso
   connection: local
@@ -10,6 +11,23 @@
     control_dir: "{{ ansible_config_file | dirname | dirname }}"
     wywy_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    proxmox_iso_product: pve
+
+  roles:
+    - role: proxmox_iso
+
+- name: Build per-node PBS 4.2-1 answer ISOs
+  hosts: proxmox_iso
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    control_dir: "{{ ansible_config_file | dirname | dirname }}"
+    wywy_env: "{{ (ansible_inventory_sources | select('search', '/(dev|prod)$') | map('basename') | first) }}"
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    proxmox_iso_product: pbs
+    proxmox_iso_hosts: "{{ groups['proxmox_backup'] | default([]) | sort }}"
 
   roles:
     - role: proxmox_iso

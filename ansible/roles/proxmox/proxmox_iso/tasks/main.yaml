@@ -1,18 +1,38 @@
 ---
-# Build one automated-install ISO per physical node in groups['proxmox'].
-
 - name: Require the playbook context
   ansible.builtin.assert:
     that:
       - control_dir is defined
-      - proxmox_iso_hosts | length > 0
-      - proxmox_iso_pin is defined
-      - proxmox_iso_pin is mapping
       - proxmox_iso_public_keys is defined
     fail_msg: >-
-      run this role from playbooks/proxmox/iso.yaml with an
-      inventory that defines a non-empty proxmox group, plus
-      proxmox_iso_public_keys in group_vars/proxmox_iso.yaml.
+      run this role from playbooks/proxmox/iso.yaml with an inventory that
+      defines proxmox_iso_public_keys in group_vars/proxmox_iso.yaml.
+    quiet: true
+
+- name: Validate the selected product
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_product in proxmox_iso_pins
+    fail_msg: >-
+      proxmox_iso_product must be one of {{ proxmox_iso_pins.keys() | list }}.
+    quiet: true
+
+- name: Report an empty host selection
+  ansible.builtin.debug:
+    msg: "no {{ proxmox_iso_product }} hosts selected; nothing to build."
+  when: proxmox_iso_hosts | length == 0
+
+- name: End the role when no hosts are selected
+  ansible.builtin.meta: end_role
+  when: proxmox_iso_hosts | length == 0
+
+- name: Require the ISO pin
+  ansible.builtin.assert:
+    that:
+      - proxmox_iso_pin is defined
+      - proxmox_iso_pin is mapping
+    fail_msg: >-
+      proxmox_iso_pins must define a pin for {{ proxmox_iso_product }}.
     quiet: true
 
 - name: Validate the ISO pin
@@ -22,7 +42,7 @@
       - proxmox_iso_pin.sha256 is match('^[0-9a-f]{64}$')
       - proxmox_iso_pin.version is match('^[0-9]+\.[0-9]+-[0-9]+$')
     fail_msg: >-
-      proxmox_iso_pin (in the role defaults) must pin an https URL, a
+      the {{ proxmox_iso_product }} pin must specify an https URL, a
       lowercase SHA256, and a version such as 9.2-1.
     quiet: true
 
@@ -77,7 +97,7 @@
     state: directory
     mode: "0700"
   loop:
-    - "{{ control_dir }}/build/proxmox"
+    - "{{ proxmox_iso_build_root }}"
     - "{{ proxmox_iso_build_dir }}"
     - "{{ proxmox_iso_cache_dir }}"
     - "{{ proxmox_iso_answer_dir }}"
@@ -128,7 +148,7 @@
       - proxmox_iso_source_stat.stat.checksum == proxmox_iso_pin.sha256
     fail_msg: >-
       the cached source ISO does not match the pinned SHA256; delete
-      build/proxmox/cache and re-run.
+      {{ proxmox_iso_cache_dir }} and re-run.
     quiet: true
 
 # Read the one-way-door password store explicitly. A missing or undecryptable
@@ -151,7 +171,7 @@
     proxmox_iso_passwords: "{{ proxmox_iso_root_read.stdout | from_yaml }}"
   no_log: true
 
-- name: Require a password for every selected PVE node
+- name: Require a password for every selected node
   ansible.builtin.assert:
     that:
       - proxmox_iso_passwords is mapping
@@ -160,7 +180,7 @@
       - proxmox_iso_passwords.values() | select('equalto', '') | list | length == 0
     fail_msg: >-
       {{ proxmox_iso_root_secret }} must contain a non-empty password for
-      every physical node in groups['proxmox'].
+      every selected {{ proxmox_iso_product }} host.
     quiet: true
   no_log: true
 

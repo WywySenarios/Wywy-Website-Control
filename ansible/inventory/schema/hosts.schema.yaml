@@ -27,6 +27,10 @@ properties:
                 minProperties: 1
           proxmox_cluster_leader:
             $ref: "#/$defs/singleHostGroup"
+          proxmox_backup:
+            $ref: "#/$defs/group"
+            description: >-
+              Physical Proxmox Backup Server nodes. May be empty until a backup server is added.
           db_pve:
             $ref: "#/$defs/singleHostGroup"
           files_pve:

@@ -1,23 +1,41 @@
-# Proxmox VE 9.2-1 Setup
+# Proxmox Setup
 
 ## Playbooks
 
 Run these playbooks in order. You will need to flash the ISOs yourself after the iso playbook.
 
-| Playbook                          | Purpose                                                                                               |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `playbooks/proxmox/populate.yaml` | Add missing root passwords to the encrypted store.                                                    |
-| `playbooks/proxmox/iso.yaml`      | Build the per-node installer ISOs.                                                                    |
-| `playbooks/proxmox/apt.yaml`      | Replace all apt sources with controlled Debian, Proxmox, and Ceph Tentacle sources; remove os-prober. |
-| `playbooks/proxmox/cluster.yaml`  | Create the PVE cluster, join nodes using the leader fingerprint and root password, then harden SSH.   |
+| Playbook                          | Purpose                                                         |
+| --------------------------------- | --------------------------------------------------------------- |
+| `playbooks/proxmox/populate.yaml` | Add missing PVE and PBS root passwords to the encrypted stores. |
+| `playbooks/proxmox/iso.yaml`      | Build the per-node PVE and PBS installer ISOs.                  |
+| `playbooks/proxmox/apt.yaml`      | Manage apt sources on PVE nodes.                                |
+| `playbooks/proxmox/cluster.yaml`  | Create the PVE cluster and harden SSH.                          |
+
+## Node Topology
+
+### PBS Nodes
+
+PBS machines can have several drives.
+The repo-configured disk is the drive to store the target OS in.
+There is no RAID.
+The remaining drives stay untouched and are added later as PBS datastores.
 
 ## Bootstrap
 
 Use playbooks `populate.yaml` and `iso.yaml`
 
-Tip: `ip link show` and `lsblk -o WWN` can be used to help you gather information.
+Tip: `ip link show` and `lsblk -o NAME,WWN` can be used to help you gather information.
 
-ISOs output at `build/proxmox/dev/iso/<node>.iso`. Force a rebuild with `-e proxmox_iso_force_rebuild=true`.
+The `iso.yaml` playbook builds two independent sets:
+
+| Product | Host group                 | Output                                      |
+| ------- | -------------------------- | ------------------------------------------- |
+| PVE     | `groups['proxmox']`        | `build/proxmox/<env>/iso/<node>.iso`        |
+| PBS     | `groups['proxmox_backup']` | `build/proxmox-backup/<env>/iso/<node>.iso` |
+
+An empty `proxmox_backup` group skips the PBS build.
+
+Tip: Force a rebuild with `-e proxmox_iso_force_rebuild=true`.
 
 Feel free to double check the answer file:
 

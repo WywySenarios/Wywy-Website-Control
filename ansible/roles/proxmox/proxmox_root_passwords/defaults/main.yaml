@@ -1,0 +1,4 @@
+---
+proxmox_root_passwords_label: PVE
+proxmox_root_passwords_secret: "{{ control_dir }}/secrets/{{ wywy_env }}/proxmox/root.sops.yaml"
+proxmox_root_passwords_hosts: "{{ groups['proxmox'] | default([]) | sort }}"

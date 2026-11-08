@@ -18,3 +18,4 @@ __pycache__/
 
 # Proxmox ISO build artifacts
 /build/proxmox/
+/build/proxmox-backup/

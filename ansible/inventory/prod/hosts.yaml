@@ -18,6 +18,7 @@ all:
     proxmox_iso:
       hosts:
         localhost:
+    proxmox_backup: {}
     db_pve:
       hosts:
         proxmox-2.internal:
