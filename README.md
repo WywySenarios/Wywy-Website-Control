@@ -39,7 +39,7 @@ Some secrets are sops-encrypted under `secrets/<env>/` (currently `secrets/dev/`
 
 Ansible configuration lives in `ansible/inventory/<env>/group_vars/` as plain `*.yaml` and encrypted `*.sops.yaml` files.
 
-## Known Bugs
+## Known Issues
 
 Jenkins images playbook fails to resolve registry.internal. Currently /etc/hosts manual workaround is needed.
 
@@ -50,6 +50,8 @@ registry VM playbooks read gateway & nameserver from its own group var instead o
 Some playbooks (particularily those generating certs) will ask for sudo password and this is not documented.
 
 Proxmox/cloud managed /etc/hosts blocks may override Ansible blocks. Outside-of-cluster DNS needs to happen soon.
+
+Postgres traffic is unencrypted. Clients authenticate with SCRAM, which protects the password, but queries and results travel in plaintext on the LAN. TLS is not configured.
 
 ## Status
 
