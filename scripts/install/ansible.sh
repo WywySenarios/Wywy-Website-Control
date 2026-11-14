@@ -26,11 +26,6 @@ if "$DRY_RUN"; then
 	exit 0
 fi
 
-command -v uv >/dev/null 2>&1 || {
-	error "ansible: 'uv' not found in PATH — install it (https://docs.astral.sh/uv/)"
-	exit 1
-}
-
 header "Syncing the Ansible toolchain ($ANSIBLE_DIR)"
 uv sync --directory "$ANSIBLE_DIR" --locked
 
