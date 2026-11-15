@@ -8,6 +8,7 @@ required:
   - control_dir
   - wywy_gateway
   - wywy_nameserver
+  - k8s_pod_cidr
   - proxmox_template_image
   - cloudflare_public_hosts
 properties:
@@ -22,6 +23,9 @@ properties:
     type: string
   wywy_nameserver:
     type: string
+  k8s_pod_cidr:
+    type: string
+    description: Pod CIDR used by Kubernetes and Calico.
   proxmox_template_image:
     type: object
     additionalProperties: false

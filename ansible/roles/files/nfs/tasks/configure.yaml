@@ -27,9 +27,9 @@
 - name: Fail closed when the pod CIDR is not configured
   ansible.builtin.assert:
     that:
-      - wywy_pod_cidr | length > 0
+      - k8s_pod_cidr | length > 0
     fail_msg: >-
-      Group variable "wywy_pod_cidr" is not resolveable.
+      Group variable "k8s_pod_cidr" is not resolveable.
     quiet: true
 
 - name: Check the data disk is present

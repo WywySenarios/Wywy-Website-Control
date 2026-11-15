@@ -54,10 +54,6 @@ SCHEMA_TARGET_FILES: dict[str, tuple[str, ...]] = {
         "dev/group_vars/all.sops.yaml",
         "prod/group_vars/all.sops.yaml",
     ),
-    "files.sops.schema.yaml": (
-        "dev/group_vars/files.sops.yaml",
-        "prod/group_vars/files.sops.yaml",
-    ),
     "k8s_vms.sops.schema.yaml": (
         "dev/group_vars/k8s_vms.sops.yaml",
         "prod/group_vars/k8s_vms.sops.yaml",
