@@ -3,9 +3,30 @@ wywy_env: dev
 control_dir: "{{ ansible_config_file | dirname | dirname }}"
 wywy_gateway: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'gateway.internal') }}
-wywy_nameserver: >-
-  {{ lookup('wywy_hosts', 'hosts.sops', 'nameserver.internal') }}
+wywy_nameserver: "{{ wywy_gateway }}"
 k8s_pod_cidr: 10.244.0.0/16
+proxmox_sdn_zone: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.zone }}
+proxmox_sdn_vnet: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.vnet }}
+proxmox_sdn_vlan_id: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.vlan_id }}
+proxmox_sdn_subnet: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.subnet }}
+proxmox_sdn_gateway: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.gateway }}
+proxmox_sdn_dns: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.dns }}
+proxmox_sdn_dhcp_range: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).proxmox_sdn.dhcp_range }}
+
 proxmox_template_image:
   url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64-20261017-2634.qcow2
   sha512: "62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe"

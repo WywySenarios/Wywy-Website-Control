@@ -18,6 +18,10 @@ all:
     proxmox_iso:
       hosts:
         localhost:
+    openwrt:
+      hosts:
+        gateway.internal:
+          ansible_user: root
     proxmox_backup: {}
     db_pve:
       hosts:

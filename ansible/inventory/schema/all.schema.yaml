@@ -1,6 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 title: Environment-wide variables
-description: Environment-wide Ansible variables.
+description: Environment-wide Ansible variables. The proxmox_sdn_* values are rendered from config/base/network.yaml.
 type: object
 additionalProperties: false
 required:
@@ -9,6 +9,13 @@ required:
   - wywy_gateway
   - wywy_nameserver
   - k8s_pod_cidr
+  - proxmox_sdn_zone
+  - proxmox_sdn_vnet
+  - proxmox_sdn_vlan_id
+  - proxmox_sdn_subnet
+  - proxmox_sdn_gateway
+  - proxmox_sdn_dns
+  - proxmox_sdn_dhcp_range
   - proxmox_template_image
   - cloudflare_public_hosts
 properties:
@@ -26,6 +33,29 @@ properties:
   k8s_pod_cidr:
     type: string
     description: Pod CIDR used by Kubernetes and Calico.
+  proxmox_sdn_zone:
+    type: string
+    description: Proxmox SDN zone name for the VM VLAN.
+    pattern: "^[a-z][a-z0-9-]*$"
+  proxmox_sdn_vnet:
+    type: string
+    description: Proxmox SDN VNet name for the VM VLAN.
+    pattern: "^[a-z][a-z0-9-]*$"
+  proxmox_sdn_vlan_id:
+    type: string
+    description: VLAN ID rendered from config/base/network.yaml; validated as an integer there.
+  proxmox_sdn_subnet:
+    type: string
+    description: VM subnet in CIDR form.
+  proxmox_sdn_gateway:
+    type: string
+    description: OpenWrt VLAN interface address; the VM subnet gateway.
+  proxmox_sdn_dns:
+    type: string
+    description: DNS server address handed to VMs; normally the OpenWrt VLAN interface.
+  proxmox_sdn_dhcp_range:
+    type: string
+    description: Single PVE IPAM/DHCP pool for workers, services, and static control-plane mappings.
   proxmox_template_image:
     type: object
     additionalProperties: false
