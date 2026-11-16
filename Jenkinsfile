@@ -28,6 +28,16 @@ pipeline {
       }
     }
 
+    stage('tofu-checks') {
+      steps {
+        withChecks('tofu-checks') {
+          sh 'scripts/tests/terraform/fmt.sh'
+          sh 'scripts/tests/terraform/validate.sh'
+          sh 'scripts/tests/terraform/test.sh'
+        }
+      }
+    }
+
     stage('k8s-manifests') {
       agent { label 'manifests' }
       steps {
