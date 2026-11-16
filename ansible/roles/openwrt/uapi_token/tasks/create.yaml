@@ -1,0 +1,8 @@
+---
+- name: Create the uapi token
+  ansible.builtin.raw: >-
+    uapi-token create --name {{ uapi_token_name }}
+    --scope '{{ uapi_token_scopes | join("' --scope '") }}'
+  register: openwrt_uapi_token_create
+  changed_when: true
+  no_log: true

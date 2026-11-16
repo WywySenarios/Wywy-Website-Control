@@ -11,17 +11,27 @@ The operator machine needs to be set up with the `wywy-dotfiles` repo. It is ass
 For your homelab setup:
 
 - Multiple computers to run Proxmox VE
-- Preferrably a dedicated network
+- Preferrably a dedicated router
 
 ## Usage
 
-1. Install the Ansible toolchain:
+1. Flash OpenWRT to your router
+
+2. Configure the IP and subnet the OpenWRT LAN should occupy.
+
+3. set `gateway.internal` in `/etc/hosts` to reoslve to your OpenWRT router
+
+4. Gain SSH access with public key authentication to your OpenWRT router
+
+5. Reserve your IP address as expected by `config/base/network.yaml`
+
+6. Install the Ansible toolchain:
 
    ```bash
    scripts/install/ansible.sh
    ```
 
-2. Run all the Ansible playbooks as you see fit! `ansible/playbooks/` has README's in some sub-directories to give you an idea of what to run in what order.
+7. Run all the Ansible playbooks and Terraform suites as you see fit! `ansible/playbooks/` and `terraform/` have README's in some subdirectories to give you an idea of what to run in what order.
 
 ## Configuration
 

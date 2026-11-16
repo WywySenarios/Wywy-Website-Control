@@ -1,0 +1,36 @@
+---
+- name: Install uapi on the OpenWrt router
+  hosts: openwrt
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Install uapi
+      block:
+        - name: Install the uapi package
+          ansible.builtin.include_role:
+            name: uapi_token
+            tasks_from: install
+
+        - name: Wait for uhttpd to stay up
+          ansible.builtin.raw: "/etc/init.d/uhttpd status"
+          register: openwrt_uhttpd_status
+          changed_when: false
+          retries: 5
+          delay: 2
+          until: openwrt_uhttpd_status.rc == 0
+
+      rescue:
+        - name: Remove the uapi uhttpd handler
+          ansible.builtin.raw: >-
+            uci del_list uhttpd.main.ucode_prefix='/api/v3=/usr/share/uapi/main.uc' || true;
+            uci commit uhttpd;
+            /etc/init.d/uhttpd restart
+          changed_when: true
+
+        - name: Fail with the uhttpd failure
+          ansible.builtin.fail:
+            msg: >-
+              uapi installed, but uhttpd did not stay up. The uapi handler was
+              removed and uhttpd was restarted. Check
+              `logread -e uhttpd` and `uci show uhttpd.main.ucode_prefix`.

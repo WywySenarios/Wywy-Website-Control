@@ -1,0 +1,12 @@
+proxmox_sdn:
+  zone: main
+  vnet: main
+  vlan_id: 23
+  subnet: 172.16.0.0/16
+  gateway: 172.16.0.1
+  dns: 172.16.0.1
+  dhcp_range: 172.16.0.2-172.16.255.254
+
+openwrt:
+  dns_domain: internal
+  operator_source: 192.168.235.235

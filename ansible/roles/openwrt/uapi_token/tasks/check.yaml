@@ -1,0 +1,6 @@
+---
+- name: Check whether the uapi token exists
+  ansible.builtin.raw: "uapi-token show {{ uapi_token_name }}"
+  register: openwrt_uapi_token_show
+  changed_when: false
+  failed_when: false

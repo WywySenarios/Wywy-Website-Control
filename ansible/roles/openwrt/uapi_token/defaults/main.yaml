@@ -1,0 +1,4 @@
+---
+uapi_token_name: terraform
+uapi_token_scopes:
+  - "*:rw"

@@ -1,0 +1,76 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: VM network contract
+description: Shared non-secret VM network values read by Ansible and OpenTofu.
+type: object
+additionalProperties: false
+required:
+  - proxmox_sdn
+  - openwrt
+properties:
+  proxmox_sdn:
+    type: object
+    description: Proxmox sub-network properties.
+    additionalProperties: false
+    required:
+      - zone
+      - vnet
+      - vlan_id
+      - subnet
+      - gateway
+      - dns
+      - dhcp_range
+    properties:
+      zone:
+        type: string
+        description: Proxmox SDN zone name for the VM VLAN.
+        pattern: "^[a-z][a-z0-9-]*$"
+      vnet:
+        type: string
+        description: Proxmox SDN VNet name for the VM VLAN.
+        pattern: "^[a-z][a-z0-9-]*$"
+      vlan_id:
+        type: integer
+        description: VLAN tag for the VM subnet.
+        minimum: 1
+        maximum: 4094
+      subnet:
+        type: string
+        description: >-
+          Network address space.
+          The gateway and DHCP range must be inside this CIDR.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}/([0-9]|[12][0-9]|3[0-2])$'
+      gateway:
+        type: string
+        description: >-
+          OpenWrt VLAN interface address.
+          This is the VM default gateway and must be inside subnet.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+      dns:
+        type: string
+        description: >-
+          DNS server handed to VMs.
+          This may share an IP with the gateway.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+      dhcp_range:
+        type: string
+        description: >-
+          Inclusive IPv4 range PVE IPAM/DHCP may allocate.
+          Must be inside subnet and exclude the gateway.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}-([0-9]{1,3}\.){3}[0-9]{1,3}$'
+  openwrt:
+    type: object
+    additionalProperties: false
+    required:
+      - dns_domain
+      - operator_source
+    properties:
+      dns_domain:
+        type: string
+        description: >-
+          Internal DNS domain served by OpenWrt. Used for names such as k8s-api.<domain>.
+        pattern: "^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$"
+      operator_source:
+        type: string
+        description: >-
+          Single operator IPv4 address as seen by the OpenWrt and Proxmox firewalls.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'

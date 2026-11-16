@@ -2,6 +2,7 @@
 
 | Category   | Purpose                            | Level |
 | ---------- | ---------------------------------- | ----- |
+| openwrt    | Router bootstrap                   | 0     |
 | proxmox    | Hypervisor                         | 0     |
 | db         | PostgreSQL database                | 1     |
 | files      | NFS (file storage)                 | 1     |

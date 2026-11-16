@@ -1,0 +1,7 @@
+---
+- name: Revoke the existing uapi token
+  ansible.builtin.raw: "uapi-token revoke {{ uapi_token_name }}"
+  register: openwrt_uapi_token_revoke
+  changed_when: openwrt_uapi_token_revoke.rc == 0
+  failed_when: false
+  no_log: true

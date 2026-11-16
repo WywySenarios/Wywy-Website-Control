@@ -37,6 +37,12 @@ Adding a new top-level domain means adding its path there.
 | `k8s_platform`      | Kubernetes platform services             |
 | `k8s_worker`        | Kubernetes worker lifecycle              |
 
+## `openwrt/`
+
+| Role         | Owns                                     |
+| ------------ | ---------------------------------------- |
+| `uapi_token` | OpenWrt uapi install and token lifecycle |
+
 ## `pki/`
 
 | Role          | Owns                                     |
