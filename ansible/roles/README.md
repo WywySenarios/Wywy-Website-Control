@@ -51,14 +51,16 @@ Adding a new top-level domain means adding its path there.
 
 ## `proxmox/`
 
-| Role               | Owns                       |
-| ------------------ | -------------------------- |
-| `proxmox_apt`      | Proxmox host package state |
-| `proxmox_cluster`  | Proxmox cluster membership |
-| `proxmox_iso`      | Proxmox installation media |
-| `proxmox_ssh`      | Proxmox SSH access         |
-| `proxmox_template` | Proxmox VM image templates |
-| `proxmox_vm`       | Proxmox VM lifecycle       |
+| Role                     | Owns                          |
+| ------------------------ | ----------------------------- |
+| `proxmox_apt`            | Proxmox host package state    |
+| `proxmox_cluster`        | Proxmox cluster membership    |
+| `proxmox_iso`            | Proxmox installation media    |
+| `proxmox_root_passwords` | Proxmox root-password stores  |
+| `proxmox_ssh`            | Proxmox SSH access            |
+| `proxmox_template`       | Proxmox VM image templates    |
+| `proxmox_terraform_token` | Proxmox Terraform API token   |
+| `proxmox_vm`             | Proxmox VM lifecycle          |
 
 ## `registry/`
 

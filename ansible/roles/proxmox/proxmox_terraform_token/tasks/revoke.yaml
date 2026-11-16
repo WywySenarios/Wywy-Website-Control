@@ -1,0 +1,13 @@
+---
+- name: Revoke the Terraform API token
+  when: proxmox_terraform_token_exists | bool
+  ansible.builtin.raw: >-
+    pveum user token delete {{ proxmox_terraform_token_user }}
+    {{ proxmox_terraform_token_name }}
+  changed_when: true
+  no_log: true
+
+- name: Record that the Terraform API token is gone
+  when: proxmox_terraform_token_exists | bool
+  ansible.builtin.set_fact:
+    proxmox_terraform_token_exists: false

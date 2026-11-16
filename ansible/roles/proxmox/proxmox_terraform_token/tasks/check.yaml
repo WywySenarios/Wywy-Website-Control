@@ -1,0 +1,40 @@
+---
+- name: Read PVE users
+  ansible.builtin.raw: "pveum user list --output-format json"
+  register: proxmox_terraform_token_users
+  changed_when: false
+
+- name: Record whether the Terraform user exists
+  ansible.builtin.set_fact:
+    proxmox_terraform_token_user_exists: >-
+      {{ proxmox_terraform_token_users.stdout | from_json
+         | selectattr('userid', 'eq', proxmox_terraform_token_user)
+         | list | length > 0 }}
+
+- name: Read PVE roles
+  ansible.builtin.raw: "pveum role list --output-format json"
+  register: proxmox_terraform_token_roles
+  changed_when: false
+
+- name: Record whether the Terraform role exists
+  ansible.builtin.set_fact:
+    proxmox_terraform_token_role_exists: >-
+      {{ proxmox_terraform_token_roles.stdout | from_json
+         | selectattr('roleid', 'eq', proxmox_terraform_token_role)
+         | list | length > 0 }}
+
+- name: Read Terraform user tokens
+  when: proxmox_terraform_token_user_exists | bool
+  ansible.builtin.raw: >-
+    pveum user token list {{ proxmox_terraform_token_user }}
+    --output-format json
+  register: proxmox_terraform_token_tokens
+  changed_when: false
+
+- name: Record whether the Terraform token exists
+  ansible.builtin.set_fact:
+    proxmox_terraform_token_exists: >-
+      {{ (proxmox_terraform_token_tokens.stdout | default('[]') | from_json
+          | selectattr('tokenid', 'eq', proxmox_terraform_token_name)
+          | list | length > 0)
+         if proxmox_terraform_token_user_exists | bool else false }}

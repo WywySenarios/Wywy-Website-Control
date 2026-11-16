@@ -4,12 +4,13 @@
 
 Run these playbooks in order. You will need to flash the ISOs yourself after the iso playbook.
 
-| Playbook                          | Purpose                                                         |
-| --------------------------------- | --------------------------------------------------------------- |
-| `playbooks/proxmox/populate.yaml` | Add missing PVE and PBS root passwords to the encrypted stores. |
-| `playbooks/proxmox/iso.yaml`      | Build the per-node PVE and PBS installer ISOs.                  |
-| `playbooks/proxmox/apt.yaml`      | Manage apt sources on PVE nodes.                                |
-| `playbooks/proxmox/cluster.yaml`  | Create the PVE cluster and harden SSH.                          |
+| Playbook                                            | Purpose                                                         |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| `playbooks/proxmox/secrets/root_pswd/populate.yaml` | Add missing PVE and PBS root passwords to the encrypted stores. |
+| `playbooks/proxmox/iso.yaml`                        | Build the per-node PVE and PBS installer ISOs.                  |
+| `playbooks/proxmox/apt.yaml`                        | Manage apt sources on PVE nodes.                                |
+| `playbooks/proxmox/cluster.yaml`                    | Create the PVE cluster and harden SSH.                          |
+| `playbooks/proxmox/secrets/terraform/populate.yaml` | Add the Terraform API token to the encrypted store.             |
 
 ## Node Topology
 
@@ -22,7 +23,7 @@ The remaining drives stay untouched and are added later as PBS datastores.
 
 ## Bootstrap
 
-Use playbooks `populate.yaml` and `iso.yaml`
+Use `secrets/root_pswd/populate.yaml` and `iso.yaml`
 
 Tip: `ip link show` and `lsblk -o NAME,WWN` can be used to help you gather information.
 
