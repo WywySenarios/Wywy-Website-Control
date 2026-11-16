@@ -15,9 +15,7 @@ required:
   - proxmox_vm_vmid
   - proxmox_vm_name
   - proxmox_vm_template_vmid
-  - proxmox_vm_address
-  - proxmox_vm_gateway
-  - proxmox_vm_nameserver
+  - proxmox_ipam_mode
   - proxmox_vm_disk_size
 properties:
   ansible_user:
@@ -31,7 +29,7 @@ properties:
   proxmox_template_cores:
     type: integer
   k8s_vm:
-    type: string
+    type: object
   proxmox_template_vmid:
     type: string
   proxmox_template_name:
@@ -44,11 +42,11 @@ properties:
     type: string
   proxmox_vm_template_vmid:
     type: string
-  proxmox_vm_address:
+  proxmox_ipam_mode:
     type: string
-  proxmox_vm_gateway:
-    type: string
-  proxmox_vm_nameserver:
-    type: string
+    enum:
+      - static
+      - dhcp
+    description: Control planes use static PVE IPAM allocations; workers use DHCP.
   proxmox_vm_disk_size:
     type: string

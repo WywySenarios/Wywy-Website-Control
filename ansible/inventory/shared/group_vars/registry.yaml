@@ -1,6 +1,5 @@
 ---
-ansible_host: >-
-  {{ lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
-wywy_worker_ips: "{{ hostvars[groups['k8s_workers'][0]].wywy_worker_ips }}"
+ansible_host: "{{ inventory_hostname }}"
 wywy_operator_ip: >-
-  {{ lookup('wywy_hosts', 'hosts.sops', 'operator.internal') }}
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).openwrt.operator_source }}

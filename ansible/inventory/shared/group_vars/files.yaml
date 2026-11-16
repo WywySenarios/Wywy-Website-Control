@@ -1,6 +1,2 @@
 ---
-ansible_host: >-
-  {{ lookup('wywy_hosts', 'hosts.sops', inventory_hostname) }}
-wywy_worker_ips: "{{ hostvars[groups['k8s_workers'][0]].wywy_worker_ips }}"
-wywy_control_plane_ips: >-
-  {{ hostvars[groups['k8s_control_plane'][0]].wywy_control_plane_ips }}
+ansible_host: "{{ inventory_hostname }}"

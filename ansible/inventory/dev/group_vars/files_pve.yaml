@@ -7,9 +7,7 @@ proxmox_template_name: "debian-13-files-template"
 proxmox_vm_vmid: 132
 proxmox_vm_name: "files-vm-dev"
 proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
-proxmox_vm_address: "{{ hostvars['files.internal'].ansible_host }}"
-proxmox_vm_gateway: "{{ wywy_gateway }}"
-proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+proxmox_ipam_mode: dhcp
 proxmox_vm_disk_size: "16G"
 # Dedicated XFS disk for /srv/nfs.
 # This disk will contain the payload!

@@ -17,9 +17,6 @@ proxmox_template_disk_size: "{{ k8s_vm.proxmox_template_disk_size | default('') 
 proxmox_vm_vmid: "{{ k8s_vm.proxmox_vm_vmid | default('') }}"
 proxmox_vm_name: "{{ k8s_vm.proxmox_vm_name | default('') }}"
 proxmox_vm_template_vmid: "{{ proxmox_template_vmid }}"
-proxmox_vm_address: >-
-  {{ hostvars[k8s_vm.vm_hostname].ansible_host
-     if k8s_vm.vm_hostname is defined else '' }}
-proxmox_vm_gateway: "{{ wywy_gateway }}"
-proxmox_vm_nameserver: "{{ wywy_nameserver }}"
+proxmox_ipam_mode: >-
+  {{ 'static' if (k8s_vm.role | default('')) == 'control-plane' else 'dhcp' }}
 proxmox_vm_disk_size: "{{ k8s_vm.proxmox_vm_disk_size | default('') }}"

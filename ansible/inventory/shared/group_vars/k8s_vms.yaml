@@ -2,29 +2,14 @@
 # Shared by the k8s VMs and the Proxmox hosts that own them.
 k8s_version: "1.36.2-2.1"
 containerd_version: "2.4.2-3~debian.13~trixie"
-kube_vip_version: "v1.3.1"
 calico_version: "v3.29.2"
 
-wywy_k8s_api_ip: >-
-  {{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}
+k8s_api_hostname: k8s-api.internal
 
 k8s_control_plane_hosts: >-
   {{ k8s_vm_definitions | dict2items
      | selectattr('value.role', 'equalto', 'control-plane')
      | map(attribute='value.vm_hostname') | list }}
 
-k8s_vm_addresses: >-
-  {{ dict(k8s_vm_definitions.values() | map(attribute='vm_hostname')
-          | zip(k8s_vm_definitions.values() | map(attribute='vm_address'))) }}
-k8s_control_plane_ips: >-
-  {{ k8s_vm_definitions.values() | selectattr('role', 'equalto', 'control-plane')
-     | map(attribute='vm_address') | list }}
 k8s_apiserver_extra_sans: >-
-  {{ (['k8s-api.internal', wywy_k8s_api_ip] + k8s_control_plane_ips
-      + k8s_control_plane_hosts) | unique | join(',') }}
-wywy_worker_ips: >-
-  {{ k8s_vm_definitions.values() | selectattr('role', 'equalto', 'worker')
-     | map(attribute='vm_address') | list }}
-wywy_control_plane_ips: >-
-  {{ k8s_vm_definitions.values() | selectattr('role', 'equalto', 'control-plane')
-     | map(attribute='vm_address') | list }}
+  {{ ([k8s_api_hostname] + k8s_control_plane_hosts) | unique | join(',') }}

@@ -4,12 +4,6 @@ type: object
 additionalProperties: false
 required:
   - ansible_host
-  - wywy_worker_ips
-  - wywy_control_plane_ips
 properties:
   ansible_host:
-    type: string
-  wywy_worker_ips:
-    type: string
-  wywy_control_plane_ips:
     type: string

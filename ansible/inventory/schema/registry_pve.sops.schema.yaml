@@ -9,9 +9,6 @@ required:
   - proxmox_vm_vmid
   - proxmox_vm_name
   - proxmox_vm_template_vmid
-  - proxmox_vm_address
-  - proxmox_vm_gateway
-  - proxmox_vm_nameserver
   - proxmox_vm_disk_size
   - proxmox_vm_data_disk_size
   - sops
@@ -29,15 +26,6 @@ properties:
     type: string
     pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_template_vmid:
-    type: string
-    pattern: '^ENC\[AES256_GCM,'
-  proxmox_vm_address:
-    type: string
-    pattern: '^ENC\[AES256_GCM,'
-  proxmox_vm_gateway:
-    type: string
-    pattern: '^ENC\[AES256_GCM,'
-  proxmox_vm_nameserver:
     type: string
     pattern: '^ENC\[AES256_GCM,'
   proxmox_vm_disk_size:
