@@ -1,3 +1,5 @@
+mock_provider "proxmox" {}
+
 run "loads_network_contract" {
   command = plan
 
