@@ -16,6 +16,7 @@ required:
   - proxmox_sdn_gateway
   - proxmox_sdn_dns
   - proxmox_sdn_dhcp_range
+  - openwrt_operator_source
   - proxmox_template_image
   - cloudflare_public_hosts
 properties:
@@ -56,6 +57,10 @@ properties:
   proxmox_sdn_dhcp_range:
     type: string
     description: Single PVE IPAM/DHCP pool for workers, services, and static control-plane mappings.
+  openwrt_operator_source:
+    type: string
+    description: Operator IPv4 address rendered from config/base/network.yaml.
+    pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
   proxmox_template_image:
     type: object
     additionalProperties: false

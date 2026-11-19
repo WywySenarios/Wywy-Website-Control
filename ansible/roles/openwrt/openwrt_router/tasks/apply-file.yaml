@@ -1,0 +1,35 @@
+---
+- name: Render {{ item }}
+  ansible.builtin.set_fact:
+    router_config_content: "{{ lookup('template', 'templates/' ~ item ~ '.j2') }}"
+  no_log: "{{ (item in ['rpcd', 'wireless']) | bool }}"
+
+- name: Hash the rendered {{ item }}
+  ansible.builtin.set_fact:
+    router_config_hash: "{{ router_config_content | hash('sha256') }}"
+  no_log: "{{ (item in ['rpcd', 'wireless']) | bool }}"
+
+- name: Read the remote checksum for {{ item }}
+  ansible.builtin.raw: "sha256sum /etc/config/{{ item }} 2>/dev/null || true"
+  register: router_config_remote
+  changed_when: false
+
+- name: Write {{ item }}
+  when: router_config_hash not in (router_config_remote.stdout | default(''))
+  ansible.builtin.raw: >-
+    set -e;
+    tmp="/etc/config/{{ item }}.wywy-new";
+    printf '%s' {{ router_config_content | quote }} > "$tmp";
+    chmod 600 "$tmp";
+    if [ -f "/etc/config/{{ item }}" ]; then
+      cp "/etc/config/{{ item }}" "/etc/config/{{ item }}.wywy-bak";
+    fi;
+    mv "$tmp" "/etc/config/{{ item }}"
+  changed_when: true
+  no_log: "{{ (item in ['rpcd', 'wireless']) | bool }}"
+
+- name: Mark the router configuration changed for {{ item }}
+  when: router_config_hash not in (router_config_remote.stdout | default(''))
+  ansible.builtin.set_fact:
+    router_config_changed: true
+  no_log: "{{ (item in ['rpcd', 'wireless']) | bool }}"

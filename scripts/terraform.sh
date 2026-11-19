@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run OpenTofu with the environment's uapi and Proxmox tokens loaded from sops.
+# Run OpenTofu with the environment's Proxmox token loaded from sops.
 #
 # Usage:
 #   scripts/terraform.sh (--dev|--prod) [tofu arguments...]
@@ -28,33 +28,9 @@ case "${1:-}" in
 esac
 
 secrets_dir="$CONTROL_DIR/secrets/$WYWY_ENV"
-token_file="$secrets_dir/openwrt/uapi.sops"
 
-uapi_token="$(
-	sops -d --output-type binary "$token_file" |
-		sed -n '1p' |
-		tr -d '\r'
-)"
-if [ -z "$uapi_token" ]; then
-	error "$token_file is empty"
-	exit 1
-fi
-case "$uapi_token" in
-*[[:space:]]*)
-	error "$token_file token contains whitespace"
-	exit 1
-	;;
-esac
-
-# The router uses a self-signed certificate today. Set UAPI_INSECURE=0 once it
-# has a trusted certificate.
-UAPI_INSECURE="${UAPI_INSECURE:-1}"
-
-export UAPI_TOKEN="$uapi_token"
-export UAPI_INSECURE
-
-# Proxmox is required. The file contains one API token in the form
-# user@realm!tokenid=secret. This is not the root password and not an SSH key.
+# The file contains one API token in the form user@realm!tokenid=secret. This
+# is not the root password and not an SSH key.
 proxmox_token_file="$secrets_dir/proxmox/terraform.sops"
 if [ ! -f "$proxmox_token_file" ]; then
 	error "$proxmox_token_file is missing; create a terraform@pve API token and store it there"

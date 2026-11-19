@@ -1,0 +1,18 @@
+openwrt_operator_mac: ENC[AES256_GCM,data:YkzoHyYtSqJHAtoLlgMEe3I=,iv:0kzLbDdb5uG6J0Jj5BWlGsqxPqkmsUZRqtkZZOuVsrQ=,tag:XgRza1q+giVTmp+0kslUqg==,type:str]
+openwrt_dhcp_default_duid: ENC[AES256_GCM,data:xCFq8XJVg9bVkrOf6QJYTlrCclAV7dyIYCl7cfljL9JtTtwk,iv:KMYF3ttswt0Mr7fbqnJeyU2+3f687Q4OuMnCzuF1rU4=,tag:n9TFYot0Z2Qq6TH9w+jwqQ==,type:str]
+openwrt_ula_prefix: ENC[AES256_GCM,data:QpjcuCk18CQBEErBICgj6SeKNQ==,iv:HUJSBz0WEctUIvIIAgn0ly+u53QGKv3oqPTl2s3XM38=,tag:MN83jaVPDnCSWYoCbpRVzg==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBQclBWb0UxQWhudjdNR0lj
+            RVk2Tmptb2FXdjlFOS8wT1NvNVdBWGI2QnpBCmkzbnF2ZUcyZ0NUeVQ2QXRBbVFG
+            NVVCdStZc0RySk91ODFaRFdnS1BhckEKLS0tIDdPVm5UMm84aFlKeDJkOVVuY2Nl
+            d0c3M2lVRjBKT2VXdk1PVjJzTmttakEKGxHQJZYR05t8YSNMOVcBSdAWqmJ04Uby
+            wr1VzMzBbMI665yDKRG8XShFAJHeyOqj0NnXYKTPGoYSLgTZg3rRPA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
+    lastmodified: "2026-11-18T17:05:03Z"
+    mac: ENC[AES256_GCM,data:4wBtN+B4pWKMBGarEtAtgfFsPWEqNquEE5zlCAqGwDqQxZWISBWdbJqt/C4klZUh0b9rkSupDUF45ZLLwIBNGOrqwk0TFXrNHuZByQUXERmXOOnaifouHt2MJEH6/EGtXDuWHBwyGXPXPPRIbS8xcVui3JaXpR1+Sv0Ex/KOyEc=,iv:Isa1/Fx0SmcXXzS/vpQzmLtKWERHWwuOlQIRSCHaYeM=,tag:2oPlMjvXu569eG9IjJexNQ==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.13.3

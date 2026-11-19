@@ -26,6 +26,9 @@ proxmox_sdn_dns: >-
 proxmox_sdn_dhcp_range: >-
   {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
       | from_yaml).proxmox_sdn.dhcp_range }}
+openwrt_operator_source: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).openwrt.operator_source }}
 
 proxmox_template_image:
   url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64-20261017-2634.qcow2

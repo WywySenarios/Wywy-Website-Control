@@ -1,0 +1,29 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Encrypted OpenWrt inventory
+description: Sops-encrypted values for the openwrt group.
+type: object
+additionalProperties: false
+required:
+  - openwrt_operator_mac
+  - openwrt_dhcp_default_duid
+  - openwrt_ula_prefix
+  - sops
+properties:
+  openwrt_operator_mac:
+    type: string
+    description: Operator NIC MAC address used for the static DHCP reservation.
+    pattern: '^ENC\[AES256_GCM,'
+  openwrt_dhcp_default_duid:
+    type: string
+    description: DHCPv6 client DUID for the router.
+    pattern: '^ENC\[AES256_GCM,'
+  openwrt_ula_prefix:
+    type: string
+    description: IPv6 ULA /48 prefix for the LAN.
+    pattern: '^ENC\[AES256_GCM,'
+  openwrt_wifi_key:
+    type: string
+    description: Dev-only Wi-Fi PSK. Production must not define it.
+    pattern: '^ENC\[AES256_GCM,'
+  sops:
+    type: object

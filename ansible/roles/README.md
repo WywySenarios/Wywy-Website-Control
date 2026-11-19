@@ -39,9 +39,9 @@ Adding a new top-level domain means adding its path there.
 
 ## `openwrt/`
 
-| Role         | Owns                                     |
-| ------------ | ---------------------------------------- |
-| `uapi_token` | OpenWrt uapi install and token lifecycle |
+| Role             | Owns                                      |
+| ---------------- | ----------------------------------------- |
+| `openwrt_router` | Raw OpenWrt config file writer and checksum |
 
 ## `pki/`
 

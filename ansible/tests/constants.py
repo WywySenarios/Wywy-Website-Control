@@ -62,6 +62,10 @@ SCHEMA_TARGET_FILES: dict[str, tuple[str, ...]] = {
         "dev/group_vars/proxmox.sops.yaml",
         "prod/group_vars/proxmox.sops.yaml",
     ),
+    "openwrt.sops.schema.yaml": (
+        "dev/group_vars/openwrt.sops.yaml",
+        "prod/group_vars/openwrt.sops.yaml",
+    ),
 }
 SCHEMA_TARGETS: tuple[tuple[Path, Path], ...] = tuple(
     (SCHEMA_DIR / schema, INVENTORY_DIR / target)

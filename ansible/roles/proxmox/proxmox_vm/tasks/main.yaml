@@ -5,9 +5,7 @@
       - (proxmox_vm_vmid | string | regex_replace('[0-9]', '')) | length == 0
       - (proxmox_vm_template_vmid | string | regex_replace('[0-9]', '')) | length == 0
       - (proxmox_vm_name | regex_replace('[A-Za-z0-9._-]', '')) | length == 0
-      - (proxmox_vm_address | regex_replace('^[0-9.]+$', '')) | length == 0
-      - (proxmox_vm_gateway | regex_replace('^[0-9.]+$', '')) | length == 0
-      - (proxmox_vm_nameserver | regex_replace('^[0-9.]+$', '')) | length == 0
+      - (proxmox_ipam_mode | default('')) in ['dhcp', 'static']
       - >-
         (proxmox_vm_disk_size | regex_replace('[0-9]', '')
         | regex_replace('^[KMGT]$', '')) | length == 0
@@ -16,10 +14,29 @@
         | regex_replace('^[KMGT]$', '')) | length == 0
     fail_msg: >-
       a proxmox_vm_* var is missing or unsafe to pass to qm(1). The VM's
-      identity lives in ansible/inventory/<env>/group_vars/<group>_pve.yaml;
-      the addresses come from the encrypted hosts file. proxmox_vm_data_disk_size
-      is a human size such as "128G".
+      identity lives in ansible/inventory/<env>/group_vars/<group>_pve.yaml.
+      proxmox_vm_data_disk_size is a human size such as "128G".
     quiet: true
+
+- name: Validate the static VM network parameters
+  when: proxmox_ipam_mode == 'static'
+  ansible.builtin.assert:
+    that:
+      - (proxmox_vm_address | default('') | length) > 0
+      - (proxmox_vm_address | default('') | regex_replace('^[0-9.]+$', '')) | length == 0
+      - proxmox_sdn_subnet is defined
+      - proxmox_sdn_gateway is defined
+      - proxmox_sdn_dns is defined
+    fail_msg: >-
+      static VMs need proxmox_vm_address from the PVE IPAM allocation, plus
+      proxmox_sdn_subnet, proxmox_sdn_gateway, and proxmox_sdn_dns.
+    quiet: true
+
+- name: Set the static network prefix length
+  when: proxmox_ipam_mode == 'static'
+  ansible.builtin.set_fact:
+    proxmox_vm_prefix_length: >-
+      {{ proxmox_sdn_subnet | regex_replace('^.*/', '') }}
 
 # check_mode is disabled for the reads because the guards below need real output
 - name: Read the current config for VMID {{ proxmox_vm_vmid }}
@@ -49,29 +66,51 @@
   changed_when: true
   when: proxmox_vm_cfg.rc != 0
 
-- name: Remove the stale SSH host key for a newly cloned VM
+- name: Remove the stale SSH host key for a newly cloned static VM
   ansible.builtin.command:
     argv:
       - ssh-keygen
       - -R
-      - "{{ proxmox_vm_address }}"
+      - "{{ proxmox_vm_address | default('') }}"
   delegate_to: localhost
   become: false
   changed_when: "'updated' in (result.stdout | default(''))"
-  when: proxmox_vm_cfg.rc != 0
+  when:
+    - proxmox_vm_cfg.rc != 0
+    - proxmox_ipam_mode == 'static'
 
-# we have to guard the value because the key is already in the template
-- name: Point the guest at its address, gateway and nameserver
+- name: Point the DHCP guest at DHCP
   ansible.builtin.command:
-    cmd: >-
-      qm set {{ proxmox_vm_vmid }}
-      --ipconfig0 ip={{ proxmox_vm_address }}/24,gw={{ proxmox_vm_gateway }}
-      --nameserver {{ proxmox_vm_nameserver }}
+    argv:
+      - qm
+      - set
+      - "{{ proxmox_vm_vmid }}"
+      - --ipconfig0
+      - ip=dhcp
+      - --nameserver
+      - "{{ proxmox_sdn_dns }}"
   changed_when: true
   when: >-
-    (('ipconfig0: ip=' ~ proxmox_vm_address ~ '/24,gw=' ~ proxmox_vm_gateway)
-    not in proxmox_vm_cfg.stdout)
-    or (('nameserver: ' ~ proxmox_vm_nameserver) not in proxmox_vm_cfg.stdout)
+    proxmox_ipam_mode == 'dhcp'
+    and (('ipconfig0: ip=dhcp' not in proxmox_vm_cfg.stdout)
+    or (('nameserver: ' ~ proxmox_sdn_dns) not in proxmox_vm_cfg.stdout))
+
+- name: Point the static guest at its IPAM address
+  ansible.builtin.command:
+    argv:
+      - qm
+      - set
+      - "{{ proxmox_vm_vmid }}"
+      - --ipconfig0
+      - "ip={{ proxmox_vm_address | default('') }}/{{ proxmox_vm_prefix_length | default('') }},gw={{ proxmox_sdn_gateway }}"
+      - --nameserver
+      - "{{ proxmox_sdn_dns }}"
+  changed_when: true
+  when: >-
+    proxmox_ipam_mode == 'static'
+    and ((('ipconfig0: ip=' ~ proxmox_vm_address ~ '/' ~ proxmox_vm_prefix_length
+    ~ ',gw=' ~ proxmox_sdn_gateway) not in proxmox_vm_cfg.stdout)
+    or (('nameserver: ' ~ proxmox_sdn_dns) not in proxmox_vm_cfg.stdout))
 
 - name: Grow the disk to the final VM size
   ansible.builtin.command:
@@ -119,13 +158,33 @@
       register: proxmox_vm_verify_state
       changed_when: false
 
-    - name: Assert the VM matches the wanted shape
+    - name: Assert the DHCP VM matches the wanted shape
+      when: proxmox_ipam_mode == 'dhcp'
       ansible.builtin.assert:
         that:
           - "'template: 1' not in proxmox_vm_verify.stdout"
           - "('name: ' ~ proxmox_vm_name) in proxmox_vm_verify.stdout"
-          - "('ipconfig0: ip=' ~ proxmox_vm_address ~ '/24,gw=' ~ proxmox_vm_gateway) in proxmox_vm_verify.stdout"
-          - "('nameserver: ' ~ proxmox_vm_nameserver) in proxmox_vm_verify.stdout"
+          - "'ipconfig0: ip=dhcp' in proxmox_vm_verify.stdout"
+          - "('nameserver: ' ~ proxmox_sdn_dns) in proxmox_vm_verify.stdout"
+          - "('size=' ~ proxmox_vm_disk_size) in proxmox_vm_verify.stdout"
+          - "'status: running' in proxmox_vm_verify_state.stdout"
+        fail_msg: >-
+          the VM did not reach the wanted shape:
+          {{ proxmox_vm_verify.stdout }}
+          {{ proxmox_vm_verify_state.stdout }}
+        quiet: true
+
+    - name: Assert the static VM matches the wanted shape
+      when: proxmox_ipam_mode == 'static'
+      ansible.builtin.assert:
+        that:
+          - "'template: 1' not in proxmox_vm_verify.stdout"
+          - "('name: ' ~ proxmox_vm_name) in proxmox_vm_verify.stdout"
+          - >-
+            ('ipconfig0: ip=' ~ proxmox_vm_address ~ '/'
+            ~ proxmox_vm_prefix_length ~ ',gw=' ~ proxmox_sdn_gateway)
+            in proxmox_vm_verify.stdout
+          - "('nameserver: ' ~ proxmox_sdn_dns) in proxmox_vm_verify.stdout"
           - "('size=' ~ proxmox_vm_disk_size) in proxmox_vm_verify.stdout"
           - "'status: running' in proxmox_vm_verify_state.stdout"
         fail_msg: >-

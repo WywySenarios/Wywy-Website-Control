@@ -10,4 +10,4 @@ scripts/tests/terraform/validate.sh
 scripts/tests/terraform/test.sh
 ```
 
-`test.sh` uses a mocked provider, so it does not contact a router.
+`test.sh` only exercises local configuration loading; it does not contact Proxmox.
