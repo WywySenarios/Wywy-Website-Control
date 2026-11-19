@@ -10,6 +10,7 @@ proxmox_terraform_token_privileges:
   - Datastore.AllocateSpace
   - Datastore.Audit
   - Pool.Allocate
+  - SDN.Allocate
   - SDN.Audit
   - SDN.Use
   - Sys.Audit

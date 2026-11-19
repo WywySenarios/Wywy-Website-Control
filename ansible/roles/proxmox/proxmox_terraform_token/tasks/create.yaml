@@ -37,7 +37,7 @@
   no_log: true
 
 - name: Record the new Terraform API token
-  when: not proxmox_terraform_token_exists | bool
+  when: proxmox_terraform_token_create is defined
   ansible.builtin.set_fact:
     proxmox_terraform_token_created: true
     proxmox_terraform_token_full: >-
