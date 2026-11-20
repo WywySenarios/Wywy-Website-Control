@@ -1,10 +1,5 @@
 ---
-- name: Create the files VM from its template
-  hosts: files_pve
-  gather_facts: false
-  become: true
-  roles:
-    - proxmox_vm
+# Terraform creates the files VM from its template.
 
 # if you are regenerating the files VM, remember to remove the old host
 # fingerprint. this guy will not fail fast to fingerprint changes.

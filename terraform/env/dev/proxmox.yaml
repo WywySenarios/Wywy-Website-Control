@@ -13,3 +13,9 @@ registry_template:
 
 registry_vm:
   node_name: proxmox-1
+
+files_template:
+  node_name: proxmox-3
+
+files_vm:
+  node_name: proxmox-3

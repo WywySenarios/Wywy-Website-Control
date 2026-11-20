@@ -20,10 +20,6 @@ SCHEMA_TARGET_FILES: dict[str, tuple[str, ...]] = {
         "dev/group_vars/all.yaml",
         "prod/group_vars/all.yaml",
     ),
-    "files_pve.schema.yaml": (
-        "dev/group_vars/files_pve.yaml",
-        "prod/group_vars/files_pve.yaml",
-    ),
     "proxmox_iso.schema.yaml": (
         "dev/group_vars/proxmox_iso.yaml",
         "prod/group_vars/proxmox_iso.yaml",
