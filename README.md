@@ -55,8 +55,6 @@ Jenkins images playbook fails to resolve registry.internal. Currently /etc/hosts
 
 kubectl does not work unless k8s-api.internal is manually defined in /etc/hosts.
 
-registry VM playbooks read gateway & nameserver from its own group var instead of hosts.sops.
-
 Some playbooks (particularily those generating certs) will ask for sudo password and this is not documented.
 
 Proxmox/cloud managed /etc/hosts blocks may override Ansible blocks. Outside-of-cluster DNS needs to happen soon.

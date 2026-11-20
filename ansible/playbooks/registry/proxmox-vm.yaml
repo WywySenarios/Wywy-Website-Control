@@ -1,10 +1,5 @@
 ---
-- name: Create the registry VM from its template
-  hosts: registry_pve
-  gather_facts: false
-  become: true
-  roles:
-    - proxmox_vm
+# Terraform creates the registry VM from its template.
 
 # If you are regenerating the registry VM, remember to remove the old host fingerprint.
 # This guy will not fail fast to fingerprint changes.

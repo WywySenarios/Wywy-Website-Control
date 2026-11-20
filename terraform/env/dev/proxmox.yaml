@@ -7,3 +7,9 @@ database_template:
 database_vm:
   node_name: proxmox-2
   disk_size_gb: 114
+
+registry_template:
+  node_name: proxmox-1
+
+registry_vm:
+  node_name: proxmox-1

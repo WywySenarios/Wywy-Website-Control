@@ -15,3 +15,17 @@ database_vm:
   name: database-vm
   vm_id: 131
   disk_size_gb: 114
+
+registry_template:
+  name: registry-template
+  vm_id: 151001
+  disk_size_gb: 16
+  memory_mb: 4096
+  cores: 2
+  cpu_type: x86-64-v2-AES
+
+registry_vm:
+  name: registry
+  vm_id: 151002
+  disk_size_gb: 16
+  data_disk_size_gb: 64

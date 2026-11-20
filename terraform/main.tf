@@ -16,6 +16,14 @@ locals {
     local.proxmox_base.database_vm,
     local.proxmox_env.database_vm,
   )
+  registry_template = merge(
+    local.proxmox_base.registry_template,
+    local.proxmox_env.registry_template,
+  )
+  registry_vm = merge(
+    local.proxmox_base.registry_vm,
+    local.proxmox_env.registry_vm,
+  )
   template_image  = local.proxmox_base.template_image
   ssh_public_keys = local.proxmox_env.ssh_public_keys
 }
