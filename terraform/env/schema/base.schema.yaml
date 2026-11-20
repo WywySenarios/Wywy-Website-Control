@@ -1,0 +1,161 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Proxmox base VM definitions
+description: >-
+  Complete VM, template, and image definitions shared by every environment.
+  Environment files only override these values.
+type: object
+additionalProperties: false
+required:
+  - template_image
+  - registry_template
+  - registry_vm
+  - database_template
+  - database_vm
+  - files_template
+  - files_vm
+  - k8s_worker_templates
+  - k8s_worker_vms
+  - k8s_control_plane_templates
+  - k8s_control_plane_vms
+properties:
+  template_image:
+    type: object
+    additionalProperties: false
+    required:
+      - url
+      - sha512
+      - file_name
+    properties:
+      url:
+        type: string
+        pattern: "^https://"
+      sha512:
+        type: string
+        pattern: "^[0-9a-f]{128}$"
+      file_name:
+        type: string
+        minLength: 1
+  registry_template:
+    $ref: "#/$defs/template"
+  registry_vm:
+    $ref: "#/$defs/service_vm"
+  database_template:
+    $ref: "#/$defs/template"
+  database_vm:
+    $ref: "#/$defs/service_vm"
+  files_template:
+    $ref: "#/$defs/template"
+  files_vm:
+    $ref: "#/$defs/service_vm"
+  k8s_worker_templates:
+    $ref: "#/$defs/k8s_templates"
+  k8s_worker_vms:
+    $ref: "#/$defs/k8s_vms"
+  k8s_control_plane_templates:
+    $ref: "#/$defs/k8s_templates"
+  k8s_control_plane_vms:
+    $ref: "#/$defs/k8s_vms"
+$defs:
+  vm_id:
+    type: integer
+    minimum: 1
+    maximum: 255254
+    description: VMID xxxnnn, where xxx and nnn are IPv4 octets.
+  template_vm_id:
+    type: integer
+    minimum: 1000001
+    maximum: 1255254
+    description: VMID 1xxxnnn, the template for VMID xxxnnn.
+  template:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - vm_id
+      - disk_size_gb
+      - memory_mb
+      - cores
+      - cpu_type
+    properties:
+      name:
+        type: string
+        minLength: 1
+      vm_id:
+        $ref: "#/$defs/template_vm_id"
+      disk_size_gb:
+        type: integer
+        minimum: 1
+      memory_mb:
+        type: integer
+        minimum: 1
+      cores:
+        type: integer
+        minimum: 1
+      cpu_type:
+        type: string
+        minLength: 1
+  service_vm:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - vm_id
+      - disk_size_gb
+    properties:
+      name:
+        type: string
+        minLength: 1
+      vm_id:
+        $ref: "#/$defs/vm_id"
+      disk_size_gb:
+        type: integer
+        minimum: 1
+      data_disk_size_gb:
+        type: integer
+        minimum: 1
+  k8s_template:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - vm_id
+      - disk_size_gb
+    properties:
+      name:
+        type: string
+        minLength: 1
+      vm_id:
+        $ref: "#/$defs/template_vm_id"
+      disk_size_gb:
+        type: integer
+        minimum: 1
+  k8s_vm:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - vm_id
+      - disk_size_gb
+    properties:
+      name:
+        type: string
+        minLength: 1
+      vm_id:
+        $ref: "#/$defs/vm_id"
+      disk_size_gb:
+        type: integer
+        minimum: 1
+  k8s_templates:
+    type: object
+    minProperties: 1
+    propertyNames:
+      pattern: "^k8s-(worker|control-plane)-[0-9]+$"
+    additionalProperties:
+      $ref: "#/$defs/k8s_template"
+  k8s_vms:
+    type: object
+    minProperties: 1
+    propertyNames:
+      pattern: "^k8s-(worker|control-plane)-[0-9]+$"
+    additionalProperties:
+      $ref: "#/$defs/k8s_vm"
