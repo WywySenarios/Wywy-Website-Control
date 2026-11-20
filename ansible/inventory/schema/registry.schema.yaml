@@ -5,9 +5,6 @@ type: object
 additionalProperties: false
 required:
   - ansible_host
-  - wywy_operator_ip
 properties:
   ansible_host:
-    type: string
-  wywy_operator_ip:
     type: string

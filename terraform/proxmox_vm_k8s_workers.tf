@@ -110,7 +110,7 @@ resource "proxmox_virtual_environment_vm" "k8s_workers" {
       model        = "virtio"
       disconnected = false
       enabled      = null
-      firewall     = false
+      firewall     = true
       mac_address  = null
       mtu          = null
       queues       = null
@@ -123,7 +123,8 @@ resource "proxmox_virtual_environment_vm" "k8s_workers" {
   initialization {
     ip_config {
       ipv4 {
-        address = "dhcp"
+        address = "${each.value.ipv4_address}/${local.network_prefix_length}"
+        gateway = local.network.proxmox_sdn.gateway
       }
     }
 

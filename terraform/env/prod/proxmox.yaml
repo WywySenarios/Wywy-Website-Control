@@ -40,10 +40,13 @@ k8s_worker_templates:
 k8s_worker_vms:
   k8s-worker-1:
     node_name: proxmox-1
+    ipv4_address: 172.16.236.1
   k8s-worker-2:
     node_name: proxmox-2
+    ipv4_address: 172.16.236.2
   k8s-worker-3:
     node_name: proxmox-3
+    ipv4_address: 172.16.236.3
 
 k8s_control_plane_templates:
   k8s-control-plane-1:
@@ -65,10 +68,10 @@ k8s_control_plane_templates:
 k8s_control_plane_vms:
   k8s-control-plane-1:
     node_name: proxmox-1
-    ipv4_address: 172.16.0.10
+    ipv4_address: 172.16.235.1
   k8s-control-plane-2:
     node_name: proxmox-2
-    ipv4_address: 172.16.0.11
+    ipv4_address: 172.16.235.2
   k8s-control-plane-3:
     node_name: proxmox-3
-    ipv4_address: 172.16.0.12
+    ipv4_address: 172.16.235.3

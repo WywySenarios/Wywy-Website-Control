@@ -1,21 +1,4 @@
 ---
-- name: Assert that worker IPs are configured
-  ansible.builtin.assert:
-    that:
-      - wywy_worker_ips | length > 0
-    fail_msg: >-
-      wywy_worker_ips is empty.
-    quiet: true
-
-- name: Fail closed when no operator IP is configured
-  ansible.builtin.assert:
-    that:
-      - wywy_operator_ip | length > 0
-    fail_msg: >-
-      wywy_operator_ip is empty — operator.internal is missing from
-      secrets/<env>/hosts.sops, so the operator could not push to the registry.
-    quiet: true
-
 - name: Check the data disk is present
   ansible.builtin.stat:
     path: "{{ registry_data_device }}"
@@ -158,7 +141,6 @@
 - name: Configure the registry TLS certificate
   ansible.builtin.include_tasks: tls.yaml
 
-# network_mode: host means the registry binds the VM's own :5000, so the ufw = INPUT rules below (not Docker's DNAT chain) govern who can reach it.
 - name: Run the registry container
   community.docker.docker_container:
     name: registry
@@ -180,25 +162,20 @@
       - "{{ registry_tls_dir }}:/certs:ro"
   become: true
 
-- name: Allow SSH before the firewall is enabled
-  community.general.ufw:
-    rule: allow
-    name: ssh
-  become: true
+- name: Check for the in-guest firewall
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: registry_ufw
 
-# Pods reach the VM as their worker's IP (Calico SNATs pod -> LAN traffic to
-# the node); the operator pushes from operator.internal. Both are gated
-# explicitly, and there is deliberately no pod-CIDR allow rule.
-- name: Allow the cluster and operator on the registry port
+- name: Disable the in-guest firewall
   community.general.ufw:
-    rule: allow
-    from_ip: "{{ item }}"
-    to_port: "{{ registry_port }}"
-    proto: tcp
-  loop: "{{ wywy_worker_ips + [wywy_operator_ip] }}"
+    state: disabled
   become: true
+  when: registry_ufw.stat.exists
 
-- name: Enable the firewall
-  community.general.ufw:
-    state: enabled
+- name: Remove the in-guest firewall package
+  ansible.builtin.apt:
+    name: ufw
+    state: absent
+    purge: true
   become: true

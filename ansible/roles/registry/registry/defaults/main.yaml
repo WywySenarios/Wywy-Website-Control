@@ -25,4 +25,3 @@ registry_packages:
   - docker.io
   - python3-docker
   - apache2-utils
-  - ufw

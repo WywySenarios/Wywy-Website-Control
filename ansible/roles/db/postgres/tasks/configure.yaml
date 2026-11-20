@@ -15,36 +15,9 @@
   become: true
   notify: Restart postgresql
 
-- name: Assert that worker IPs are configured
-  ansible.builtin.assert:
-    that:
-      - wywy_worker_ips | length > 0
-    fail_msg: >-
-      wywy_worker_ips is empty.
-    quiet: true
-
-# pg_hba.conf is generated from the repo file: the <K8S_WORKER_IPS> rule-line
-# token is replaced; comment lines pass through untouched.
-- name: Render pg_hba.conf
-  ansible.builtin.set_fact:
-    postgres_hba_content: >-
-      {{ lookup('file', postgres_hba_source)
-      | replace('{{K8S_WORKER_IPS}}', postgres_hba_workers_block) }}
-
-- name: Assert the render left no placeholder on a rule line
-  ansible.builtin.assert:
-    that:
-      - >-
-        postgres_hba_content.split("\n")
-        | reject('match', '^\s*#')
-        | select('search', postgres_hba_placeholder_re)
-        | list | length == 0
-    fail_msg: "a placeholder survived the pg_hba render on a rule line"
-    quiet: true
-
 - name: Install pg_hba.conf
   ansible.builtin.copy:
-    content: "{{ postgres_hba_content }}"
+    src: pg_hba.conf
     dest: "{{ postgres_conf_dir }}/pg_hba.conf"
     owner: root
     group: postgres
@@ -52,27 +25,22 @@
   become: true
   notify: Reload postgresql
 
-- name: Allow SSH before the firewall is enabled
-  community.general.ufw:
-    rule: allow
-    name: ssh
-  become: true
+- name: Check for the in-guest firewall
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: postgres_ufw
 
-# Pods reach the VM as their worker's IP (Calico SNATs pod -> LAN traffic to
-# the node), so access is gated per worker. There is deliberately no pod-CIDR
-# allow rule — add one only if masquerade is disabled.
-- name: Allow each worker IP on 5432/tcp
+- name: Disable the in-guest firewall
   community.general.ufw:
-    rule: allow
-    from_ip: "{{ item }}"
-    to_port: "5432"
-    proto: tcp
-  loop: "{{ wywy_worker_ips }}"
+    state: disabled
   become: true
+  when: postgres_ufw.stat.exists
 
-- name: Enable the firewall
-  community.general.ufw:
-    state: enabled
+- name: Remove the in-guest firewall package
+  ansible.builtin.apt:
+    name: ufw
+    state: absent
+    purge: true
   become: true
 
 - name: Apply pending postgres config changes before validation

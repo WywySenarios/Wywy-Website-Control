@@ -112,7 +112,7 @@ resource "proxmox_virtual_environment_vm" "registry" {
       model        = "virtio"
       disconnected = false
       enabled      = null
-      firewall     = false
+      firewall     = true
       mac_address  = null
       mtu          = null
       queues       = null

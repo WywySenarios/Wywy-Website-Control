@@ -8,30 +8,6 @@
       exports.
     quiet: true
 
-- name: Assert that worker IPs are configured
-  ansible.builtin.assert:
-    that:
-      - wywy_worker_ips | length > 0
-    fail_msg: >-
-      wywy_worker_ips is empty.
-    quiet: true
-
-- name: Assert that some control-plane IPs are configured
-  ansible.builtin.assert:
-    that:
-      - wywy_control_plane_ips | length > 0
-    fail_msg: >-
-      wywy_control_plane_ips is empty.
-    quiet: true
-
-- name: Fail closed when the pod CIDR is not configured
-  ansible.builtin.assert:
-    that:
-      - k8s_pod_cidr | length > 0
-    fail_msg: >-
-      Group variable "k8s_pod_cidr" is not resolveable.
-    quiet: true
-
 - name: Check the data disk is present
   ansible.builtin.stat:
     path: "{{ nfs_data_device }}"
@@ -177,22 +153,20 @@
     enabled: true
   become: true
 
-- name: Allow SSH before the firewall is enabled
-  community.general.ufw:
-    rule: allow
-    name: ssh
-  become: true
+- name: Check for the in-guest firewall
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: nfs_ufw
 
-- name: Allow each export client to reach the NFS server
+- name: Disable the in-guest firewall
   community.general.ufw:
-    rule: allow
-    from_ip: "{{ item }}"
-    to_port: "{{ nfs_port }}"
-    proto: tcp
-  loop: "{{ nfs_export_clients }}"
+    state: disabled
   become: true
+  when: nfs_ufw.stat.exists
 
-- name: Enable the firewall
-  community.general.ufw:
-    state: enabled
+- name: Remove the in-guest firewall package
+  ansible.builtin.apt:
+    name: ufw
+    state: absent
+    purge: true
   become: true

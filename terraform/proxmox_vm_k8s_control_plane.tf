@@ -110,7 +110,7 @@ resource "proxmox_virtual_environment_vm" "k8s_control_planes" {
       model        = "virtio"
       disconnected = false
       enabled      = null
-      firewall     = false
+      firewall     = true
       mac_address  = null
       mtu          = null
       queues       = null
