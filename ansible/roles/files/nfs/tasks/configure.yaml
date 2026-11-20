@@ -19,8 +19,8 @@
     that:
       - nfs_data_disk.stat.exists
     fail_msg: >-
-      {{ nfs_data_device }} does not exist. Create the files VM (its proxmox_vm
-      data-disk step) before running the nfs role.
+      {{ nfs_data_device }} does not exist. Provision the files VM with its
+      data disk before running the nfs role.
     quiet: true
 
 # Device node names are not stable across boots: the data disk (scsi1) has

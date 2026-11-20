@@ -10,8 +10,8 @@
     that:
       - registry_data_disk.stat.exists
     fail_msg: >-
-      {{ registry_data_device }} does not exist. Create the registry VM (its
-      proxmox_vm data-disk step) before running the registry role.
+      {{ registry_data_device }} does not exist. Provision the registry VM with
+      its data disk before running the registry role.
     quiet: true
 
 # Device node names are not stable across boots: the data disk (scsi1) can
