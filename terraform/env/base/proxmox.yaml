@@ -3,19 +3,6 @@ template_image:
   sha512: 62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe
   file_name: debian-13-generic-amd64-20261017-2634.qcow2
 
-database_template:
-  name: debian-13-db-template
-  vm_id: 2502
-  disk_size_gb: 16
-  memory_mb: 4096
-  cores: 2
-  cpu_type: x86-64-v2-AES
-
-database_vm:
-  name: database-vm
-  vm_id: 131
-  disk_size_gb: 114
-
 registry_template:
   name: registry-template
   vm_id: 1151001
@@ -26,13 +13,26 @@ registry_template:
 
 registry_vm:
   name: registry
-  vm_id: 151002
+  vm_id: 151001
   disk_size_gb: 16
   data_disk_size_gb: 64
 
+database_template:
+  name: debian-13-db-template
+  vm_id: 1151002
+  disk_size_gb: 16
+  memory_mb: 4096
+  cores: 2
+  cpu_type: x86-64-v2-AES
+
+database_vm:
+  name: database-vm
+  vm_id: 151002
+  disk_size_gb: 114
+
 files_template:
   name: debian-13-files-template
-  vm_id: 1302
+  vm_id: 1151003
   disk_size_gb: 16
   memory_mb: 4096
   cores: 2
@@ -40,7 +40,7 @@ files_template:
 
 files_vm:
   name: files-vm
-  vm_id: 132
+  vm_id: 151003
   disk_size_gb: 16
   data_disk_size_gb: 128
 
