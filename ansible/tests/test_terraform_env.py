@@ -1,7 +1,8 @@
 """Tests for the Terraform environment contracts.
 
-Schemas live beside the environment files under `terraform/env/schema`. These
-tests also enforce the VMID-to-address rules that JSON Schema cannot express.
+Schemas live beside the environment files under
+`terraform/proxmox/env/schema`. These tests also enforce the VMID-to-address
+rules that JSON Schema cannot express.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-TERRAFORM_ENV_DIR = REPO_ROOT / "terraform" / "env"
+TERRAFORM_ENV_DIR = REPO_ROOT / "terraform" / "proxmox" / "env"
 SCHEMA_DIR = TERRAFORM_ENV_DIR / "schema"
 NETWORK_PATH = REPO_ROOT / "config" / "base" / "network.yaml"
 

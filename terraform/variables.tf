@@ -1,5 +1,5 @@
 variable "environment" {
-  description = "Environment name matching terraform/env/<environment>/proxmox.yaml."
+  description = "Environment name matching terraform/proxmox/env/<environment>/proxmox.yaml."
   type        = string
   default     = "dev"
 

@@ -7,22 +7,16 @@ cd "$REPO_ROOT"
 # shellcheck source=../lib/output.sh
 source scripts/lib/output.sh
 
-mapfile -t MODULES < <(find terraform -type f -name '*.tf' -printf '%h\n' | sort -u)
-if [ "${#MODULES[@]}" -eq 0 ]; then
-	error "no Terraform modules found under terraform/"
+# The root composes every domain module, so validating the root validates the
+# modules as well.
+header "tofu init + validate (terraform)"
+if ! (
+	cd terraform
+	tofu init -backend=false -input=false -no-color
+	tofu validate -no-color
+); then
+	error "terraform validation failed"
 	exit 1
 fi
 
-STATUS=0
-for module in "${MODULES[@]}"; do
-	header "tofu init + validate ($module)"
-	if ! (
-		cd "$module"
-		tofu init -backend=false -input=false -no-color
-		tofu validate -no-color
-	); then
-		STATUS=1
-	fi
-done
-
-exit "$STATUS"
+echo "==> terraform validation passed" >&2

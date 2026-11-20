@@ -1,6 +1,15 @@
 # Terraform
 
-Infrastructure-as-code for Proxmox VE.
+Root configuration for every Terraform-managed system.
+
+## Layout
+
+| Path       | Contents                                          |
+| ---------- | ------------------------------------------------- |
+| `proxmox/` | Proxmox VE module, called from the root `main.tf` |
+| `tests/`   | Root-module tests                                 |
+
+Each domain is a child module called from `main.tf`, not a separate root with its own state. Adding Cloudflare is a `terraform/cloudflare/` module plus a `module "cloudflare"` block in `main.tf`; `scripts/terraform.sh --dev apply` then covers both domains in one state and one lock.
 
 ## Provider
 
