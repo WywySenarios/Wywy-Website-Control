@@ -61,6 +61,7 @@ export PROXMOX_VE_API_TOKEN="$proxmox_token"
 
 export PROXMOX_VE_ENDPOINT="${PROXMOX_VE_ENDPOINT:-https://proxmox-1.internal:8006/}"
 export PROXMOX_VE_INSECURE="${PROXMOX_VE_INSECURE:-true}"
+export TF_VAR_environment="$WYWY_ENV"
 
 header "OpenTofu ($WYWY_ENV)"
 exec tofu -chdir="$CONTROL_DIR/terraform" "$@"

@@ -30,20 +30,15 @@ file contains one API token in the form `user@realm!tokenid=secret`.
 
 These are three different things:
 
-| Credential | Used by | Stored in |
-| --- | --- | --- |
-| PVE root password | Installer answer file, initial root login | `secrets/<env>/proxmox/root.sops.yaml` |
-| SSH public key | Seeded into the ISO, used by Ansible over SSH | `ansible/inventory/<env>/group_vars/proxmox_iso.yaml` |
-| Proxmox API token | Terraform provider | `secrets/<env>/proxmox/terraform.sops` |
+| Credential        | Used by                                       | Stored in                                             |
+| ----------------- | --------------------------------------------- | ----------------------------------------------------- |
+| PVE root password | Installer answer file, initial root login     | `secrets/<env>/proxmox/root.sops.yaml`                |
+| SSH public key    | Seeded into the ISO, used by Ansible over SSH | `ansible/inventory/<env>/group_vars/proxmox_iso.yaml` |
+| Proxmox API token | Terraform provider                            | `secrets/<env>/proxmox/terraform.sops`                |
 
 Terraform does not use the root password or the ISO SSH key. Create a dedicated
 `terraform@pve` API token after PVE is installed and store it in the sops file.
 Never commit it.
-
-## Inputs
-
-The VM network contract lives in `config/base/network.yaml` and is shared with
-Ansible.
 
 ## State
 

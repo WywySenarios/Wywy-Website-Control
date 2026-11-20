@@ -1,0 +1,17 @@
+template_image:
+  url: https://cloud.debian.org/images/cloud/trixie/20261017-2634/debian-13-generic-amd64-20261017-2634.qcow2
+  sha512: 62aa92aeff32cbf3fe6c01f410fef4035b1603a512f073c9f8889072168de9e49fa361ba48621359fc7608ad91225e823ea233feb33f612eb39e50aaf21957fe
+  file_name: debian-13-generic-amd64-20261017-2634.qcow2
+
+database_template:
+  name: debian-13-db-template
+  vm_id: 2502
+  disk_size_gb: 16
+  memory_mb: 4096
+  cores: 2
+  cpu_type: x86-64-v2-AES
+
+database_vm:
+  name: database-vm
+  vm_id: 131
+  disk_size_gb: 114

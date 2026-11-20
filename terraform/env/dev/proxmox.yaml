@@ -1,0 +1,9 @@
+ssh_public_keys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/bW8m9ZJNRwOv4m8ROcW7yf/Z+QhDxsndKK2unkN2U
+
+database_template:
+  node_name: proxmox-2
+
+database_vm:
+  node_name: proxmox-2
+  disk_size_gb: 114

@@ -7,6 +7,22 @@ proxmox_terraform_token_created: false
 proxmox_terraform_token_secret_path: "{{ secrets_dir }}/proxmox/terraform.sops"
 proxmox_terraform_token_privileges:
   - Datastore.Audit
+  - SDN.Allocate
   - SDN.Audit
+  - SDN.Use
   - Sys.Audit
+  - Sys.Modify
+  - VM.Allocate
   - VM.Audit
+  - VM.Clone
+  - VM.Config.CPU
+  - VM.Config.Cloudinit
+  - VM.Config.Disk
+  - VM.Config.CDROM
+  - VM.Config.HWType
+  - VM.Config.Memory
+  - VM.Config.Network
+  - VM.Config.Options
+  - VM.PowerMgmt
+  - Datastore.AllocateSpace
+  - Datastore.AllocateTemplate
