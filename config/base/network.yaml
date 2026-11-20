@@ -5,7 +5,7 @@ proxmox_sdn:
   subnet: 172.16.0.0/16
   gateway: 172.16.0.1
   dns: 172.16.0.1
-  dhcp_range: 172.16.0.2-172.16.255.254
+  dhcp_range: 172.16.1.1-172.16.255.254
 
 openwrt:
   dns_domain: internal

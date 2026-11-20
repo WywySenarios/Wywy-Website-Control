@@ -43,3 +43,59 @@ files_vm:
   vm_id: 132
   disk_size_gb: 16
   data_disk_size_gb: 128
+
+k8s_worker_templates:
+  k8s-worker-1:
+    name: k8s-worker-1
+    vm_id: 1236001
+    disk_size_gb: 16
+  k8s-worker-2:
+    name: k8s-worker-2
+    vm_id: 1236002
+    disk_size_gb: 16
+  k8s-worker-3:
+    name: k8s-worker-3
+    vm_id: 1236003
+    disk_size_gb: 16
+
+k8s_worker_vms:
+  k8s-worker-1:
+    name: k8s-worker-1
+    vm_id: 236001
+    disk_size_gb: 32
+  k8s-worker-2:
+    name: k8s-worker-2
+    vm_id: 236002
+    disk_size_gb: 32
+  k8s-worker-3:
+    name: k8s-worker-3
+    vm_id: 236003
+    disk_size_gb: 32
+
+k8s_control_plane_templates:
+  k8s-control-plane-1:
+    name: k8s-control-plane-1
+    vm_id: 1235001
+    disk_size_gb: 16
+  k8s-control-plane-2:
+    name: k8s-control-plane-2
+    vm_id: 1235002
+    disk_size_gb: 16
+  k8s-control-plane-3:
+    name: k8s-control-plane-3
+    vm_id: 1235003
+    disk_size_gb: 16
+
+k8s_control_plane_vms:
+  k8s-control-plane-1:
+    name: k8s-control-plane-1
+    vm_id: 235001
+    disk_size_gb: 32
+  k8s-control-plane-2:
+    name: k8s-control-plane-2
+    vm_id: 235002
+    disk_size_gb: 32
+  k8s-control-plane-3:
+    name: k8s-control-plane-3
+    vm_id: 235003
+    disk_size_gb: 32

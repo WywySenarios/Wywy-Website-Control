@@ -56,7 +56,7 @@ properties:
     description: DNS server address handed to VMs; normally the OpenWrt VLAN interface.
   proxmox_sdn_dhcp_range:
     type: string
-    description: Single PVE IPAM/DHCP pool for workers, services, and static control-plane mappings.
+    description: DHCP pool for workers and services; static control-plane mappings live outside it.
   openwrt_operator_source:
     type: string
     description: Operator IPv4 address rendered from config/base/network.yaml.

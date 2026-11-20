@@ -5,5 +5,4 @@ all:
     files: {}
     k8s_vms: {}
     k8s: {}
-    proxmox_k8s: {}
     registry: {}

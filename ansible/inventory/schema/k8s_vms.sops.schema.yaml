@@ -1,6 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 title: Encrypted Kubernetes VM definitions
-description: Sops-encrypted per-node VM definitions.
+description: Sops-encrypted per-node definitions. Kubernetes VM identity and creation are Terraform-managed.
 type: object
 additionalProperties: false
 required:

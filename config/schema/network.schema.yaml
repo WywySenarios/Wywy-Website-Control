@@ -55,7 +55,7 @@ properties:
         type: string
         description: >-
           Inclusive IPv4 range PVE IPAM/DHCP may allocate.
-          Must be inside subnet and exclude the gateway.
+          Must be inside subnet and exclude the gateway and the static VM range.
         pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}-([0-9]{1,3}\.){3}[0-9]{1,3}$'
   openwrt:
     type: object

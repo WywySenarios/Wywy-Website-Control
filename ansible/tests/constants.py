@@ -36,7 +36,6 @@ SCHEMA_TARGET_FILES: dict[str, tuple[str, ...]] = {
     "files.schema.yaml": ("shared/group_vars/files.yaml",),
     "k8s_vms.schema.yaml": ("shared/group_vars/k8s_vms.yaml",),
     "k8s.schema.yaml": ("shared/group_vars/k8s.yaml",),
-    "proxmox_k8s.schema.yaml": ("shared/group_vars/proxmox_k8s.yaml",),
     "registry.schema.yaml": ("shared/group_vars/registry.yaml",),
     "all.sops.schema.yaml": (
         "dev/group_vars/all.sops.yaml",

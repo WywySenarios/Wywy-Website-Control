@@ -19,3 +19,56 @@ files_template:
 
 files_vm:
   node_name: proxmox-3
+
+k8s_worker_templates:
+  k8s-worker-1:
+    node_name: proxmox-1
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+  k8s-worker-2:
+    node_name: proxmox-2
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+  k8s-worker-3:
+    node_name: proxmox-3
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+
+k8s_worker_vms:
+  k8s-worker-1:
+    node_name: proxmox-1
+  k8s-worker-2:
+    node_name: proxmox-2
+  k8s-worker-3:
+    node_name: proxmox-3
+
+k8s_control_plane_templates:
+  k8s-control-plane-1:
+    node_name: proxmox-1
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+  k8s-control-plane-2:
+    node_name: proxmox-2
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+  k8s-control-plane-3:
+    node_name: proxmox-3
+    memory_mb: 4096
+    cores: 2
+    cpu_type: x86-64-v2-AES
+
+k8s_control_plane_vms:
+  k8s-control-plane-1:
+    node_name: proxmox-1
+    ipv4_address: 172.16.0.10
+  k8s-control-plane-2:
+    node_name: proxmox-2
+    ipv4_address: 172.16.0.11
+  k8s-control-plane-3:
+    node_name: proxmox-3
+    ipv4_address: 172.16.0.12
