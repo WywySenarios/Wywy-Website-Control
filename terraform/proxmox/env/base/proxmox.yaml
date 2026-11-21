@@ -26,7 +26,7 @@ database_template:
   cpu_type: x86-64-v2-AES
 
 database_vm:
-  name: database-vm
+  name: db
   vm_id: 151002
   disk_size_gb: 114
 
@@ -39,7 +39,7 @@ files_template:
   cpu_type: x86-64-v2-AES
 
 files_vm:
-  name: files-vm
+  name: files
   vm_id: 151003
   disk_size_gb: 16
   data_disk_size_gb: 128
