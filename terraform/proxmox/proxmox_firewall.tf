@@ -26,19 +26,16 @@ locals {
         node_name = local.database_vm.node_name
         vm_id     = local.database_vm.vm_id
         group     = "db"
-        dhcp      = true
       }
       files = {
         node_name = local.files_vm.node_name
         vm_id     = local.files_vm.vm_id
         group     = "files"
-        dhcp      = true
       }
       registry = {
         node_name = local.registry_vm.node_name
         vm_id     = local.registry_vm.vm_id
         group     = "registry"
-        dhcp      = true
       }
     },
     {
@@ -47,7 +44,6 @@ locals {
         node_name = vm.node_name
         vm_id     = vm.vm_id
         group     = "k8s"
-        dhcp      = false
       }
     },
     {
@@ -56,7 +52,6 @@ locals {
         node_name = vm.node_name
         vm_id     = vm.vm_id
         group     = "k8s"
-        dhcp      = false
       }
     },
   )
@@ -279,7 +274,7 @@ resource "proxmox_virtual_environment_firewall_options" "vm" {
   node_name     = each.value.node_name
   vm_id         = each.value.vm_id
   enabled       = true
-  dhcp          = each.value.dhcp
+  dhcp          = false
   ndp           = true
   input_policy  = "DROP"
   output_policy = "ACCEPT"

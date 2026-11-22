@@ -24,9 +24,6 @@ proxmox_sdn_gateway: >-
 proxmox_sdn_dns: >-
   {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
       | from_yaml).proxmox_sdn.dns }}
-proxmox_sdn_dhcp_range: >-
-  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
-      | from_yaml).proxmox_sdn.dhcp_range }}
 openwrt_operator_source: >-
   {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
       | from_yaml).openwrt.operator_source }}

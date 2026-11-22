@@ -55,12 +55,6 @@ resource "proxmox_virtual_environment_vm" "database_template" {
     datastore_id = "local-lvm"
     interface    = "ide2"
 
-    ip_config {
-      ipv4 {
-        address = "dhcp"
-      }
-    }
-
     user_account {
       username = "wywy"
       keys     = local.ssh_public_keys
@@ -117,7 +111,8 @@ resource "proxmox_virtual_environment_vm" "database" {
   initialization {
     ip_config {
       ipv4 {
-        address = "dhcp"
+        address = "${local.database_vm.ipv4_address}/${local.network_prefix_length}"
+        gateway = local.network.proxmox_sdn.gateway
       }
     }
 

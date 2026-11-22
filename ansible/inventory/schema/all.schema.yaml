@@ -15,7 +15,6 @@ required:
   - proxmox_sdn_subnet
   - proxmox_sdn_gateway
   - proxmox_sdn_dns
-  - proxmox_sdn_dhcp_range
   - openwrt_operator_source
   - proxmox_template_image
   - cloudflare_public_hosts
@@ -54,9 +53,6 @@ properties:
   proxmox_sdn_dns:
     type: string
     description: DNS server address handed to VMs; normally the OpenWrt VLAN interface.
-  proxmox_sdn_dhcp_range:
-    type: string
-    description: DHCP pool for workers and services; static control-plane mappings live outside it.
   openwrt_operator_source:
     type: string
     description: Operator IPv4 address rendered from config/base/network.yaml.

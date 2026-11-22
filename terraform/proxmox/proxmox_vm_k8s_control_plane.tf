@@ -59,12 +59,6 @@ resource "proxmox_virtual_environment_vm" "k8s_control_plane_template" {
     datastore_id = "local-lvm"
     interface    = "ide2"
 
-    ip_config {
-      ipv4 {
-        address = "dhcp"
-      }
-    }
-
     user_account {
       username = "wywy"
       keys     = local.ssh_public_keys

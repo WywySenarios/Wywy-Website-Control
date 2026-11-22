@@ -26,6 +26,9 @@ config dnsmasq
 {% for host in groups['proxmox'] | sort %}
 	list address '/{{ host }}/{{ hostvars[host].ansible_host }}'
 {% endfor %}
+{% for record in openwrt_internal_dns_records %}
+	list address '/{{ record.name }}/{{ record.address }}'
+{% endfor %}
 
 config dhcp 'lan'
 	option interface 'lan'

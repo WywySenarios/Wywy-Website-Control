@@ -18,7 +18,6 @@ properties:
       - subnet
       - gateway
       - dns
-      - dhcp_range
     properties:
       zone:
         type: string
@@ -37,7 +36,7 @@ properties:
         type: string
         description: >-
           Network address space.
-          The gateway and DHCP range must be inside this CIDR.
+          The gateway must be inside this CIDR.
         pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}/([0-9]|[12][0-9]|3[0-2])$'
       gateway:
         type: string
@@ -51,12 +50,6 @@ properties:
           DNS server handed to VMs.
           This may share an IP with the gateway.
         pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
-      dhcp_range:
-        type: string
-        description: >-
-          Inclusive IPv4 range PVE IPAM/DHCP may allocate.
-          Must be inside subnet and exclude the gateway and the static VM range.
-        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}-([0-9]{1,3}\.){3}[0-9]{1,3}$'
   openwrt:
     type: object
     additionalProperties: false

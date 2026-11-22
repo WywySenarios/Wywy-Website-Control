@@ -1,6 +1,5 @@
 locals {
-  sdn            = local.network.proxmox_sdn
-  sdn_dhcp_parts = split("-", local.sdn.dhcp_range)
+  sdn = local.network.proxmox_sdn
 }
 
 data "proxmox_virtual_environment_nodes" "available" {}
@@ -23,13 +22,7 @@ resource "proxmox_sdn_subnet" "main" {
   cidr    = local.sdn.subnet
   gateway = local.sdn.gateway
 
-  dhcp_range = {
-    start_address = local.sdn_dhcp_parts[0]
-    end_address   = local.sdn_dhcp_parts[1]
-  }
-
-  dhcp_dns_server = local.sdn.dns
-  snat            = false
+  snat = false
 }
 
 resource "proxmox_sdn_applier" "main" {

@@ -162,6 +162,30 @@
       - uhttpd
     router_dev_config_templates:
       - wireless
+    openwrt_terraform_env_dir: "{{ control_dir }}/terraform/proxmox/env"
+    openwrt_terraform_env: >-
+      {{ lookup('file', openwrt_terraform_env_dir ~ '/base/proxmox.yaml')
+         | from_yaml
+         | combine(
+             lookup('file',
+                    openwrt_terraform_env_dir ~ '/' ~ wywy_env ~ '/proxmox.yaml')
+             | from_yaml,
+             recursive=true) }}
+    openwrt_internal_service_vms:
+      db.internal: database_vm
+      files.internal: files_vm
+      registry.internal: registry_vm
+    openwrt_internal_vm_hosts: >-
+      {{ (groups['db'] | default([]))
+         + (groups['files'] | default([]))
+         + (groups['registry'] | default([]))
+         + (groups['k8s_control_plane'] | default([]))
+         + (groups['k8s_workers'] | default([])) }}
+    openwrt_internal_dns_records: >-
+      {{ query('wywy_internal_dns',
+               openwrt_terraform_env,
+               service_vms=openwrt_internal_service_vms,
+               vm_hosts=openwrt_internal_vm_hosts) }}
 
   tasks:
     - name: Apply each router configuration file

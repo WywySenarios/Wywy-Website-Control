@@ -1,24 +1,27 @@
 ssh_public_keys:
   - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf7CfMWx/p6g04nbI5c1AKbRYx9FcZ7NfWuT3d5F9Pg
 
+registry_template:
+  node_name: proxmox-1
+
+registry_vm:
+  node_name: proxmox-1
+  ipv4_address: 172.16.151.1
+
 database_template:
   node_name: proxmox-2
 
 database_vm:
   node_name: proxmox-2
   disk_size_gb: 114
-
-registry_template:
-  node_name: proxmox-1
-
-registry_vm:
-  node_name: proxmox-1
+  ipv4_address: 172.16.151.2
 
 files_template:
   node_name: proxmox-3
 
 files_vm:
   node_name: proxmox-3
+  ipv4_address: 172.16.151.3
 
 k8s_worker_templates:
   k8s-worker-1:
