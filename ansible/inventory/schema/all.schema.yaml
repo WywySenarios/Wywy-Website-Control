@@ -17,7 +17,6 @@ required:
   - proxmox_sdn_dns
   - openwrt_operator_source
   - proxmox_template_image
-  - cloudflare_public_hosts
 properties:
   wywy_env:
     type: string
@@ -68,22 +67,3 @@ properties:
         type: string
       sha512:
         type: string
-  cloudflare_public_hosts:
-    type: array
-    items:
-      type: object
-      additionalProperties: false
-      required:
-        - name
-        - hostname
-        - namespace
-        - service
-      properties:
-        name:
-          type: string
-        hostname:
-          type: string
-        namespace:
-          type: string
-        service:
-          type: string

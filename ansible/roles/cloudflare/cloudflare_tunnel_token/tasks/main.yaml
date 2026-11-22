@@ -1,0 +1,160 @@
+---
+# Writes the cloudflared token Secret into sops.
+
+- name: Validate the Cloudflare tunnel token inputs
+  ansible.builtin.assert:
+    that:
+      - cloudflare_api_token is defined
+      - cloudflare_api_token | length > 0
+      - cloudflare_account_id is defined
+      - cloudflare_account_id | length > 0
+      - cloudflare_tunnel_token_name is defined
+      - cloudflare_tunnel_token_name | length > 0
+      - cloudflare_tunnel_token_namespace is defined
+      - cloudflare_tunnel_token_namespace | length > 0
+      - cloudflare_tunnel_token_secret_dir is defined
+    fail_msg: >-
+      Cloudflare tunnel token inputs are incomplete. Check
+      secrets/<env>/cloudflare.sops.yaml and the Terraform Cloudflare
+      environment contract.
+    quiet: true
+  no_log: true
+
+- name: Build the Cloudflare API headers
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_token_headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: application/json
+  no_log: true
+
+- name: Look up the tunnel
+  ansible.builtin.uri:
+    url: >-
+      {{ cloudflare_tunnel_token_api_base }}/accounts/{{
+      cloudflare_account_id }}/cfd_tunnel?name={{ cloudflare_tunnel_token_name
+      }}&is_deleted=false
+    method: GET
+    headers: "{{ cloudflare_tunnel_token_headers }}"
+    status_code: 200
+  register: cloudflare_tunnel_token_lookup
+  changed_when: false
+  no_log: true
+
+- name: Select the matching tunnel
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_token_matches: >-
+      {{ (cloudflare_tunnel_token_lookup.json.result | default([]))
+         | selectattr('name', 'equalto', cloudflare_tunnel_token_name)
+         | list }}
+  no_log: true
+
+- name: Require exactly one matching tunnel
+  ansible.builtin.assert:
+    that:
+      - cloudflare_tunnel_token_matches | length == 1
+    fail_msg: >-
+      expected exactly one non-deleted Cloudflare tunnel named
+      {{ cloudflare_tunnel_token_name }}, found
+      {{ cloudflare_tunnel_token_matches | length }}. Apply the Terraform
+      Cloudflare module before running this playbook.
+    quiet: true
+  no_log: true
+
+- name: Record the tunnel ID
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_token_id: "{{ cloudflare_tunnel_token_matches[0].id }}"
+  no_log: true
+
+- name: Ensure the token secret directory exists
+  ansible.builtin.file:
+    path: "{{ cloudflare_tunnel_token_secret_dir }}"
+    state: directory
+    mode: "0775"
+
+- name: Check the tunnel token secret
+  ansible.builtin.stat:
+    path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+  register: cloudflare_tunnel_token_stat
+  changed_when: false
+
+- name: Determine whether the tunnel token must be written
+  ansible.builtin.set_fact:
+    cloudflare_tunnel_token_write: >-
+      {{ cloudflare_tunnel_token_force_write | bool
+         or not cloudflare_tunnel_token_stat.stat.exists }}
+
+- name: Manage the tunnel token
+  when: cloudflare_tunnel_token_write | bool
+  block:
+    - name: Create a temporary work directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: wywy-cloudflare-tunnel-token-
+        suffix: ""
+      register: cloudflare_tunnel_token_tmp
+
+    - name: Restrict the temporary work directory
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_token_tmp.path }}"
+        state: directory
+        mode: "0700"
+
+    - name: Retrieve the tunnel token
+      ansible.builtin.uri:
+        url: >-
+          {{ cloudflare_tunnel_token_api_base }}/accounts/{{
+          cloudflare_account_id }}/cfd_tunnel/{{
+          cloudflare_tunnel_token_id }}/token
+        method: GET
+        headers: "{{ cloudflare_tunnel_token_headers }}"
+        status_code: 200
+      register: cloudflare_tunnel_token_value
+      no_log: true
+
+    - name: Write the tunnel token manifest
+      ansible.builtin.copy:
+        content: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ cloudflare_tunnel_token_manifest_name }}
+            namespace: {{ cloudflare_tunnel_token_namespace }}
+          type: Opaque
+          stringData:
+            {{ cloudflare_tunnel_token_key }}: {{ cloudflare_tunnel_token_value.json.result | to_json }}
+        dest: "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Encrypt the tunnel token secret
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          sops -e --filename-override "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml" \
+            "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.yaml" \
+            > "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.enc.yaml"
+          mv "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.enc.yaml" \
+            "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+        executable: /bin/bash
+      changed_when: true
+      no_log: true
+
+    - name: Set the encrypted token secret permissions
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+        mode: "0664"
+
+  always:
+    - name: Remove the temporary work directory
+      ansible.builtin.file:
+        path: "{{ cloudflare_tunnel_token_tmp.path }}"
+        state: absent
+      when: cloudflare_tunnel_token_tmp is defined
+
+- name: Report the tunnel token state
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'wrote a new token for ' ~ cloudflare_tunnel_token_name
+         if cloudflare_tunnel_token_write | bool
+         else 'the token secret for ' ~ cloudflare_tunnel_token_name
+              ~ ' already exists; nothing to do.' }}

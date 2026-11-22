@@ -8,9 +8,9 @@ Adding a new top-level domain means adding its path there.
 
 ## `cloudflare/`
 
-| Role                | Owns                      |
-| ------------------- | ------------------------- |
-| `cloudflare_tunnel` | Cloudflare tunnel and DNS |
+| Role                      | Owns                             |
+| ------------------------- | -------------------------------- |
+| `cloudflare_tunnel_token` | cloudflared token Secret in sops |
 
 ## `db/`
 
@@ -39,8 +39,8 @@ Adding a new top-level domain means adding its path there.
 
 ## `openwrt/`
 
-| Role             | Owns                                      |
-| ---------------- | ----------------------------------------- |
+| Role             | Owns                                        |
+| ---------------- | ------------------------------------------- |
 | `openwrt_router` | Raw OpenWrt config file writer and checksum |
 
 ## `pki/`
@@ -51,14 +51,14 @@ Adding a new top-level domain means adding its path there.
 
 ## `proxmox/`
 
-| Role                     | Owns                          |
-| ------------------------ | ----------------------------- |
-| `proxmox_apt`            | Proxmox host package state    |
-| `proxmox_cluster`        | Proxmox cluster membership    |
-| `proxmox_iso`            | Proxmox installation media    |
-| `proxmox_root_passwords` | Proxmox root-password stores  |
-| `proxmox_ssh`            | Proxmox SSH access            |
-| `proxmox_terraform_token` | Proxmox Terraform API token   |
+| Role                      | Owns                         |
+| ------------------------- | ---------------------------- |
+| `proxmox_apt`             | Proxmox host package state   |
+| `proxmox_cluster`         | Proxmox cluster membership   |
+| `proxmox_iso`             | Proxmox installation media   |
+| `proxmox_root_passwords`  | Proxmox root-password stores |
+| `proxmox_ssh`             | Proxmox SSH access           |
+| `proxmox_terraform_token` | Proxmox Terraform API token  |
 
 ## `registry/`
 

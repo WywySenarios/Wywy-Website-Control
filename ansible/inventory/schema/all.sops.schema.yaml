@@ -4,14 +4,12 @@ description: Sops-encrypted values for the all group.
 type: object
 additionalProperties: false
 required:
-  - cloudflare_api_token
-  - cloudflare_account_id
-  - cloudflare_zone_id
   - registry_password
   - argocd_load_balancer_ip
   - argocd_load_balancer_source_ranges
   - sops
 properties:
+  # Transitional: prod still stores these until secrets/prod/cloudflare.sops.yaml is populated.
   cloudflare_api_token:
     type: string
     pattern: '^ENC\[AES256_GCM,'

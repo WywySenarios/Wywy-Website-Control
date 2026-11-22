@@ -61,6 +61,8 @@ Proxmox/cloud managed /etc/hosts blocks may override Ansible blocks. Outside-of-
 
 Postgres traffic is unencrypted. Clients authenticate with SCRAM, which protects the password, but queries and results travel in plaintext on the LAN. TLS is not configured.
 
+@TODO remove transitional cloudflare secrets
+
 ## Status
 
 Unstable. Production with PVE & Kubernetes is not online.

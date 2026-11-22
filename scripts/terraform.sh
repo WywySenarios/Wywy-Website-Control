@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run OpenTofu with the environment's Proxmox token loaded from sops.
+# Run OpenTofu with the environment's credentials loaded from sops.
 #
 # Usage:
 #   scripts/terraform.sh (--dev|--prod) [tofu arguments...]
@@ -58,6 +58,41 @@ case "$proxmox_token" in
 	;;
 esac
 export PROXMOX_VE_API_TOKEN="$proxmox_token"
+
+cloudflare_secrets="$CONTROL_DIR/secrets/$WYWY_ENV/cloudflare.sops.yaml"
+if [ ! -f "$cloudflare_secrets" ]; then
+	error "$cloudflare_secrets is missing; store the Cloudflare API token and IDs there"
+	exit 1
+fi
+
+read_cloudflare_secret() {
+	local key="$1"
+	local value
+	if ! value="$(sops -d --extract "[\"$key\"]" "$cloudflare_secrets" 2>/dev/null | tr -d '\r')"; then
+		error "$cloudflare_secrets is missing $key"
+		exit 1
+	fi
+	if [ -z "$value" ]; then
+		error "$cloudflare_secrets has an empty $key"
+		exit 1
+	fi
+	printf '%s' "$value"
+}
+
+cloudflare_api_token="$(read_cloudflare_secret cloudflare_api_token)"
+cloudflare_account_id="$(read_cloudflare_secret cloudflare_account_id)"
+cloudflare_zone_id="$(read_cloudflare_secret cloudflare_zone_id)"
+
+case "$cloudflare_api_token" in
+*[[:space:]]*)
+	error "$cloudflare_secrets cloudflare_api_token contains whitespace"
+	exit 1
+	;;
+esac
+
+export CLOUDFLARE_API_TOKEN="$cloudflare_api_token"
+export TF_VAR_cloudflare_account_id="$cloudflare_account_id"
+export TF_VAR_cloudflare_zone_id="$cloudflare_zone_id"
 
 export PROXMOX_VE_ENDPOINT="${PROXMOX_VE_ENDPOINT:-https://proxmox-1.internal:8006/}"
 export PROXMOX_VE_INSECURE="${PROXMOX_VE_INSECURE:-true}"
