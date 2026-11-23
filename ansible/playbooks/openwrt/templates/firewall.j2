@@ -22,9 +22,37 @@ config zone 'wan'
 	option masq '1'
 	option mtu_fix '1'
 
+config zone 'sdn'
+	option name 'sdn'
+	list network 'sdn'
+	option input 'REJECT'
+	option output 'ACCEPT'
+	option forward 'ACCEPT'
+
 config forwarding
 	option src 'lan'
 	option dest 'wan'
+
+config forwarding
+	option src 'lan'
+	option dest 'sdn'
+
+config forwarding
+	option src 'sdn'
+	option dest 'wan'
+
+config rule
+	option name 'Allow-DNS-SDN'
+	option src 'sdn'
+	option proto 'tcp udp'
+	option dest_port '53'
+	option target 'ACCEPT'
+
+config rule
+	option name 'Allow-ICMP-SDN'
+	option src 'sdn'
+	option proto 'icmp'
+	option target 'ACCEPT'
 
 config rule
 	option name 'Allow-DHCP-Renew'

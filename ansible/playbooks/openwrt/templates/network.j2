@@ -16,6 +16,17 @@ config device 'br_lan'
 	list ports 'lan3'
 	list ports 'lan4'
 
+config device 'sdn_vlan'
+	option name 'br-lan.{{ proxmox_sdn_vlan_id }}'
+	option type '8021q'
+	option ifname 'br-lan'
+	option vid '{{ proxmox_sdn_vlan_id }}'
+
+config interface 'sdn'
+	option device 'br-lan.{{ proxmox_sdn_vlan_id }}'
+	option proto 'static'
+	list ipaddr '{{ proxmox_sdn_gateway }}/{{ proxmox_sdn_subnet.split('/')[1] }}'
+
 config interface 'lan'
 	option device 'br-lan'
 	option proto 'static'
