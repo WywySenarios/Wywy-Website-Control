@@ -2,7 +2,7 @@ creation_rules:
   # START - hard-coded anti-pattern rules
   - path_regex: (^|/)k8s/(.*/)?prod/metallb/.*\.sops(\.yaml)?$
     encrypted_regex: ^(data|stringData|addresses)$
-    age: age1w8evjqdz8f5zqa9d23dnjz88wqz070e3e40w3agdlj76shjun3sqwe37yy
+    age: age1fvh4wmf8tz0a4znz0wy5lkmfpk43dwwawuvyng7z2tazcv8djahsk40y4l
   - path_regex: (^|/)k8s/(.*/)?dev/metallb/.*\.sops(\.yaml)?$
     encrypted_regex: ^(data|stringData|addresses)$
     age: age1w8evjqdz8f5zqa9d23dnjz88wqz070e3e40w3agdlj76shjun3sqwe37yy
