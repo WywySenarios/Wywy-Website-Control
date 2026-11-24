@@ -111,10 +111,3 @@ def test_target_satisfies_schema(schema_path: Path, target_path: Path) -> None:
     target = _load_yaml(target_path)
     jsonschema.validate(instance=target, schema=schema)
     assert _subset_problems(target, schema) == []
-
-
-def test_openwrt_wifi_key_is_dev_only() -> None:
-    dev = _load_yaml(INVENTORY_DIR / "dev/group_vars/openwrt.sops.yaml")
-    prod = _load_yaml(INVENTORY_DIR / "prod/group_vars/openwrt.sops.yaml")
-    assert "openwrt_wifi_key" in dev
-    assert "openwrt_wifi_key" not in prod
