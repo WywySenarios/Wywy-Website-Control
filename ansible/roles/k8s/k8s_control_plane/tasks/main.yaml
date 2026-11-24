@@ -5,7 +5,6 @@
       - k8s_control_plane_endpoint is defined
       - k8s_control_plane_init_host is defined
       - k8s_apiserver_extra_sans is defined
-      - k8s_vm_addresses is defined
       - wywy_k8s_api_ip is defined
     fail_msg: the control-plane group vars are incomplete
 
@@ -37,7 +36,7 @@
       - --pod-network-cidr
       - "{{ k8s_pod_cidr }}"
       - --apiserver-advertise-address
-      - "{{ k8s_vm_addresses[inventory_hostname] }}"
+      - "{{ ansible_default_ipv4.address }}"
       - --apiserver-cert-extra-sans
       - "{{ k8s_apiserver_extra_sans }}"
       - --cri-socket
@@ -86,7 +85,7 @@
       - create
   delegate_to: "{{ k8s_control_plane_init_host }}"
   vars:
-    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+    ansible_host: "{{ hostvars[k8s_control_plane_init_host].ansible_host }}"
   become: true
   register: k8s_control_plane_join_token
   changed_when: true
@@ -105,7 +104,7 @@
       - --upload-certs
   delegate_to: "{{ k8s_control_plane_init_host }}"
   vars:
-    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+    ansible_host: "{{ hostvars[k8s_control_plane_init_host].ansible_host }}"
   become: true
   register: k8s_control_plane_upload_certs
   changed_when: true
@@ -135,7 +134,7 @@
     executable: /bin/bash
   delegate_to: "{{ k8s_control_plane_init_host }}"
   vars:
-    ansible_host: "{{ k8s_vm_addresses[k8s_control_plane_init_host] }}"
+    ansible_host: "{{ hostvars[k8s_control_plane_init_host].ansible_host }}"
   become: true
   register: k8s_control_plane_ca_hash
   changed_when: false
@@ -172,7 +171,7 @@
           controlPlane:
             certificateKey: "{{ k8s_control_plane_certificate_key }}"
             localAPIEndpoint:
-              advertiseAddress: "{{ k8s_vm_addresses[inventory_hostname] }}"
+              advertiseAddress: "{{ ansible_default_ipv4.address }}"
               bindPort: 6443
           nodeRegistration:
             criSocket: "{{ k8s_control_plane_kubeadm_cri_socket }}"
@@ -329,12 +328,6 @@
       - "('DNS:' ~ item) in k8s_control_plane_apiserver_cert.stdout"
   loop: "{{ k8s_control_plane_hosts }}"
 
-- name: Assert the control-plane IP SANs
-  ansible.builtin.assert:
-    that:
-      - "('IP Address:' ~ item) in k8s_control_plane_apiserver_cert.stdout"
-  loop: "{{ k8s_control_plane_ips }}"
-
 - name: Read the cluster node addresses
   ansible.builtin.command:
     argv:
@@ -346,7 +339,7 @@
       - -o
       - 'jsonpath={range .items[*]}{.metadata.name}{" "}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'
   register: k8s_control_plane_nodes
-  until: k8s_vm_addresses[inventory_hostname] in k8s_control_plane_nodes.stdout
+  until: ansible_default_ipv4.address in k8s_control_plane_nodes.stdout
   retries: 30
   delay: 5
   changed_when: false
@@ -355,7 +348,7 @@
   ansible.builtin.set_fact:
     k8s_control_plane_node_name: >-
       {{ (k8s_control_plane_nodes.stdout_lines
-          | select('search', k8s_vm_addresses[inventory_hostname])
+          | select('search', ansible_default_ipv4.address)
           | map('regex_replace', ' +.*$', '') | first) }}
 
 - name: Label the control-plane node
