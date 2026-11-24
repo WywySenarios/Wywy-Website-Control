@@ -7,8 +7,3 @@ k8s_network_calico_manifest_url: >-
 k8s_network_calico_namespace: kube-system
 k8s_network_calico_daemonset: calico-node
 k8s_network_calico_controllers: calico-kube-controllers
-
-k8s_network_coredns_namespace: kube-system
-k8s_network_coredns_configmap: coredns
-k8s_network_coredns_deployment: coredns
-k8s_network_coredns_hosts_file: hosts.sops
