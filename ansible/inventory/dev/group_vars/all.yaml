@@ -5,6 +5,12 @@ wywy_gateway: >-
   {{ lookup('wywy_hosts', 'hosts.sops', 'gateway.internal') }}
 wywy_nameserver: "{{ wywy_gateway }}"
 k8s_pod_cidr: 10.244.0.0/16
+k8s_api_hostname: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).kubernetes.api_hostname }}
+k8s_api_vip: >-
+  {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
+      | from_yaml).kubernetes.api_vip }}
 proxmox_sdn_zone: >-
   {{ (lookup('file', control_dir ~ '/config/base/network.yaml')
       | from_yaml).proxmox_sdn.zone }}

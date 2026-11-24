@@ -1,6 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
 title: Environment-wide variables
-description: Environment-wide Ansible variables. The proxmox_sdn_* values are rendered from config/base/network.yaml.
+description: Environment-wide Ansible variables. The proxmox_sdn_* and k8s_api_* values are rendered from config/base/network.yaml.
 type: object
 additionalProperties: false
 required:
@@ -9,6 +9,8 @@ required:
   - wywy_gateway
   - wywy_nameserver
   - k8s_pod_cidr
+  - k8s_api_hostname
+  - k8s_api_vip
   - proxmox_sdn_zone
   - proxmox_sdn_vnet
   - proxmox_sdn_vlan_id
@@ -32,6 +34,16 @@ properties:
   k8s_pod_cidr:
     type: string
     description: Pod CIDR used by Kubernetes and Calico.
+  k8s_api_hostname:
+    type: string
+    description: >-
+      Kubernetes API DNS name rendered from
+      config/base/network.yaml's kubernetes.api_hostname.
+  k8s_api_vip:
+    type: string
+    description: >-
+      Kubernetes API VIP rendered from
+      config/base/network.yaml's kubernetes.api_vip.
   proxmox_sdn_zone:
     type: string
     description: Proxmox SDN zone name for the VM VLAN.

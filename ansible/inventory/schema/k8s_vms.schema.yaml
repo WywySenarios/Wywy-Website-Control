@@ -7,7 +7,7 @@ required:
   - k8s_version
   - containerd_version
   - calico_version
-  - k8s_api_hostname
+  - kube_vip_version
   - k8s_control_plane_hosts
   - k8s_apiserver_extra_sans
 properties:
@@ -17,11 +17,10 @@ properties:
     type: string
   calico_version:
     type: string
-  k8s_api_hostname:
+  kube_vip_version:
     type: string
-    description: Stable DNS name for the Kubernetes API. OpenWrt resolves it to the control-plane PVE IPAM allocations.
   k8s_control_plane_hosts:
     type: string
   k8s_apiserver_extra_sans:
     type: string
-    description: Comma-separated DNS names for the apiserver certificate. Do not include IPs.
+    description: Comma-separated DNS names and the API VIP for the apiserver certificate.

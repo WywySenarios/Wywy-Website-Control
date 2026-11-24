@@ -4,7 +4,7 @@ k8s_platform_helm: helm
 
 k8s_platform_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
 k8s_platform_cluster_name: kubernetes
-k8s_platform_api_ip: "{{ lookup('wywy_hosts', 'hosts.sops', 'k8s-api.internal') }}"
+k8s_platform_api_ip: "{{ k8s_api_vip }}"
 k8s_platform_api_server: "https://{{ k8s_platform_api_ip }}:6443"
 
 k8s_platform_argocd_namespace: argocd

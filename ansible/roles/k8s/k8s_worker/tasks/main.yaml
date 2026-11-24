@@ -42,6 +42,8 @@
       - kubectl
       - --kubeconfig
       - "{{ k8s_worker_kubeconfig }}"
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - get
       - nodes
       - -o
@@ -66,6 +68,7 @@
 - name: Label the worker node
   ansible.builtin.command: >-
     kubectl --kubeconfig {{ k8s_worker_kubeconfig }}
+    --server https://{{ k8s_api_vip }}:6443
     label node --overwrite {{ k8s_worker_node_name }}
     {{ k8s_node_labels | join(' ') }}
   delegate_to: "{{ k8s_control_plane_init_host }}"
@@ -81,6 +84,8 @@
       - kubectl
       - --kubeconfig
       - "{{ k8s_worker_kubeconfig }}"
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - get
       - node
       - "{{ k8s_worker_node_name }}"

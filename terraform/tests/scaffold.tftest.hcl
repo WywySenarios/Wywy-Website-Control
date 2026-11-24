@@ -15,6 +15,11 @@ run "loads_contracts" {
   }
 
   assert {
+    condition     = output.k8s_api_vip != null
+    error_message = "kubernetes api vip must load from config/base/network.yaml."
+  }
+
+  assert {
     condition     = length(output.cloudflare.tunnel_names) > 0
     error_message = "cloudflare contract must load from terraform/cloudflare/env/dev/cloudflare.yaml."
   }

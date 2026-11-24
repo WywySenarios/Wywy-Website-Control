@@ -5,7 +5,8 @@
       - k8s_control_plane_endpoint is defined
       - k8s_control_plane_init_host is defined
       - k8s_apiserver_extra_sans is defined
-      - wywy_k8s_api_ip is defined
+      - k8s_api_hostname is defined
+      - k8s_api_vip is defined
     fail_msg: the control-plane group vars are incomplete
 
 - name: Assert the operator home directory is known
@@ -253,7 +254,7 @@
       - --interface
       - "{{ k8s_vip_interface }}"
       - --address
-      - "{{ wywy_k8s_api_ip }}"
+      - "{{ k8s_api_vip }}"
       - --controlplane
       - --arp
       - --leaderElection
@@ -288,6 +289,8 @@
       - kubectl
       - --kubeconfig
       - /etc/kubernetes/admin.conf
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - apply
       - -f
       - "{{ k8s_control_plane_kube_vip_rbac }}"
@@ -296,7 +299,7 @@
 
 - name: Wait for the API VIP
   ansible.builtin.wait_for:
-    host: "{{ wywy_k8s_api_ip }}"
+    host: "{{ k8s_api_vip }}"
     port: 6443
     timeout: 300
   delegate_to: localhost
@@ -319,8 +322,8 @@
 - name: Assert the VIP SANs
   ansible.builtin.assert:
     that:
-      - "'DNS:k8s-api.internal' in k8s_control_plane_apiserver_cert.stdout"
-      - "('IP Address:' ~ wywy_k8s_api_ip) in k8s_control_plane_apiserver_cert.stdout"
+      - "('DNS:' ~ k8s_api_hostname) in k8s_control_plane_apiserver_cert.stdout"
+      - "('IP Address:' ~ k8s_api_vip) in k8s_control_plane_apiserver_cert.stdout"
 
 - name: Assert the control-plane name SANs
   ansible.builtin.assert:
@@ -334,6 +337,8 @@
       - kubectl
       - --kubeconfig
       - /etc/kubernetes/admin.conf
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - get
       - nodes
       - -o
@@ -357,6 +362,8 @@
       - kubectl
       - --kubeconfig
       - /etc/kubernetes/admin.conf
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - label
       - node
       - --overwrite
@@ -371,6 +378,8 @@
       - kubectl
       - --kubeconfig
       - /etc/kubernetes/admin.conf
+      - --server
+      - "https://{{ k8s_api_vip }}:6443"
       - get
       - node
       - "{{ k8s_control_plane_node_name }}"

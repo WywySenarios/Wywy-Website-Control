@@ -6,6 +6,10 @@ proxmox_sdn:
   gateway: 172.16.0.1
   dns: 172.16.0.1
 
+kubernetes:
+  api_hostname: k8s-api.internal
+  api_vip: 172.16.235.10
+
 openwrt:
   dns_domain: internal
   operator_source: 192.168.235.235

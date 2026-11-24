@@ -182,10 +182,12 @@
          + (groups['k8s_control_plane'] | default([]))
          + (groups['k8s_workers'] | default([])) }}
     openwrt_internal_dns_records: >-
-      {{ query('wywy_internal_dns',
-               openwrt_terraform_env,
-               service_vms=openwrt_internal_service_vms,
-               vm_hosts=openwrt_internal_vm_hosts) }}
+      {{ (query('wywy_internal_dns',
+                openwrt_terraform_env,
+                service_vms=openwrt_internal_service_vms,
+                vm_hosts=openwrt_internal_vm_hosts)
+          + [{'name': k8s_api_hostname, 'address': k8s_api_vip}])
+         | sort(attribute='name') }}
 
   tasks:
     - name: Apply each router configuration file

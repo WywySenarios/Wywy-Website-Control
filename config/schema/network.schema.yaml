@@ -5,6 +5,7 @@ type: object
 additionalProperties: false
 required:
   - proxmox_sdn
+  - kubernetes
   - openwrt
 properties:
   proxmox_sdn:
@@ -49,6 +50,24 @@ properties:
         description: >-
           DNS server handed to VMs.
           This may share an IP with the gateway.
+        pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+  kubernetes:
+    type: object
+    description: Kubernetes API endpoint advertised by kube-vip.
+    additionalProperties: false
+    required:
+      - api_hostname
+      - api_vip
+    properties:
+      api_hostname:
+        type: string
+        description: Internal DNS name for the Kubernetes API VIP.
+        pattern: "^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$"
+      api_vip:
+        type: string
+        description: >-
+          Floating IPv4 address advertised by kube-vip.
+          Must be inside the SDN subnet and must not be assigned to a VM.
         pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
   openwrt:
     type: object
