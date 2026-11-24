@@ -263,20 +263,16 @@
   no_log: true
   register: k8s_node_internal_ca_bundle
 
-- name: Parse the internal CA and registry address
+- name: Parse the internal CA
   ansible.builtin.set_fact:
     k8s_node_internal_ca_cert: "{{ (k8s_node_internal_ca_bundle.stdout | from_yaml).cert }}"
-    k8s_node_registry_ip: "{{ lookup('wywy_hosts', 'hosts.sops', 'registry.internal') }}"
   no_log: true
 
-- name: Point registry.internal at the registry VM
+- name: Remove the stale registry.internal hosts entry
   ansible.builtin.lineinfile:
     path: /etc/hosts
     regexp: '^[^#]*\bregistry\.internal\b'
-    line: "{{ k8s_node_registry_ip }} {{ k8s_node_registry_host }}"
-    owner: root
-    group: root
-    mode: "0644"
+    state: absent
 
 - name: Ensure the containerd registry certificate directory exists
   ansible.builtin.file:

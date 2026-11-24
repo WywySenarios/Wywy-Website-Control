@@ -5,10 +5,7 @@ containerd_version: "2.4.2-3~debian.13~trixie"
 calico_version: "v3.29.2"
 kube_vip_version: "v1.3.1"
 
-k8s_control_plane_hosts: >-
-  {{ k8s_vm_definitions | dict2items
-     | selectattr('value.role', 'equalto', 'control-plane')
-     | map(attribute='value.vm_hostname') | list }}
+k8s_control_plane_hosts: "{{ groups['k8s_control_plane'] | sort }}"
 
 k8s_apiserver_extra_sans: >-
   {{ ([k8s_api_hostname, k8s_api_vip] + k8s_control_plane_hosts)
