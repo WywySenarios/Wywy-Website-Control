@@ -9,7 +9,6 @@ RENDER_DIRS=(
 	k8s/base/image-updater
 	k8s/base/infrastructure
 	k8s/base/jenkins
-	k8s/base/metallb
 	k8s/base/nextcloud
 	k8s/base/vaultwarden
 	k8s/dev/infrastructure

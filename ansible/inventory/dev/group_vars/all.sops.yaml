@@ -1,6 +1,4 @@
 registry_password: ENC[AES256_GCM,data:h4js3sdhckb7Ei+gFJgeYNGjWB+/3hJGhHGCdygdrTs=,iv:+cBUsnRmBsiVUNsqHUhA51cr8iWso5yiVZ2FUDvV3Qc=,tag:C+nkjNKprFd5ZzEo/KzQzg==,type:str]
-argocd_load_balancer_ip: ENC[AES256_GCM,data:7UfhMNicMvdf7xI=,iv:Hy8sIof8Yp6DHzLapYoFtQTp7+l3ry40xmMigZM+1bw=,tag:Eu/QJJVC45xX0PajWhxivw==,type:str]
-argocd_load_balancer_source_ranges: ENC[AES256_GCM,data:p6vkXE5ExtgN8EA=,iv:07rXyMuwkwB1jQNTyC6rpGh+GULMeSt4hUVtuUh1DE4=,tag:JuF6QFYZcwhdpv6eDC6WGg==,type:str]
 sops:
     age:
         - enc: |
@@ -12,7 +10,7 @@ sops:
             o5M/BLDsKitHHefEosGaNxVkmlAxujLiOO85fEaHhMxCAiLr0ILq/A==
             -----END AGE ENCRYPTED FILE-----
           recipient: age1w8evjqdz8f5zqa9d23dnjz88wqz070e3e40w3agdlj76shjun3sqwe37yy
-    lastmodified: "2026-11-22T16:36:40Z"
-    mac: ENC[AES256_GCM,data:GBpoa2R1rKWqJwMy6p+GoP6mHJh0STQ78WAha3lhOGm5nfJgJ3/UMUULPs5l7yZRSr4Oqw9d5iKrm/f8rlXRNUr2swLjL5CS9nIAYD4stSb/5yTYYA+4+0HjDys6ObCRzAHwWXsKls8DfPN98R/KiviohNqfPDZTuQqvMD/fUKo=,iv:7y7oUAEY5xtZoPbeuSjsXCK9p7uAQqdOpqqinJYAkGw=,tag:nGpLELRobs3irUfHct+cDQ==,type:str]
+    lastmodified: "2026-11-24T05:31:06Z"
+    mac: ENC[AES256_GCM,data:JqUDw4oJHE539AQYzK4ayqVCeUrLA97mJDrl47l9S42NLrLUXvhcvSX03cDbN3AU+IjaqJTNETKaYQWAvatojgO0URAy1CmT1X1yN2nzp6x63ZuYss1P9AMWFAbJcxTujWzGFphCdNUjnsb0tZqSMyQ1voorlqL/AQOnbwSWR3g=,iv:U9+984xN7mcMj/2NzFlnaLOuOkuHXDnnRycA8obGnRc=,tag:Fcw9jMXsRER6+oCS0wIzAg==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3

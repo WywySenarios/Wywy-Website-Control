@@ -1,4 +1,8 @@
 public_hosts:
+  argocd:
+    hostname: argocd.ericzhu.me
+    namespace: argocd
+    service: http://argocd-server.argocd.svc.cluster.local:80
   immich:
     hostname: immich.ericzhu.me
     namespace: immich

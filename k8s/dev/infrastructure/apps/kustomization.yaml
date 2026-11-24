@@ -34,11 +34,11 @@ patches:
 
   - target:
       kind: Application
-      name: argocd-tls
+      name: argocd-cloudflared
     patch: |-
       - op: replace
         path: /spec/source/path
-        value: k8s/dev/argocd/tls
+        value: k8s/dev/cloudflared/argocd
       - op: replace
         path: /spec/source/targetRevision
         value: dev
@@ -128,17 +128,6 @@ patches:
       - op: replace
         path: /spec/sources/0/targetRevision
         value: dev
-
-  - target:
-      kind: Application
-      name: metallb
-    patch: |-
-      - op: replace
-        path: /spec/sources/1/targetRevision
-        value: dev
-      - op: replace
-        path: /spec/sources/1/path
-        value: k8s/dev/metallb
 
   - target:
       kind: Application

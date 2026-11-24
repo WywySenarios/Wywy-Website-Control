@@ -4,6 +4,10 @@ configs:
   cm:
     # KSOPS needs this.
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+  params:
+    # Cloudflare terminates public TLS; the server only serves plain HTTP
+    # inside the cluster.
+    server.insecure: true
 
 server:
   livenessProbe:

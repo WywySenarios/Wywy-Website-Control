@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - app-of-apps.yaml
-  - app-argocd-tls.yaml
+  - app-argocd-cloudflared.yaml
   - app-csi-driver-nfs.yaml
   - app-immich-secrets.yaml
   - app-immich.yaml
@@ -11,7 +11,6 @@ resources:
   - app-jenkins.yaml
   - app-master-database-secrets.yaml
   - app-master-database.yaml
-  - app-metallb.yaml
   - app-nextcloud.yaml
   - app-observability.yaml
   - app-vaultwarden.yaml

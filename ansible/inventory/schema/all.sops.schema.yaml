@@ -5,8 +5,6 @@ type: object
 additionalProperties: false
 required:
   - registry_password
-  - argocd_load_balancer_ip
-  - argocd_load_balancer_source_ranges
   - sops
 properties:
   # Transitional: prod still stores these until secrets/prod/cloudflare.sops.yaml is populated.
@@ -22,6 +20,8 @@ properties:
   registry_password:
     type: string
     pattern: '^ENC\[AES256_GCM,'
+  # Transitional: prod still stores the retired MetalLB values until that
+  # sops file is re-encrypted with the prod age key.
   argocd_load_balancer_ip:
     type: string
     pattern: '^ENC\[AES256_GCM,'

@@ -112,30 +112,6 @@
           - update
       changed_when: false
 
-    - name: Read the current Argo CD server Service type
-      ansible.builtin.command:
-        argv:
-          - "{{ k8s_platform_kubectl }}"
-          - --kubeconfig
-          - "{{ k8s_platform_kubeconfig_tmp.path }}"
-          - -n
-          - "{{ k8s_platform_argocd_namespace }}"
-          - get
-          - svc
-          - "{{ k8s_platform_argocd_release }}-server"
-          - -o
-          - "jsonpath={.spec.type}"
-      changed_when: false
-      failed_when: false
-      register: k8s_platform_argocd_service_current
-
-    - name: Preserve an exposed Argo CD Service
-      ansible.builtin.set_fact:
-        k8s_platform_argocd_service_type: >-
-          {{ 'LoadBalancer'
-             if k8s_platform_argocd_service_current.stdout == 'LoadBalancer'
-             else 'ClusterIP' }}
-
     - name: Install or upgrade Argo CD
       ansible.builtin.command: >-
         {{ k8s_platform_helm }} --kubeconfig {{ k8s_platform_kubeconfig_tmp.path }}
@@ -144,9 +120,7 @@
         --namespace {{ k8s_platform_argocd_namespace }}
         --version {{ k8s_platform_argocd_chart_version }}
         --values {{ k8s_platform_argocd_values }}
-        --set server.service.type={{ k8s_platform_argocd_service_type }}
-        --set server.service.loadBalancerIP={{ k8s_platform_argocd_load_balancer_ip }}
-        --set-json 'server.service.loadBalancerSourceRanges={{ k8s_platform_argocd_load_balancer_source_ranges | to_json }}'
+        --set server.service.type=ClusterIP
         --atomic --wait --timeout {{ k8s_platform_helm_timeout }}
       register: k8s_platform_argocd_install
       changed_when: "'STATUS: deployed' in k8s_platform_argocd_install.stdout"
