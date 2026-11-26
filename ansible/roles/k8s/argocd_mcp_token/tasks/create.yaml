@@ -1,0 +1,99 @@
+---
+- name: Check the Argo CD admin secret
+  ansible.builtin.stat:
+    path: "{{ argocd_mcp_token_admin_secret }}"
+  register: argocd_mcp_token_admin_secret_stat
+
+- name: Require the Argo CD admin secret
+  ansible.builtin.assert:
+    that:
+      - argocd_mcp_token_admin_secret_stat.stat.exists
+    fail_msg: >-
+      {{ argocd_mcp_token_admin_secret }} is missing. Run
+      playbooks/argocd/secrets/populate.yaml first.
+    quiet: true
+
+- name: Read the Argo CD admin password
+  ansible.builtin.command:
+    argv:
+      - sops
+      - -d
+      - "{{ argocd_mcp_token_admin_secret }}"
+  register: argocd_mcp_token_admin_password
+  changed_when: false
+  no_log: true
+
+- name: Ensure the Argo CD MCP secret directory exists
+  ansible.builtin.file:
+    path: "{{ argocd_mcp_token_secret | dirname }}"
+    state: directory
+    mode: "0775"
+
+- name: Mint the Argo CD MCP account token
+  ansible.builtin.command:
+    argv:
+      - "{{ argocd_mcp_token_kubectl }}"
+      - --kubeconfig
+      - "{{ argocd_mcp_token_kubeconfig }}"
+      - --server
+      - "{{ argocd_mcp_token_api_server }}"
+      - -n
+      - "{{ argocd_mcp_token_namespace }}"
+      - exec
+      - -i
+      - deployment/argocd-server
+      - --
+      - sh
+      - -c
+      - |
+        set -eu
+        trap 'rm -f {{ argocd_mcp_token_config_path }}' EXIT
+        rm -f {{ argocd_mcp_token_config_path }}
+        read -r password
+        printf '%s\n' "$password" \
+          | argocd --config {{ argocd_mcp_token_config_path }} \
+              --insecure --plaintext \
+              login localhost:8080 --username admin >&2
+        argocd --config {{ argocd_mcp_token_config_path }} \
+          --prompts-enabled=false \
+          account delete-token --account {{ argocd_mcp_token_account }} \
+          {{ argocd_mcp_token_id }} >&2 || true
+        argocd --config {{ argocd_mcp_token_config_path }} \
+          account generate-token --account {{ argocd_mcp_token_account }} \
+          --id {{ argocd_mcp_token_id }} --expires-in 0s
+    stdin: "{{ argocd_mcp_token_admin_password.stdout | trim }}"
+  register: argocd_mcp_token_exec
+  # Delete + generate is a real Argo CD change every time this task runs. The
+  # role only runs it when the sops secret is missing or rotation is forced.
+  changed_when: true
+  no_log: false
+
+- name: Generate the MCP inbound bearer token
+  ansible.builtin.set_fact:
+    argocd_mcp_token_auth_token: >-
+      {{ lookup('pipe', 'openssl rand -base64 32') | trim }}
+  no_log: true
+
+- name: Build the Argo CD MCP secret manifest
+  ansible.builtin.set_fact:
+    argocd_mcp_token_manifest:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ argocd_mcp_token_manifest_name }}"
+        namespace: "{{ argocd_mcp_token_namespace }}"
+      type: Opaque
+      stringData:
+        ARGOCD_API_TOKEN: "{{ argocd_mcp_token_exec.stdout | trim }}"
+        MCP_AUTH_TOKEN: "{{ argocd_mcp_token_auth_token }}"
+  no_log: true
+
+- name: Write the Argo CD MCP secret
+  ansible.builtin.include_role:
+    name: sops_secret
+  vars:
+    sops_secret_target: "{{ argocd_mcp_token_secret }}"
+    sops_secret_format: yaml
+    sops_secret_plaintext: "{{ argocd_mcp_token_manifest | to_nice_yaml }}"
+    sops_secret_expected: "{{ argocd_mcp_token_manifest | to_json }}"
+  no_log: true

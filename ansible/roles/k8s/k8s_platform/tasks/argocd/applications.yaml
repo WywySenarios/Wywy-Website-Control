@@ -11,40 +11,42 @@
     fail_msg: the Argo CD infrastructure kustomization is missing
 
 - name: Apply the Argo CD infrastructure
-  ansible.builtin.command:
-    argv:
-      - "{{ k8s_platform_kubectl }}"
-      - --kubeconfig
-      - "{{ k8s_platform_kubeconfig }}"
-      - --server
-      - "{{ k8s_platform_api_server }}"
-      - apply
-      - -k
-      - "{{ k8s_platform_argocd_infrastructure_dir }}"
-  register: k8s_platform_argocd_infrastructure_apply
-  changed_when: >-
-    'created' in k8s_platform_argocd_infrastructure_apply.stdout
-    or 'configured' in k8s_platform_argocd_infrastructure_apply.stdout
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_platform_kubeconfig }}"
+    host: "{{ k8s_platform_api_server }}"
+    state: present
+    apply: true
+    definition: "{{ lookup('kubernetes.core.kustomize', binary_path=k8s_platform_kubectl, dir=k8s_platform_argocd_infrastructure_dir) }}"
 
 - name: Wait for the Argo CD root Application
-  ansible.builtin.command:
-    argv:
-      - "{{ k8s_platform_kubectl }}"
-      - --kubeconfig
-      - "{{ k8s_platform_kubeconfig }}"
-      - --server
-      - "{{ k8s_platform_api_server }}"
-      - get
-      - application
-      - "{{ k8s_platform_argocd_root_application_name }}"
-      - -n
-      - "{{ k8s_platform_argocd_namespace }}"
-      - -o
-      - "jsonpath={.status.sync.status} {.status.health.status}"
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_platform_kubeconfig }}"
+    host: "{{ k8s_platform_api_server }}"
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    namespace: "{{ k8s_platform_argocd_namespace }}"
+    name: "{{ k8s_platform_argocd_root_application_name }}"
   register: k8s_platform_argocd_root_status
   until: >-
-    'Synced' in k8s_platform_argocd_root_status.stdout
-    and 'Healthy' in k8s_platform_argocd_root_status.stdout
+    (k8s_platform_argocd_root_status.resources | default([]) | length > 0)
+    and (k8s_platform_argocd_root_status.resources[0].status.sync.status
+         | default('')) == 'Synced'
+    and (k8s_platform_argocd_root_status.resources[0].status.health.status
+         | default('')) == 'Healthy'
   retries: "{{ k8s_platform_argocd_wait_retries }}"
   delay: "{{ k8s_platform_argocd_wait_delay }}"
   changed_when: false
+  failed_when: false
+
+- name: Require a healthy Argo CD root Application
+  ansible.builtin.assert:
+    that:
+      - (k8s_platform_argocd_root_status.resources | default([]) | length > 0)
+      - (k8s_platform_argocd_root_status.resources[0].status.sync.status
+        | default('')) == 'Synced'
+      - (k8s_platform_argocd_root_status.resources[0].status.health.status
+        | default('')) == 'Healthy'
+    fail_msg: >-
+      {{ k8s_platform_argocd_root_application_name }} did not become
+      Synced and Healthy
+    quiet: true

@@ -1,0 +1,17 @@
+---
+- name: Restart the Argo CD MCP deployment
+  kubernetes.core.k8s:
+    kubeconfig: "{{ argocd_mcp_token_kubeconfig }}"
+    host: "{{ argocd_mcp_token_api_server }}"
+    kind: Deployment
+    namespace: "{{ argocd_mcp_token_namespace }}"
+    name: argocd-mcp
+    state: patched
+    merge_type: strategic-merge
+    definition:
+      spec:
+        template:
+          metadata:
+            annotations:
+              kubectl.kubernetes.io/restartedAt: >-
+                {{ now(utc=true).strftime('%Y-%m-%dT%H:%M:%SZ') }}

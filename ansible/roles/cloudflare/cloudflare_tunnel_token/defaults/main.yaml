@@ -1,5 +1,9 @@
 ---
 cloudflare_tunnel_token_api_base: https://api.cloudflare.com/client/v4
-cloudflare_tunnel_token_manifest_name: cloudflared-tunnel-token
+cloudflare_tunnel_token_secret_names: {}
+cloudflare_tunnel_token_secret_name: >-
+  {{ cloudflare_tunnel_token_secret_names[cloudflare_tunnel_token_name]
+     | default('cloudflared-tunnel-token') }}
+cloudflare_tunnel_token_manifest_name: "{{ cloudflare_tunnel_token_secret_name }}"
 cloudflare_tunnel_token_key: TUNNEL_TOKEN
 cloudflare_tunnel_token_force_write: false

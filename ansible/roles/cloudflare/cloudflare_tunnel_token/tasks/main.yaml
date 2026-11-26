@@ -73,7 +73,7 @@
 
 - name: Check the tunnel token secret
   ansible.builtin.stat:
-    path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+    path: "{{ cloudflare_tunnel_token_secret_dir }}/{{ cloudflare_tunnel_token_secret_name }}.sops.yaml"
   register: cloudflare_tunnel_token_stat
   changed_when: false
 
@@ -130,18 +130,18 @@
       ansible.builtin.shell:
         cmd: |
           set -euo pipefail
-          sops -e --filename-override "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml" \
+          sops -e --filename-override "{{ cloudflare_tunnel_token_secret_dir }}/{{ cloudflare_tunnel_token_secret_name }}.sops.yaml" \
             "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.yaml" \
             > "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.enc.yaml"
           mv "{{ cloudflare_tunnel_token_tmp.path }}/cloudflared-tunnel-token.enc.yaml" \
-            "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+            "{{ cloudflare_tunnel_token_secret_dir }}/{{ cloudflare_tunnel_token_secret_name }}.sops.yaml"
         executable: /bin/bash
       changed_when: true
       no_log: true
 
     - name: Set the encrypted token secret permissions
       ansible.builtin.file:
-        path: "{{ cloudflare_tunnel_token_secret_dir }}/cloudflared-tunnel-token.sops.yaml"
+        path: "{{ cloudflare_tunnel_token_secret_dir }}/{{ cloudflare_tunnel_token_secret_name }}.sops.yaml"
         mode: "0664"
 
   always:

@@ -4,5 +4,27 @@
   connection: local
   gather_facts: false
   become: false
-  roles:
-    - k8s_platform
+  tasks:
+    - name: Install Argo CD
+      ansible.builtin.import_role:
+        name: k8s_platform
+        tasks_from: argocd/install
+    - name: Set the Argo CD admin password
+      ansible.builtin.import_role:
+        name: k8s_platform
+        tasks_from: argocd/admin
+
+# Note: Argo CD must be running before the MCP account token can be minted.
+- name: Populate the Argo CD MCP credentials
+  ansible.builtin.import_playbook: secrets/mcp/populate.yaml
+
+- name: Create the Argo CD applications
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Create the Argo CD applications
+      ansible.builtin.import_role:
+        name: k8s_platform
+        tasks_from: argocd/applications

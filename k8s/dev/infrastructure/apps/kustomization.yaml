@@ -34,13 +34,19 @@ patches:
 
   - target:
       kind: Application
-      name: argocd-cloudflared
+      name: argocd
     patch: |-
       - op: replace
-        path: /spec/source/path
+        path: /spec/sources/0/path
         value: k8s/dev/cloudflared/argocd
       - op: replace
-        path: /spec/source/targetRevision
+        path: /spec/sources/0/targetRevision
+        value: dev
+      - op: replace
+        path: /spec/sources/1/path
+        value: k8s/dev/argocd-mcp
+      - op: replace
+        path: /spec/sources/1/targetRevision
         value: dev
 
   - target:

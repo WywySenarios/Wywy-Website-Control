@@ -11,7 +11,6 @@ k8s_platform_argocd_namespace: argocd
 k8s_platform_argocd_release: argocd
 k8s_platform_argocd_chart_version: "10.11.6"
 k8s_platform_argocd_values: "{{ role_path }}/files/argocd-values.yaml"
-k8s_platform_helm_repo_name: argo-helm
 k8s_platform_helm_repo_url: https://argoproj.github.io/argo-helm
 k8s_platform_helm_timeout: 10m
 

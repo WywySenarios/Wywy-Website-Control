@@ -1,0 +1,14 @@
+---
+argocd_mcp_token_account: mcp
+argocd_mcp_token_id: argocd-mcp
+argocd_mcp_token_manifest_name: argocd-mcp
+argocd_mcp_token_namespace: argocd
+argocd_mcp_token_kubectl: kubectl
+argocd_mcp_token_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+argocd_mcp_token_api_server: "https://{{ k8s_api_vip }}:6443"
+argocd_mcp_token_config_path: /tmp/argocd-mcp-config
+argocd_mcp_token_secret: >-
+  {{ control_dir }}/k8s/{{ wywy_env }}/argocd-mcp/secrets/argocd-mcp.sops.yaml
+argocd_mcp_token_admin_secret: >-
+  {{ control_dir }}/secrets/{{ wywy_env }}/argocd-admin.sops
+argocd_mcp_token_force_write: false
