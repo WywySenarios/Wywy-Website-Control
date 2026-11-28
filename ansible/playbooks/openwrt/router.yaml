@@ -26,26 +26,11 @@
       changed_when: false
       failed_when: false
 
-    - name: Read the current Wi-Fi PSK
-      when: wywy_env == 'dev'
-      ansible.builtin.raw: "uci get wireless.default_radio0.key"
-      register: openwrt_current_wifi_key
-      changed_when: false
-      failed_when: false
-
-    - name: Record whether the Wi-Fi PSK needs persisting
-      when: wywy_env == 'dev'
-      ansible.builtin.set_fact:
-        openwrt_wifi_key_missing: >-
-          {{ openwrt_wifi_key | default('', true) | trim | length == 0 }}
-
     - name: Record whether the network identifiers need persisting
       ansible.builtin.set_fact:
         openwrt_network_secrets_missing: >-
           {{ (openwrt_dhcp_default_duid | default('', true) | trim | length == 0)
-             or (openwrt_ula_prefix | default('', true) | trim | length == 0)
-             or (wywy_env == 'dev'
-                 and (openwrt_wifi_key_missing | default(false) | bool)) }}
+             or (openwrt_ula_prefix | default('', true) | trim | length == 0) }}
 
     - name: Generate a ULA prefix when neither the inventory nor router has one
       ansible.builtin.set_fact:
@@ -71,14 +56,6 @@
                 ~ ':' ~ (openwrt_generated_ula_hex | default('0000000000'))[6:10]
                 ~ '::/48') }}
 
-    - name: Populate the Wi-Fi PSK
-      when: wywy_env == 'dev'
-      ansible.builtin.set_fact:
-        openwrt_wifi_key: >-
-          {{ openwrt_wifi_key | default('', true) | trim
-             or openwrt_current_wifi_key.stdout | default('') | trim
-             or lookup('pipe', 'openssl rand -hex 16') | trim }}
-
     - name: Validate the DHCPv6 DUID and ULA prefix
       ansible.builtin.assert:
         that:
@@ -89,17 +66,6 @@
         fail_msg: >-
           invalid DHCPv6 DUID or ULA prefix:
           {{ openwrt_dhcp_default_duid }} {{ openwrt_ula_prefix }}
-        quiet: true
-
-    - name: Validate the Wi-Fi PSK
-      when: wywy_env == 'dev'
-      ansible.builtin.assert:
-        that:
-          - openwrt_wifi_key | length >= 8
-          - openwrt_wifi_key is match('^\S+$')
-        fail_msg: >-
-          invalid Wi-Fi PSK: it must be at least 8 characters and contain no
-          whitespace.
         quiet: true
 
 - name: Persist the OpenWrt network identifiers
@@ -122,12 +88,7 @@
              hostvars[groups['openwrt'][0]].openwrt_dhcp_default_duid | default(''),
            'openwrt_ula_prefix':
              hostvars[groups['openwrt'][0]].openwrt_ula_prefix | default('')
-         }
-         | combine(
-           {'openwrt_wifi_key':
-             hostvars[groups['openwrt'][0]].openwrt_wifi_key | default('')}
-           if wywy_env == 'dev' else {}
-         ) }}
+         } }}
 
   tasks:
     - name: Store generated network identifiers in sops
@@ -160,8 +121,6 @@
       - system
       - ubihealthd
       - uhttpd
-    router_dev_config_templates:
-      - wireless
     openwrt_terraform_env_dir: "{{ control_dir }}/terraform/proxmox/env"
     openwrt_terraform_env: >-
       {{ lookup('file', openwrt_terraform_env_dir ~ '/base/proxmox.yaml')
@@ -194,28 +153,9 @@
       ansible.builtin.include_role:
         name: openwrt_router
         tasks_from: apply-file
-      loop: >-
-        {{ router_config_templates
-           + (router_dev_config_templates if wywy_env == 'dev' else []) }}
+      loop: "{{ router_config_templates }}"
       loop_control:
         label: "{{ item }}"
-
-    - name: Remove the Wi-Fi configuration outside dev
-      when: wywy_env != 'dev'
-      ansible.builtin.raw: >-
-        if [ -e /etc/config/wireless ]; then
-          rm -f /etc/config/wireless;
-          echo changed;
-        fi
-      register: openwrt_wireless_removed
-      changed_when: "'changed' in openwrt_wireless_removed.stdout"
-
-    - name: Mark the router configuration changed after Wi-Fi removal
-      when:
-        - wywy_env != 'dev'
-        - "'changed' in (openwrt_wireless_removed.stdout | default(''))"
-      ansible.builtin.set_fact:
-        router_config_changed: true
 
     - name: Reboot the router
       when: router_config_changed | default(false) | bool

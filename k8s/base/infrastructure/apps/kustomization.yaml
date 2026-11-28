@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - app-of-apps.yaml
-  - app-argocd-cloudflared.yaml
+  - app-argocd.yaml
   - app-csi-driver-nfs.yaml
   - app-immich-secrets.yaml
   - app-immich.yaml

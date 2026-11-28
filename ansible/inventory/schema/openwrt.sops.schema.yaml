@@ -21,9 +21,5 @@ properties:
     type: string
     description: IPv6 ULA /48 prefix for the LAN.
     pattern: '^ENC\[AES256_GCM,'
-  openwrt_wifi_key:
-    type: string
-    description: Dev-only Wi-Fi PSK. Production must not define it.
-    pattern: '^ENC\[AES256_GCM,'
   sops:
     type: object

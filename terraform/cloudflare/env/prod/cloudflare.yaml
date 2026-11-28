@@ -3,6 +3,10 @@ public_hosts:
     hostname: argocd.ericzhu.me
     namespace: argocd
     service: http://argocd-server.argocd.svc.cluster.local:80
+  argocd-mcp:
+    hostname: argocd-mcp.ericzhu.me
+    namespace: argocd
+    service: http://argocd-mcp.argocd.svc.cluster.local:3000
   immich:
     hostname: immich.ericzhu.me
     namespace: immich

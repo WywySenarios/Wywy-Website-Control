@@ -1,0 +1,21 @@
+---
+- name: Check the Argo CD MCP secret
+  ansible.builtin.stat:
+    path: "{{ argocd_mcp_token_secret }}"
+  register: argocd_mcp_token_secret_stat
+
+- name: Record whether the MCP secret must be written
+  ansible.builtin.set_fact:
+    argocd_mcp_token_write: >-
+      {{ argocd_mcp_token_force_write | bool
+         or not argocd_mcp_token_secret_stat.stat.exists }}
+
+- name: Provision the Argo CD MCP credentials
+  when: argocd_mcp_token_write | bool
+  ansible.builtin.include_tasks: create.yaml
+
+- name: Report the Argo CD MCP credential state
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'wrote new Argo CD MCP credentials' if argocd_mcp_token_write | bool
+         else 'the Argo CD MCP secret already exists; nothing to do' }}

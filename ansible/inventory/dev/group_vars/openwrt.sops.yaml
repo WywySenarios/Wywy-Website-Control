@@ -1,19 +1,18 @@
-openwrt_operator_mac: ENC[AES256_GCM,data:dVguWF5pARfFuisy9BZYYG0=,iv:jGokZw1AHMvfqFJGZiVtfYeUCK42GFdL3CBrHZLTqXc=,tag:nCVwJcFX558e598OpgQPLA==,type:str]
-openwrt_dhcp_default_duid: ENC[AES256_GCM,data:6pkki1y6yEtiaw677AiXJjPLBAHiG5aonszndlKtA0+tMdBD,iv:ka+4ZKZFAwYlppX8B3xq7Mby4E3NOcI5ArFFOek19Zs=,tag:Wgpsjcewve0LyT6uoFac8Q==,type:str]
-openwrt_ula_prefix: ENC[AES256_GCM,data:P9Y8h2hXA4KyofBNeAvLo5Q2,iv:6jpciT0jMA8i2UV+LvwDHEH4f9NkSbb6hgrzRyDIZJQ=,tag:2LADXk1BhOC7kL5fClpuGA==,type:str]
-openwrt_wifi_key: ENC[AES256_GCM,data:QVIfEKwzd6QnRpDCxBrxaP9LJV+/CzV6IEs5LuraeJ8=,iv:nZPlTbsKB35o65Il6v98YqNrFcj/VJKU3AbVveH73hc=,tag:je7fgvvNNRqhEUs4fbZTQw==,type:str]
+openwrt_operator_mac: ENC[AES256_GCM,data:Ts4lMHkvLvgRQgWul0E/NrA=,iv:OPH3TURAK4CSZ+9EreaN7zbEDAcXMNSrEYqGcx+LBxQ=,tag:eo8Q0voq7bZ3J4dmt4NFLw==,type:str]
+openwrt_dhcp_default_duid: ENC[AES256_GCM,data:T1+T+pGQ2AvAkixx2UglHoA7dFe7iE/QwHvKunWDDMVnqMFY,iv:Y5EfgabH6z9aT4w2JnadoslCGVl11U6GTiZ6dopbfvE=,tag:XxUtIZXW30LMpgox1hfvgg==,type:str]
+openwrt_ula_prefix: ENC[AES256_GCM,data:egXgucYuCMayAbBsU/ArSGoD,iv:ru9yx5Wl7u5WEubRaZHOOIfop9q7tW2f9VY0vMOxQzw=,tag:YY7+KXnYfiHqKnL/nyLIOQ==,type:str]
 sops:
     age:
         - enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5SWtSNE9GaWRXb3V4L3lN
-            RG5zSnlvVTRkc201Z2FLY0s4Y285dkpYVnd3CjRaYzl4Vlg1VlplQzlqVXdRdUZC
-            MWhPM3VVN0JxR0NUUDk2eTMxQllXZVEKLS0tIHc2K2JFOUJsNmJ5Wm1yN0NqUU9a
-            aVM1VHBpQ3crMDdOb1haWFo0SnlGWFUKrZyEA3kbH3/AJOVmRT/vDNMp8SOqc389
-            YFcG98AMf9GbH26/ytIzFgXACsIDRUkUt4tuYy6dGrgcwrk6xCO7HQ==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAxWUZtUVFJMHQ4VHQ1UGpk
+            MFYvVlJsL0QyVWZ0NzFlOTdtK3luODNqVGhJCmFpWnd1QkE2RmJRTmw5L0pmeXhr
+            RW95OUt2OXUvcW9xN1V1Z0ZLVGhHcUUKLS0tIHJBRkNpSnV3MFNIaVNZSzM1S01w
+            N1lGOEU1YTJRYW52WGo1RVF4b1d5TjAKuk9E/v9umV15hFWdDG1gwDsu++cQZY/K
+            j+5v2O08elRiyuBZnHTC7J7++INMo698YuzxmAEKRtpcDtBAgM+fqw==
             -----END AGE ENCRYPTED FILE-----
           recipient: age1w8evjqdz8f5zqa9d23dnjz88wqz070e3e40w3agdlj76shjun3sqwe37yy
-    lastmodified: "2026-11-18T05:24:59Z"
-    mac: ENC[AES256_GCM,data:4VvTgYebBfioHIDjWRLWB4eGSK1JxNvSU9W1Iiuy6wjeZbWPQ79pGeSLvHCiuvswjygWjVOuHVQPF8lp5QLHczvbDDc3EUcguLZhAGUecSldLVJ1iVg/YR9RGvclXsdqnusyNqztrXYpzMFTGYL5Ng9bE+bFqrarWJTZkYYcAkU=,iv:YYfTwkprhDF48sEYfirelWeP2VkSXl1KmaGa5MTSVDc=,tag:bKvM9CEXWsoh+xa08Jtl8w==,type:str]
+    lastmodified: "2026-11-26T02:09:06Z"
+    mac: ENC[AES256_GCM,data:W8E9cYMqR3aiBXZmXvlQhm0zrxMBiYzN+si7kST/VYoHwIr5oe/yp9gEhSqK7Qfo8PyejONOBKH2J2rapVH7Q+FwoIxxYVSoHvdZiblOjmP2VH5INSBcNv5j6w1iXDWlR3rwYqduLw6eOGqHUrr/ytkCgVCNSflsFGsRy2yqGgQ=,iv:Mk/d9pMJTaCyOH8uLb4rLpHGCyMzuwQEMXFmr4zzVUk=,tag:qzzb87SCeoDvcjk5T++Csw==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3

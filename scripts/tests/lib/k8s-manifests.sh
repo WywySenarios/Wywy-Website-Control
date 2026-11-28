@@ -5,7 +5,9 @@ K8S_SCHEMA_URL="https://raw.githubusercontent.com/yannh/kubernetes-json-schema/$
 CRD_SCHEMA_URL="https://raw.githubusercontent.com/datreeio/CRDs-catalog/${CRD_SCHEMA_COMMIT}/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
 
 RENDER_DIRS=(
+	k8s/base/argocd-mcp
 	k8s/base/cloudflared
+	k8s/base/cloudflared-argocd
 	k8s/base/image-updater
 	k8s/base/infrastructure
 	k8s/base/jenkins

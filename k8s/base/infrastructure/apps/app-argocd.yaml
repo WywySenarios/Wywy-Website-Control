@@ -1,16 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd-cloudflared
+  name: argocd
   namespace: argocd
   finalizers:
     - resources-finalizer.argoproj.io
 spec:
   project: wywy-prod
-  source:
-    repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
-    targetRevision: main
-    path: k8s/prod/cloudflared/argocd
+  sources:
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      path: k8s/prod/cloudflared/argocd
+    - repoURL: https://github.com/WywySenarios/Wywy-Website-Control.git
+      targetRevision: main
+      path: k8s/prod/argocd-mcp
   destination:
     # The argocd namespace and the argocd-server Service come from argocd.yaml, so this Application must not fight over them.
     server: https://kubernetes.default.svc

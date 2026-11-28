@@ -21,47 +21,29 @@
   no_log: true
 
 - name: Set the Argo CD admin password
-  vars:
-    k8s_platform_argocd_admin_patch:
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_platform_kubeconfig }}"
+    host: "{{ k8s_platform_api_server }}"
+    kind: Secret
+    namespace: "{{ k8s_platform_argocd_namespace }}"
+    name: argocd-secret
+    state: patched
+    merge_type: merge
+    definition:
       stringData:
         admin.password: >-
           {{ k8s_platform_argocd_admin_password.stdout
              | trim
              | ansible.builtin.password_hash(hashtype='bcrypt', rounds=10) }}
         admin.passwordMtime: "{{ now(utc=true).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-  ansible.builtin.command:
-    argv:
-      - "{{ k8s_platform_kubectl }}"
-      - --kubeconfig
-      - "{{ k8s_platform_kubeconfig }}"
-      - --server
-      - "{{ k8s_platform_api_server }}"
-      - -n
-      - "{{ k8s_platform_argocd_namespace }}"
-      - patch
-      - secret
-      - argocd-secret
-      - --type=merge
-      - -p
-      - "{{ k8s_platform_argocd_admin_patch | to_json }}"
-  register: k8s_platform_argocd_admin_patch_result
-  changed_when: "'patched' in k8s_platform_argocd_admin_patch_result.stdout"
   no_log: true
 
 - name: Remove the initial Argo CD admin password
-  ansible.builtin.command:
-    argv:
-      - "{{ k8s_platform_kubectl }}"
-      - --kubeconfig
-      - "{{ k8s_platform_kubeconfig }}"
-      - --server
-      - "{{ k8s_platform_api_server }}"
-      - -n
-      - "{{ k8s_platform_argocd_namespace }}"
-      - delete
-      - secret
-      - argocd-initial-admin-secret
-      - --ignore-not-found
-  register: k8s_platform_argocd_initial_secret
-  changed_when: "'deleted' in k8s_platform_argocd_initial_secret.stdout"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_platform_kubeconfig }}"
+    host: "{{ k8s_platform_api_server }}"
+    kind: Secret
+    namespace: "{{ k8s_platform_argocd_namespace }}"
+    name: argocd-initial-admin-secret
+    state: absent
   no_log: true

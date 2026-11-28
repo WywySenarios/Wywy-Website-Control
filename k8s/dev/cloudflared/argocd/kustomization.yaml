@@ -4,23 +4,5 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - ../../../base/cloudflared
+  - ../../../base/cloudflared-argocd
   - secrets
-
-# The namespace hosts the Argo CD control plane, so narrow the base
-# same-namespace egress rule to the API server on its HTTP port.
-patches:
-  - target:
-      kind: NetworkPolicy
-      name: cloudflared
-    patch: |-
-      - op: replace
-        path: /spec/egress/2
-        value:
-          to:
-            - podSelector:
-                matchLabels:
-                  app.kubernetes.io/name: argocd-server
-          ports:
-            - protocol: TCP
-              port: 8080

@@ -4,10 +4,19 @@ configs:
   cm:
     # KSOPS needs this.
     kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+    # Argo CD MCP server API key.
+    accounts.mcp: apiKey
   params:
     # Cloudflare terminates public TLS; the server only serves plain HTTP
     # inside the cluster.
     server.insecure: true
+  rbac:
+    policy.csv: |
+      p, role:mcp, applications, *, wywy-dev/*, allow
+      p, role:mcp, logs, get, wywy-dev/*, allow
+      p, role:mcp, projects, get, wywy-dev, allow
+      p, role:mcp, clusters, get, https://kubernetes.default.svc, allow
+      g, mcp, role:mcp
 
 server:
   livenessProbe:
